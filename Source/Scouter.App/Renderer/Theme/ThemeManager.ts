@@ -11,6 +11,7 @@ import { watch } from "chokidar";
 import type { FSWatcher } from "chokidar";
 import { ThemeResolver, ThemeCss, SimpleEvent } from "@scouter/gui";
 import type { ITheme, IResolvedTheme, IThemeJson, ThemeMode, ThemeScheme, ITypography, DensityKind } from "@scouter/gui";
+import { MonacoLoader } from "@scouter/gui";
 import { Settings } from "../Services/Settings";
 import { EventBus } from "../Services/EventBus";
 import { ThemeLoader } from "./ThemeLoader";
@@ -104,9 +105,17 @@ export class ThemeManager
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 테마를 바꾼다. 없으면 false.
+	// 테마를 바꾼다. 없으면 false. 저장은 호출자가 Settings로 한다.
 	// @param _id: Id
 	public static Set(_id: string): boolean
+	{
+		return ThemeManager.Preview(_id);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 테마를 미리본다. Settings에 기록하지 않는다. 확정·원복은 호출자 몫.
+	// @param _id: Id
+	public static Preview(_id: string): boolean
 	{
 		const found = ThemeManager.s_themes_.get(_id);
 		if (found === undefined)
@@ -148,6 +157,7 @@ export class ThemeManager
 			ThemeManager.s_style_.textContent = css;
 			document.documentElement.dataset["theme"] = ThemeManager.s_current_.Id;
 			document.documentElement.dataset["scheme"] = useScheme.toLowerCase();
+			MonacoLoader.ApplyTheme(ThemeManager.s_resolved_.Tokens, useScheme === "Dark");
 			ThemeManager.s_changed_.Invoke({ Id: ThemeManager.s_current_.Id, Name: ThemeManager.s_current_.Name, Scheme: useScheme });
 			EventBus.Publish("Scouter.ThemeChanged", { Id: ThemeManager.s_current_.Id, Scheme: useScheme });
 		}

@@ -57,6 +57,7 @@ export interface IP4Settings
 	Port: string;
 	User: string;
 	Client: string;
+	Charset: string;
 	DescribeBatch: number;
 	MaxChanges: number;
 }

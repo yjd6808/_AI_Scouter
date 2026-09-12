@@ -5,7 +5,7 @@
 	설명: P4Util 메인 화면. 추출 실행·취소·결과 표시.
 */
 
-import { UserControl, TextBox, NumericUpDown, Button, CheckBox, ListView, LogView, StatusDot, DotStatus } from "@scouter/gui";
+import { UserControl, TextBox, NumericUpDown, Button, CheckBox, ListView, LogView, StatusDot, DotStatus, ContextMenu, MenuItem } from "@scouter/gui";
 import { GridView, GridViewColumn } from "@scouter/gui";
 import type { DataList } from "@scouter/gui";
 import { Shared } from "../P4Runner";
@@ -22,9 +22,22 @@ interface IExtractResult
 
 export class MainControl extends UserControl
 {
+	// ==================== 정적 ====================
+	private static s_clipboard_: ((_text: string) => void) | null = null;
+
 	// ==================== 멤버 ====================
 	private data_!: DataList;
 	private abort_: AbortController | null = null;
+
+	// ==================== 공개 메서드 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 클립보드 기록기를 둔다. Index OnActivate에서 1회.
+	// @param _write: 기록기
+	public static SetClipboard(_write: (_text: string) => void): void
+	{
+		MainControl.s_clipboard_ = _write;
+	}
 
 	// ==================== 확장점 ====================
 
@@ -48,9 +61,34 @@ export class MainControl extends UserControl
 		{
 			this.abort_?.abort();
 		});
+		this.BindMenu();
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 파일 목록 우클릭 메뉴를 건다. 경로 복사 1종.
+	private BindMenu(): void
+	{
+		const menu = new ContextMenu();
+		const copy = new MenuItem();
+		copy.Header = "경로 복사";
+		copy.Click.Add(() =>
+		{
+			const list = this.RequireName(ListView, "lst_files");
+			const paths: string[] = [];
+			for (const selected of list.SelectedItems)
+			{
+				const path = (selected as Partial<IFileEntry>).DepotPath;
+				if (typeof path === "string" && path.length > 0)
+					paths.push(path);
+			}
+			if (paths.length > 0)
+				MainControl.s_clipboard_?.(paths.join("\n"));
+		});
+		menu.AddItem(copy);
+		this.RequireName(ListView, "lst_files").ContextMenu = menu;
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 추출을 실행한다. 같은 Tool을 UI에서 직접 쓴다.

@@ -83,6 +83,7 @@ export class ToolTipService
 		const label = new TextBlock();
 		label.Text = _text;
 		popup.AddChild(label);
+		popup.Element.style.pointerEvents = "none";
 		popup.PlacementTarget = _element;
 		popup.StaysOpen = false;
 		ToolTipService.s_popup_ = popup;

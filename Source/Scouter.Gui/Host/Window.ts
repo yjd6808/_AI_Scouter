@@ -41,6 +41,7 @@ export class Window extends ContentControl
 	private isModal_ = false;
 	private isActive_ = false;
 	private closed_ = false;
+	private closer_: ((_result: unknown) => void) | null = null;
 
 	// ==================== 생성 · 소멸 ====================
 
@@ -82,6 +83,14 @@ export class Window extends ContentControl
 	{
 		this.result_ = _result;
 		this.OnCloseRequested();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 닫기 배선을 건다. UIManager.Create 전용. 직접 호출 금지.
+	// @param _fn: 닫기 처리
+	public SetCloser(_fn: (_result: unknown) => void): void
+	{
+		this.closer_ = _fn;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +208,6 @@ export class Window extends ContentControl
 	// Close() 요청 진입점. UIManager에 위임하도록 오버라이드 금지, 그대로 둔다.
 	protected OnCloseRequested(): void
 	{
-		// UIManager.Close(this, result)가 실제 처리. 기본은 무시.
+		this.closer_?.(this.result_);
 	}
 }

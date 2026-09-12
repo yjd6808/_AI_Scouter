@@ -3,15 +3,18 @@
 	"private": true,
 	"type": "module",
 	"version": "0.4.0",
+	"description": "로컬 개발자 유틸리티 허브",
+	"author": "Scouter",
+	"main": "dist/main/Main.cjs",
 	"workspaces": [
 		"Source/*",
 		"Plugins/*"
 	],
 	"scripts": {
 		"clean": "rimraf Source/*/dist dist",
-		"typecheck": "tsc -b Source/Scouter.Gui Source/Scouter.PluginApi Source/Scouter.App Source/Scouter.Harness Plugins/P4Util",
+		"typecheck": "tsc -b Source/Scouter.Gui Source/Scouter.PluginApi Source/Scouter.App Source/Scouter.Harness Plugins/P4Util Plugins/Notes",
 		"lint": "eslint . --max-warnings 0",
-		"lint:layout": "node --import tsx Scripts/LayoutLint.mjs Source/Scouter.App/Renderer/Layout Plugins/P4Util/Layout",
+		"lint:layout": "node --import tsx Scripts/LayoutLint.mjs Source/Scouter.App/Renderer/Layout Plugins/P4Util/Layout Plugins/Notes/Layout",
 		"lint:theme": "node Scripts/ThemeLint.mjs Source/Scouter.App/Renderer/Theme/Themes",
 		"build:main": "webpack -c webpack/main.cjs",
 		"build:renderer": "webpack -c webpack/renderer.cjs",
@@ -60,7 +63,10 @@
 		"ajv-formats": "^3.0.1",
 		"chokidar": "^5.0.0",
 		"croner": "^10.0.1",
+		"dompurify": "^3.4.15",
+		"electron-updater": "^6.8.9",
 		"esbuild": "^0.28.2",
+		"marked": "^15.0.12",
 		"zod": "^4.6.2"
 	}
 }

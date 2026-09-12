@@ -41,3 +41,30 @@
 .gui-logview__row.is-error { color: var(--error); }
 .gui-propertygrid { display: grid; grid-template-columns: minmax(120px, 35%) 1fr; gap: 4px 8px; align-items: center; }
 .gui-propertygrid__error { color: var(--error); font-size: 12px; }
+.gui-treeview { display: flex; flex-direction: column; overflow: auto; outline: none; }
+.gui-treeview__item { min-height: 28px; display: flex; align-items: center; padding: 0 8px 0 calc(var(--depth, 0) * 16px); cursor: pointer; }
+.gui-treeview__item:hover { background: var(--background-hover); }
+.gui-treeview__item.is-selected { background: var(--primary-muted); }
+.gui-treeview__toggle { width: 16px; color: var(--text-weak); }
+.gui-treeview__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gui-menu { display: flex; gap: 2px; }
+.gui-menu__head { height: 28px; display: flex; align-items: center; padding: 0 8px; cursor: pointer; }
+.gui-menu__head:hover { background: var(--background-hover); }
+.gui-menuitem { min-height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 8px; cursor: pointer; }
+.gui-menuitem:hover { background: var(--background-hover); }
+.gui-menuitem__check, .gui-menuitem__icon { width: 20px; color: var(--text-weak); }
+.gui-menuitem__header { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gui-menuitem__gesture { color: var(--text-weak); font-size: 12px; }
+.gui-menuitem__arrow { color: var(--text-weak); }
+.gui-toolbar { display: flex; gap: 2px; align-items: center; overflow: hidden; }
+.gui-navitem { width: 100%; justify-content: flex-start; }
+.gui-datagrid.no-resize .gui-gridview__grip { display: none; }
+.gui-avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary-muted); color: var(--text-base); font-size: 12px; overflow: hidden; flex: none; }
+.gui-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.gui-codeeditor, .gui-diffview { display: flex; min-height: 120px; overflow: hidden; }
+.gui-markdown { overflow: auto; }
+.gui-markdown__body { font-size: var(--gui-font-size); color: var(--text-base); }
+.gui-markdown__body table { border-collapse: collapse; }
+.gui-markdown__body th, .gui-markdown__body td { border: 1px solid var(--border); padding: 4px 8px; }
+.gui-markdown__body code { font-family: var(--gui-font-mono); background: var(--background-hover); padding: 0 4px; border-radius: 4px; }
+.gui-markdown__body a { color: var(--primary); }

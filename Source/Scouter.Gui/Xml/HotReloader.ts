@@ -55,7 +55,20 @@ export class HotReloader
 		const name = _provider.NameOf(_path);
 		if (name === null)
 			return;
-		const ok = await UIManager.ReloadByLayout(name);
-		_onToast(ok ? `${name} 다시 불러옴` : `${name} 재적재 실패`, !ok);
+		try
+		{
+			const ok = await UIManager.ReloadByLayout(name);
+			if (ok)
+			{
+				_onToast(`${name} 다시 불러옴`, false);
+				return;
+			}
+			const first = UIManager.LastReloadErrors[0] ?? "";
+			_onToast(first.length > 0 ? `${name} 재적재 실패: ${first}` : `${name} 재적재 실패`, true);
+		}
+		catch (_e)
+		{
+			_onToast(`${name} 재적재 실패: ${_e instanceof Error ? _e.message : String(_e)}`, true);
+		}
 	}
 }

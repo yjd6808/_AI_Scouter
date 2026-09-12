@@ -7,3 +7,5 @@ Plugins/*/.cache/
 Source/*/.cache/
 *.tsbuildinfo
 out/
+probe-*
+happy-probe.ts

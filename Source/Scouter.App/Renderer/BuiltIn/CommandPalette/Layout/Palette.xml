@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window xmlns="scouter/gui" Name="command_palette" Title="명령 팔레트">
+	<StackPanel Name="root" ContentHost="true" Spacing="8" Margin="12">
+		<TextBox Name="txt_query" Placeholder="명령 검색... (set: 설정, theme: 테마)" />
+		<ListBox Name="lst_items" MaxHeight="384" />
+		<TextBlock Name="txt_hint" Text="↑↓ 이동  ↵ 실행  esc 닫기" />
+	</StackPanel>
+</Window>

@@ -2,13 +2,13 @@
 	작성자: 윤정도
 	생성일: 2026-09-12
 	=====
-	설명: Main 프로세스 진입점. 단일 인스턴스 + 창 생성 + IPC 등록만 한다.
+	설명: Main 프로세스 진입점. 인자·단일 인스턴스 후 AppHost로 넘긴다.
 */
 
 import { app } from "electron";
-import { WindowFactory } from "./WindowFactory";
-import { Ipc } from "./Ipc";
 import { LaunchArgs } from "./LaunchArgs";
+import { AppHost } from "./AppHost";
+import { MainWindow } from "./MainWindow";
 
 const args = LaunchArgs.Parse(process.argv);
 if (args.Test)
@@ -20,13 +20,13 @@ if (!app.requestSingleInstanceLock() && !args.Test)
 }
 else
 {
-	app.on("second-instance", () => { WindowFactory.Current?.show(); WindowFactory.Current?.focus(); });
+	app.on("second-instance", () =>
+	{
+		MainWindow.Current?.show();
+		MainWindow.Current?.focus();
+	});
 	void app.whenReady().then(() =>
 	{
-		const win = WindowFactory.Create(args);
-		Ipc.Register(win);
-		if (!args.Hidden)
-			win.show();
+		AppHost.StartAsync(args);
 	});
-	app.on("window-all-closed", () => { app.quit(); });
 }

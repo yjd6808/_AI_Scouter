@@ -2,9 +2,17 @@
 <Window xmlns="scouter/gui" Name="about" Title="정보">
 	<DataList>
 		<Data Key="appVersion" Type="String" Value=""/>
+		<Data Key="versions" Type="String" Value=""/>
+		<Data Key="updateState" Type="String" Value=""/>
 	</DataList>
 	<StackPanel ContentHost="true" Spacing="8" Margin="12">
 		<TextBlock Name="txt_about" Text="Scouter v{@appVersion}" />
-		<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />
+		<TextBlock Name="txt_versions" Text="{@versions}" />
+		<TextBlock Name="txt_update" Text="{@updateState}" />
+		<StackPanel Orientation="Horizontal" Spacing="8">
+			<Button Name="btn_update" Content="업데이트 확인" Variant="Ghost" />
+			<Button Name="btn_restart" Content="재시작" Variant="Ghost" />
+			<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />
+		</StackPanel>
 	</StackPanel>
 </Window>

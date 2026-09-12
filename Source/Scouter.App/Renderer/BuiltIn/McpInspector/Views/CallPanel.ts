@@ -5,7 +5,7 @@
 	설명: CallPanel. 직접 호출 폼. PropertyGrid + 실행 + 결과.
 */
 
-import { StackPanel, TextBlock, Button, TextBox, PropertyGrid, ListBox } from "@scouter/gui";
+import { StackPanel, TextBlock, Button, TextBox, PropertyGrid, TreeView } from "@scouter/gui";
 import { ToolRegistry } from "../../../Plugin/ToolRegistry";
 
 export class CallPanel
@@ -24,8 +24,8 @@ export class CallPanel
 	//////////////////////////////////////////////////////////////////////////////////////
 	// pnl_call 자리에서 조각을 찾는다.
 	// @param _panel: pnl_call 패널
-	// @param _list: 도구 목록 (선택 동기화용)
-	public constructor(_panel: StackPanel, _list: ListBox)
+	// @param _tree: 도구 트리 (리프 선택 동기화용)
+	public constructor(_panel: StackPanel, _tree: TreeView)
 	{
 		this.panel_ = _panel;
 		this.title_ = _panel.RequireName(TextBlock, "txt_tool");
@@ -37,11 +37,11 @@ export class CallPanel
 		{
 			void this.OnInvoke();
 		});
-		_list.SelectionChanged.Add(() =>
+		_tree.SelectedItemChanged.Add(() =>
 		{
-			const item = _list.SelectedItem;
-			if (typeof item === "string")
-				this.Bind(item);
+			const selected = _tree.SelectedItem as { Kind?: unknown; FullName?: unknown } | null;
+			if (selected !== null && selected.Kind === "tool" && typeof selected.FullName === "string")
+				this.Bind(selected.FullName);
 		});
 	}
 

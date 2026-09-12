@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="command_palette_main">
+	<StackPanel Spacing="8" Margin="12">
+		<TextBlock Text="명령 팔레트는 Ctrl+Shift+P로 엽니다." />
+		<Button Name="btn_open" Content="명령 팔레트 열기" Variant="Primary" />
+	</StackPanel>
+</UserControl>

@@ -9,6 +9,7 @@ import { Window, Grid, GridSplitter, StackPanel, ContentPresenter, TitleBar, Dat
 import type { UserControl } from "@scouter/gui";
 import { Settings } from "../Services/Settings";
 import { Paths } from "../Services/Paths";
+import { Ipc } from "../Services/Ipc";
 import { Hotkeys } from "../Services/Hotkeys";
 import { CommandRegistry } from "../Services/CommandRegistry";
 import { SidebarController } from "./SidebarController";
@@ -21,6 +22,9 @@ import { McpHttpServer } from "../Mcp/McpHttpServer";
 @RegisterWindow("Shell")
 export class ShellWindow extends Window
 {
+	// ==================== 정적 ====================
+	private static s_commandsRegistered_ = false;
+
 	// ==================== 멤버 ====================
 	private sidebar_!: SidebarController;
 	private presenter_!: ContentPresenter;
@@ -94,13 +98,18 @@ export class ShellWindow extends Window
 		this.sidebar_ = new SidebarController(this.RequireName(StackPanel, "plugin_list"), this);
 		this.RequireName(GridSplitter, "splitter").DragCompleted.Add(() => { this.OnSplitterCompleted(); });
 		this.RequireName(TitleBar, "title_bar").Chrome = new IpcWindowChrome();
-		ShellCommands.Register(this);
+		if (!ShellWindow.s_commandsRegistered_)
+		{
+			ShellWindow.s_commandsRegistered_ = true;
+			ShellCommands.Register(this);
+		}
 		for (const def of CommandRegistry.List())
 		{
 			if (def.Hotkey !== undefined)
 				Hotkeys.Bind(def.Hotkey, def.Id);
 		}
 		Settings.Changed.Add((_change) => { this.OnSettingsChanged(_change.Key); });
+		Ipc.On("app:open-settings", () => { this.OpenSettings(); });
 		PluginManager.Changed.Add(() => { this.RebuildFromPlugins(); });
 		McpHttpServer.SessionsChanged.Add(() =>
 		{

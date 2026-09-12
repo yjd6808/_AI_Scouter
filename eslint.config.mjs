@@ -3,7 +3,7 @@ import stylistic from "@stylistic/eslint-plugin";
 import scouter from "./Scripts/EslintPlugin/index.mjs";
 
 export default tseslint.config(
-	{ ignores: ["**/dist/**", "**/node_modules/**", "**/*.d.ts", "**/coverage/**", "**/.cache/**"] },
+	{ ignores: ["**/dist/**", "**/node_modules/**", "**/*.d.ts", "**/coverage/**", "**/.cache/**", "**/release/**"] },
 	...tseslint.configs.strictTypeChecked,
 	{
 		languageOptions: { parserOptions: { projectService: true } },

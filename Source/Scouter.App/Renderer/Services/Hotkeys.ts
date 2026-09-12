@@ -62,6 +62,19 @@ export class Hotkeys
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// 명령의 핫키를 역조회한다. 없으면 null. 팔레트 Badge용.
+	// @param _commandId: 명령 Id
+	public static HotkeyOf(_commandId: string): string | null
+	{
+		for (const [chord, id] of Hotkeys.s_map_)
+		{
+			if (id === _commandId)
+				return chord;
+		}
+		return null;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// "shift+ctrl+p" → "Ctrl+Shift+P". 순서는 Ctrl Shift Alt Meta.
 	// @param _chord: 원문
 	public static Normalize(_chord: string): string

@@ -5,11 +5,18 @@
 	설명: InspectorMainControl. 세션·호출·직접호출 3탭.
 */
 
-import { UserControl, ListBox, TabControl, ListView, VirtualList, TextBox, TextBlock, Button, StackPanel, DataList } from "@scouter/gui";
+import { UserControl, TreeView, TabControl, ListView, VirtualList, TextBox, TextBlock, Button, StackPanel, DataList, CodeEditor } from "@scouter/gui";
 import { McpHttpServer } from "../../../Mcp/McpHttpServer";
 import { ToolRegistry } from "../../../Plugin/ToolRegistry";
 import { CallLogBuffer } from "../CallLogBuffer";
 import { CallPanel } from "./CallPanel";
+
+interface IToolNode
+{
+	Kind: "group" | "tool";
+	Name: string;
+	FullName: string;
+}
 
 export class InspectorMainControl extends UserControl
 {
@@ -17,10 +24,10 @@ export class InspectorMainControl extends UserControl
 	private static s_invoker_: ((_full: string, _args: Record<string, unknown>) => Promise<unknown>) | null = null;
 
 	// ==================== 멤버 ====================
-	private tools_!: ListBox;
+	private tools_!: TreeView;
 	private sessions_!: ListView;
 	private calls_!: VirtualList;
-	private detail_!: TextBox;
+	private detail_!: CodeEditor;
 	private callPanel_: CallPanel | null = null;
 
 	// ==================== 공개 메서드 ====================
@@ -40,10 +47,10 @@ export class InspectorMainControl extends UserControl
 	// @param _data: 바인딩 소스
 	protected override OnInit(_data: DataList): void
 	{
-		this.tools_ = this.RequireName(ListBox, "tree_tools");
+		this.tools_ = this.RequireName(TreeView, "tree_tools");
 		this.sessions_ = this.RequireName(ListView, "lst_sessions");
 		this.calls_ = this.RequireName(VirtualList, "log_calls");
-		this.detail_ = this.RequireName(TextBox, "txt_detail");
+		this.detail_ = this.RequireName(CodeEditor, "txt_detail");
 		const tabs = this.RequireName(TabControl, "tab_main");
 		this.sessions_.DisplayMemberPath = "Client";
 		this.RebuildTools("");
@@ -80,16 +87,32 @@ export class InspectorMainControl extends UserControl
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// Tool 목록을 다시 깐다.
+	// Tool 목록을 Plugin 그룹 트리로 다시 깐다.
 	// @param _filter: 필터
 	private RebuildTools(_filter: string): void
 	{
 		const query = _filter.toLowerCase();
-		const names = ToolRegistry.List()
-			.map((_t) => _t.FullName)
-			.filter((_n) => _n.toLowerCase().includes(query))
-			.sort();
-		this.tools_.SetItems(names);
+		const groups = new Map<string, IToolNode[]>();
+		for (const full of ToolRegistry.List().map((_t) => _t.FullName).filter((_n) => _n.toLowerCase().includes(query)).sort())
+		{
+			const cut = full.indexOf("__");
+			const plugin = cut > 0 ? full.slice(0, cut) : "";
+			const list = groups.get(plugin) ?? [];
+			list.push({ Kind: "tool", Name: cut > 0 ? full.slice(cut + 2) : full, FullName: full });
+			groups.set(plugin, list);
+		}
+		const roots: IToolNode[] = [...groups.keys()].map((_plugin) => ({ Kind: "group", Name: _plugin, FullName: "" }));
+		this.tools_.SetItems(roots, {
+			HeaderOf: (_n) => (_n as IToolNode).Name,
+			ChildrenOf: (_n) =>
+			{
+				const node = _n as IToolNode;
+				if (node.Kind !== "group")
+					return [];
+				return groups.get(node.Name) ?? [];
+			},
+			HasChildren: (_n) => (_n as IToolNode).Kind === "group",
+		});
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

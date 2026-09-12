@@ -12,6 +12,7 @@ import { SizeObserver } from "./SizeObserver";
 import { Thickness } from "./Thickness";
 import { Visibility, HAlign, VAlign } from "./UITypes";
 import type { IDisposable } from "./Disposable";
+import type { ContextMenu } from "../Controls/Items/ContextMenu";
 
 export abstract class UIElement implements IDisposable
 {
@@ -43,6 +44,7 @@ export abstract class UIElement implements IDisposable
 	private readonly attached_ = new Map<unknown, unknown>();
 	private isLoaded_ = false;
 	private isSizeObserved_ = false;
+	private contextMenu_: ContextMenu | null = null;
 
 	// ==================== 생성 · 소멸 ====================
 
@@ -142,6 +144,23 @@ export abstract class UIElement implements IDisposable
 	public set Focusable(_v: boolean) { this.SetValue(UIElement.FocusableProperty, _v); }
 	public get Tag(): unknown { return this.GetValue(UIElement.TagProperty); }
 	public set Tag(_v: unknown) { this.SetValue(UIElement.TagProperty, _v); }
+	public get ContextMenu(): ContextMenu | null { return this.contextMenu_; }
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 우클릭 메뉴를 단다. 첫 설정 때 열기 구독을 건다.
+	// @param _v: 메뉴 (null이면 해제)
+	public set ContextMenu(_v: ContextMenu | null)
+	{
+		const first = this.contextMenu_ === null && _v !== null;
+		this.contextMenu_ = _v;
+		if (first)
+		{
+			this.ContextMenuOpening.Add((_s, _a) =>
+			{
+				this.contextMenu_?.OpenAt(_a.X, _a.Y);
+			});
+		}
+	}
 
 	// ==================== 이벤트 ====================
 	public readonly PreviewPointerDown: RoutedEvent<PointerEventArgs>;

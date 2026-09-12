@@ -11,10 +11,11 @@
 	<Grid ContentHost="true" Name="root" RowDefinitions="Auto,*,Auto">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Name="col_sidebar" Width="150" MinWidth="48" MaxWidth="400"/>
+			<ColumnDefinition Width="4"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 
-		<TitleBar Grid.Row="0" Grid.ColumnSpan="2" Name="title_bar" Title="Scouter" Icon="scouter"/>
+		<TitleBar Grid.Row="0" Grid.ColumnSpan="3" Name="title_bar" Title="Scouter" Icon="scouter"/>
 
 		<Border Grid.Row="1" Grid.Column="0" Name="sidebar" Background="{$theme.background-panel}">
 			<DockPanel>
@@ -29,11 +30,11 @@
 			</DockPanel>
 		</Border>
 
-		<GridSplitter Grid.Row="1" Grid.Column="0" Name="splitter" ResizeDirection="Columns"/>
+		<GridSplitter Grid.Row="1" Grid.Column="1" Name="splitter" ResizeDirection="Columns"/>
 
-		<ContentPresenter Grid.Row="1" Grid.Column="1" Name="content"/>
+		<ContentPresenter Grid.Row="1" Grid.Column="2" Name="content"/>
 
-		<StatusBar Grid.Row="2" Grid.ColumnSpan="2" Name="status_bar">
+		<StatusBar Grid.Row="2" Grid.ColumnSpan="3" Name="status_bar">
 			<StatusBarItem><StatusDot Name="dot_mcp" Status="Idle"/></StatusBarItem>
 			<StatusBarItem><TextBlock Text="MCP :{@mcpPort}"/></StatusBarItem>
 			<StatusBarItem><TextBlock Name="txt_sessions" Text="{@mcpSessions} sessions"/></StatusBarItem>

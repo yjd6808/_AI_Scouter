@@ -6,6 +6,6 @@
 		"rootDir": ".",
 		"types": ["node"]
 	},
-	"include": ["Main/**/*.ts", "Renderer/**/*.ts", "Renderer/**/*.json", "Config/**/*.json"],
+	"include": ["Main/**/*.ts", "Renderer/**/*.ts", "Renderer/**/*.json", "Config/**/*.json", "Shared/**/*.ts"],
 	"references": [{ "path": "../Scouter.Gui" }, { "path": "../Scouter.PluginApi" }]
 }

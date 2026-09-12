@@ -14,7 +14,7 @@
 		<DockPanel Grid.Column="0">
 			<TextBox DockPanel.Dock="Top" Name="txt_filter" Placeholder="Tool 필터" />
 			<Button DockPanel.Dock="Bottom" Name="btn_audit" Content="감사 로그 열기" Variant="Ghost" />
-			<ListBox Name="tree_tools" />
+			<TreeView Name="tree_tools" />
 		</DockPanel>
 		<GridSplitter Grid.Column="1" />
 		<TabControl Grid.Column="2" Name="tab_main">
@@ -24,7 +24,7 @@
 			<TabItem Header="호출 로그">
 				<StackPanel>
 					<VirtualList Name="log_calls" ItemHeight="20" />
-					<TextBox Name="txt_detail" AcceptsReturn="true" IsReadOnly="true" />
+					<CodeEditor Name="txt_detail" Language="json" ReadOnly="true" />
 				</StackPanel>
 			</TabItem>
 			<TabItem Header="직접 호출">

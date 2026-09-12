@@ -49,7 +49,10 @@ export class LaunchArgs
 			else if (token === "--plugin-dir")
 				args.PluginDir = _argv[++idx] ?? null;
 			else if (token === "--port")
-				args.Port = Number(_argv[++idx] ?? NaN) || null;
+			{
+				const port = Number(_argv[++idx] ?? NaN);
+				args.Port = Number.isNaN(port) ? null : port;
+			}
 		}
 		return args;
 	}

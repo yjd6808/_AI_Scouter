@@ -1,0 +1,16 @@
+{
+	"Id": "Notes",
+	"Name": "Notes",
+	"Version": "0.1.0",
+	"Description": "마크다운 메모 4종 + 화면",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "notes",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Settings": "Settings.schema.json",
+	"Tools": ["Append", "Read", "List", "Search"],
+	"Commands": [],
+	"Hotkeys": {}
+}

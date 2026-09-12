@@ -14,6 +14,7 @@ export class FileLogSink
 	// ==================== 멤버 ====================
 	private readonly dir_: string;
 	private readonly retainDays_: number;
+	private readonly clock_: () => number;
 	private queue_: string[] = [];
 	private flushing_ = false;
 	private currentDay_ = "";
@@ -24,10 +25,12 @@ export class FileLogSink
 	// 폴더로 만든다.
 	// @param _dir: 로그 폴더
 	// @param _retainDays: 보관일 (기본 7)
-	public constructor(_dir: string, _retainDays = 7)
+	// @param _clock: 시계 (미지정 시 실제 시간)
+	public constructor(_dir: string, _retainDays = 7, _clock?: () => number)
 	{
 		this.dir_ = _dir;
 		this.retainDays_ = _retainDays;
+		this.clock_ = _clock ?? (() => Date.now());
 	}
 
 	// ==================== 공개 메서드 ====================
@@ -59,7 +62,7 @@ export class FileLogSink
 		this.flushing_ = false;
 		if (batch.length === 0)
 			return;
-		const day = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+		const day = new Date(this.clock_()).toISOString().slice(0, 10).replace(/-/g, "");
 		try
 		{
 			await fs.mkdir(this.dir_, { recursive: true });
@@ -75,21 +78,24 @@ export class FileLogSink
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 보관일 지난 파일을 지운다.
+	// 보관일 지난 파일을 지운다. 파일명 날짜 기준.
 	private async SweepAsync(): Promise<void>
 	{
 		try
 		{
+			const now = this.clock_();
 			const files = await fs.readdir(this.dir_);
-			const cutoff = Date.now() - this.retainDays_ * 86400000;
 			for (const file of files)
 			{
-				if (!file.startsWith("app-") || !file.endsWith(".log"))
+				const match = /^app-(\d{8})\.log$/.exec(file);
+				if (match === null)
 					continue;
-				const full = path.join(this.dir_, file);
-				const stat = await fs.stat(full);
-				if (stat.mtimeMs < cutoff)
-					await fs.unlink(full);
+				const stamp = match[1] as string;
+				const dayMs = Date.parse(`${stamp.slice(0, 4)}-${stamp.slice(4, 6)}-${stamp.slice(6, 8)}T00:00:00Z`);
+				if (Number.isNaN(dayMs))
+					continue;
+				if (dayMs + this.retainDays_ * 86400000 <= now)
+					await fs.unlink(path.join(this.dir_, file));
 			}
 		}
 		catch

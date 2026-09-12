@@ -1,0 +1,15 @@
+{
+	"Id": "CommandPalette",
+	"Name": "Command Palette",
+	"Version": "0.4.0",
+	"Description": "Ctrl+Shift+P 명령 팔레트",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/MainView.xml",
+	"Icon": "command",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Tools": [],
+	"Commands": ["Open"],
+	"Hotkeys": {}
+}

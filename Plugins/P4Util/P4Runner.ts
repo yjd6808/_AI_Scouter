@@ -256,7 +256,9 @@ export class P4Runner implements IP4Runner
 	// @param _signal: 취소 신호
 	private Opts(_signal?: AbortSignal): { TimeoutMs: number; Env: Record<string, string>; MaxOutputBytes: number; Signal?: AbortSignal }
 	{
-		const env: Record<string, string> = { P4CHARSET: "utf8" };
+		const env: Record<string, string> = {};
+		if (this.settings_.Charset.length > 0)
+			env["P4CHARSET"] = this.settings_.Charset;
 		if (this.settings_.Port.length > 0)
 			env["P4PORT"] = this.settings_.Port;
 		if (this.settings_.User.length > 0)

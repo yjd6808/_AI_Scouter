@@ -8,6 +8,7 @@
 		"P4Port": { "type": "string", "default": "" },
 		"P4User": { "type": "string", "default": "" },
 		"P4Client": { "type": "string", "default": "" },
+		"P4Charset": { "type": "string", "default": "utf8" },
 		"DescribeBatch": { "type": "number", "default": 20 },
 		"MaxChanges": { "type": "number", "default": 2000 }
 	}

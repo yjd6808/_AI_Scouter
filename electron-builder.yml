@@ -1,11 +1,18 @@
-appId: com.scouter.app
+appId: com.nexon.scouter
 productName: Scouter
 directories: { output: release }
 files: ["dist/**", "package.json"]
+extraResources:
+  - { from: "node_modules/esbuild/bin", to: "esbuild" }
+  - { from: "Plugins/P4Util", to: "Plugins/P4Util", filter: ["!.cache"] }
+  - { from: "Source/Scouter.App/Renderer/Theme/Themes", to: "Themes" }
+  - { from: "Assets", to: "Assets" }
 win:
   target: [{ target: nsis, arch: [x64] }]
+  icon: Assets/app.ico
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
   deleteAppDataOnUninstall: false
+publish: { provider: generic, url: "${env.SCOUTER_UPDATE_URL}" }

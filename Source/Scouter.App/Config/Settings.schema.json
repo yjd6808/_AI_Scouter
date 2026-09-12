@@ -39,7 +39,33 @@
 			{
 				"CloseToTray": { "type": "boolean", "default": true },
 				"AutoStart": { "type": "boolean", "default": false },
-				"AutoSelectNewPlugin": { "type": "boolean", "default": true }
+				"StartHidden": { "type": "boolean", "default": false },
+				"AutoSelectNewPlugin": { "type": "boolean", "default": true },
+				"Update": {
+					"type": "object",
+					"properties":
+					{
+						"Channel": { "type": "string", "enum": ["stable", "none"], "default": "stable" },
+						"Url": { "type": "string", "default": "" }
+					},
+					"additionalProperties": true
+				}
+			},
+			"additionalProperties": true
+		},
+		"Hotkeys":
+		{
+			"type": "object",
+			"properties":
+			{
+				"Global": {
+					"type": "object",
+					"properties":
+					{
+						"Show": { "type": "string", "default": "Ctrl+Shift+Space" }
+					},
+					"additionalProperties": true
+				}
 			},
 			"additionalProperties": true
 		},

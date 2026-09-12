@@ -55,11 +55,13 @@ export class UIManager
 	private static readonly s_dialogs_ = new Map<Window, IDialogEntry>();
 	private static s_shownHandlers_: Array<(_w: Window) => void> = [];
 	private static s_closedHandlers_: Array<(_w: Window) => void> = [];
+	private static s_lastReloadErrors_: string[] = [];
 	private static s_inited_ = false;
 
 	// ==================== 속성 ====================
 	public static get Root(): UIElement | null { return UIManager.s_root_; }
 	public static get LayoutProvider(): ILayoutProvider | null { return UIManager.s_provider_; }
+	public static get LastReloadErrors(): ReadonlyArray<string> { return UIManager.s_lastReloadErrors_; }
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 최상위 모달·메인을 구한다.
@@ -146,6 +148,37 @@ export class UIManager
 		await UIManager.LoadInto(win, _name, _data);
 		win.InitForManager(win.DataList);
 		return UIManager.ShowDialogLoaded<T>(win, _timeoutMs);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 창을 만들어 Popup 레이어에 올린다. 팔레트용. 바깥 클릭·ESC 닫기는 창이 직접 처리.
+	// @param _name: 창 이름
+	// @param _data: 초기 데이터
+	public static ShowPopup(_name: string, _data?: DataList): Window
+	{
+		const win = UIManager.Create(_name);
+		win.InitForManager(_data ?? win.DataList);
+		UIManager.Place(win, UILayerKind.Popup);
+		win.NotifyShown();
+		UIManager.EmitShown(win);
+		UIManager.FocusFirst(win);
+		return win;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// XML을 읽어 Popup 레이어에 올린다. 팔레트 XML용.
+	// @param _name: 창 이름
+	// @param _data: 데이터 오버라이드
+	public static async ShowPopupAsync(_name: string, _data?: Record<string, unknown>): Promise<Window>
+	{
+		const win = UIManager.Create(_name);
+		await UIManager.LoadInto(win, _name, _data);
+		win.InitForManager(win.DataList);
+		UIManager.Place(win, UILayerKind.Popup);
+		win.NotifyShown();
+		UIManager.EmitShown(win);
+		UIManager.FocusFirst(win);
+		return win;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -285,6 +318,7 @@ export class UIManager
 		const ctx = UIManager.CreateContext();
 		ctx.Graph = graph;
 		const result = XmlLoader.LoadWindowInto(_window, xml, ctx);
+		UIManager.s_lastReloadErrors_ = result.Ok ? [] : result.Errors.map((_e) => _e.Text);
 		if (!result.Ok)
 		{
 			if (prev !== undefined)
@@ -393,6 +427,7 @@ export class UIManager
 		if (!(created instanceof Window))
 			throw new Error(`[UIManager] Window 아님: ${_name}`);
 		const win = created;
+		win.SetCloser((_result) => { UIManager.Close(win, _result); });
 		UIManager.s_windows_.set(_name, win);
 		return win;
 	}

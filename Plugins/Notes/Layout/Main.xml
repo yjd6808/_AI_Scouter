@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="notes_main">
+	<UserControl.Data>
+		<Item Key="noteCount" Type="Int" Value="0" />
+		<Item Key="stateText" Type="String" Value="대기" />
+	</UserControl.Data>
+	<DockPanel LastChildFill="true">
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="12">
+			<TextBox Name="txt_title" Width="200" Placeholder="새 노트 이름" />
+			<Button Name="btn_new" Content="새 노트" Variant="Ghost" />
+			<Button Name="btn_save" Content="저장" Variant="Primary" />
+			<Button Name="btn_refresh" Content="새로고침" Variant="Ghost" />
+		</StackPanel>
+		<StatusBar DockPanel.Dock="Bottom">
+			<StatusBarItem>
+				<TextBlock Name="txt_state" Text="{@stateText}" />
+			</StatusBarItem>
+			<StatusBarItem DockPanel.Dock="Right">
+				<TextBlock Name="txt_count" Text="{{@noteCount} + ` notes`}" />
+			</StatusBarItem>
+		</StatusBar>
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="220"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			<ListBox Name="lst_notes" Grid.Column="0" />
+			<TextBox Name="txt_body" Grid.Column="1" AcceptsReturn="true" Margin="12" />
+		</Grid>
+	</DockPanel>
+</UserControl>

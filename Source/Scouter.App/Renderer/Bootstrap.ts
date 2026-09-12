@@ -20,6 +20,9 @@ import { Settings } from "./Services/Settings";
 import { Hotkeys } from "./Services/Hotkeys";
 import { CommandRegistry } from "./Services/CommandRegistry";
 import { FileLogSink } from "./Services/FileLogSink";
+import { GlobalHotkey } from "./Services/GlobalHotkey";
+import { Shutdown } from "./Services/Shutdown";
+import { UpdateClient } from "./Services/UpdateClient";
 import { SettingsSource } from "./Services/SettingsSource";
 import { McpHttpServer } from "./Mcp/McpHttpServer";
 import { TestApiServer } from "./TestApi/TestApiServer";
@@ -80,7 +83,7 @@ async function Main(): Promise<void>
 	const layoutDirs = Args.LayoutDir ?? "Source/Scouter.App/Renderer/Layout";
 	const builtInRoot = "Source/Scouter.App/Renderer/BuiltIn";
 	const userPlugins = `${Paths.ScouterHome}/plugins`;
-	const provider = new FsLayoutProvider({ LayoutDir: layoutDirs, UserDir: Paths.ScouterHome, DistDir: "dist/renderer", PluginDir: Args.PluginDir, ExtraPluginRoots: [builtInRoot, userPlugins] });
+	const provider = new FsLayoutProvider({ LayoutDir: layoutDirs, UserDir: Paths.ScouterHome, DistDir: "dist/renderer", PluginDir: Args.PluginDir ?? (Paths.IsPackaged ? null : "Plugins"), ExtraPluginRoots: [builtInRoot, userPlugins] });
 	UIManager.Init(root, provider);                                    // 5
 	UIManager.SetContextFactory(() =>
 	{
@@ -111,8 +114,11 @@ async function Main(): Promise<void>
 	await McpHttpServer.AttachMcpAsync(Paths.ScouterHome, Settings.Get<Array<{ Name: string; Transport: "stdio" | "http"; Command?: string; Args?: string[]; Url?: string; Headers?: Record<string, string>; Prefix: string }>>("Mcp.Upstreams", []));
 	if (Args.IsTest)
 		TestApiServer.Attach(McpHttpServer);                           // 8
+	GlobalHotkey.Sync();
+	Shutdown.Arm();
+	UpdateClient.Start();
 	await UIManager.ShowAsync("Shell");                                // 9
-	if (!Paths.IsPackaged)
+	if (!Paths.IsPackaged && !Args.IsTest)
 	{
 		HotReloader.Start(provider, new ChokidarWatcher(), (_msg, _isError) => // 10
 		{

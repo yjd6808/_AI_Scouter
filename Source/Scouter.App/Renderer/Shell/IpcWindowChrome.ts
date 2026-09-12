@@ -8,6 +8,8 @@
 import { SimpleEvent } from "@scouter/gui";
 import type { IWindowChrome } from "@scouter/gui";
 import { Ipc } from "../Services/Ipc";
+import { Settings } from "../Services/Settings";
+import { IpcChannels } from "../../Shared/IpcChannels";
 
 export class IpcWindowChrome implements IWindowChrome
 {
@@ -43,10 +45,13 @@ export class IpcWindowChrome implements IWindowChrome
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 닫는다.
+	// 닫는다. 트레이면 숨김.
 	public Close(): void
 	{
-		void Ipc.Invoke("window:close");
+		if (Settings.Get<boolean>("App.CloseToTray", true))
+			void Ipc.Invoke(IpcChannels.WindowHide);
+		else
+			void Ipc.Invoke(IpcChannels.WindowClose);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

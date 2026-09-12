@@ -51,6 +51,7 @@ export class SidebarController
 			btn.Icon = item.Icon;
 			btn.Variant = "Ghost";
 			btn.ToolTip = item.Title;
+			btn.Element.classList.add("gui-navitem");
 			const id = item.Id;
 			btn.Click.Add((_s, _a) =>
 			{

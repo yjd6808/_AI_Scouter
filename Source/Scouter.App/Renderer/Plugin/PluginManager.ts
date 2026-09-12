@@ -114,7 +114,7 @@ export class PluginManager
 		PluginManager.s_dirs_ = [
 			{ Dir: Args.Safe ? null : _builtIn, Source: "BuiltIn" },
 			{ Dir: Args.Safe ? null : userDir, Source: "User" },
-			{ Dir: Args.Safe ? null : Args.PluginDir, Source: "External" },
+			{ Dir: Args.Safe ? null : (Args.PluginDir ?? (Paths.IsPackaged ? null : "Plugins")), Source: "External" },
 		];
 		PluginManager.s_permStore_ = new PermissionStore(path.join(Paths.ScouterHome, "permissions.json"));
 		const candidates = await PluginDiscovery.Scan(PluginManager.s_dirs_);
@@ -269,6 +269,7 @@ export class PluginManager
 		{
 			case "ScouterCore": return import("../BuiltIn/ScouterCore/Index");
 			case "McpInspector": return import("../BuiltIn/McpInspector/Index");
+			case "CommandPalette": return import("../BuiltIn/CommandPalette/Index");
 			default: throw new Error(`[Plugin] 내장 로더 없음: ${_id}`);
 		}
 	}

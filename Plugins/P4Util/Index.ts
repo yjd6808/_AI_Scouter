@@ -21,11 +21,12 @@ import { MainControl } from "./Views/MainControl";
 function ReadSettings(_ctx: IPluginContext): IP4Settings
 {
 	return {
-		Port: _ctx.Settings.Get<string>("P4Port", ""),
-		User: _ctx.Settings.Get<string>("P4User", ""),
-		Client: _ctx.Settings.Get<string>("P4Client", ""),
-		DescribeBatch: _ctx.Settings.Get<number>("DescribeBatch", 20),
-		MaxChanges: _ctx.Settings.Get<number>("MaxChanges", 2000),
+		get Port(): string { return _ctx.Settings.Get<string>("P4Port", ""); },
+		get User(): string { return _ctx.Settings.Get<string>("P4User", ""); },
+		get Client(): string { return _ctx.Settings.Get<string>("P4Client", ""); },
+		get Charset(): string { return _ctx.Settings.Get<string>("P4Charset", "utf8"); },
+		get DescribeBatch(): number { return _ctx.Settings.Get<number>("DescribeBatch", 20); },
+		get MaxChanges(): number { return _ctx.Settings.Get<number>("MaxChanges", 2000); },
 	};
 }
 
@@ -61,6 +62,7 @@ export default class P4UtilPlugin extends PluginBase
 		_ctx.Tools.Register(new DiffRangeTool(runner));
 		_ctx.Tools.Register(new ReviewPromptTool(runner));
 		_ctx.Ui.RegisterWindow("Main", MainControl);
+		MainControl.SetClipboard((_text) => { _ctx.Clipboard.WriteText(_text); });
 		_ctx.Commands.Register("CopyPrompt", {
 			Title: "AI 프롬프트 복사",
 			Hotkey: "Ctrl+Shift+C",

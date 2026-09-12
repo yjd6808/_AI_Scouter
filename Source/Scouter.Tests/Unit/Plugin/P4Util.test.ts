@@ -14,7 +14,7 @@ import type { IP4Runner, IChangeInfo, IDescribeInfo, IFileEntry, IP4Settings } f
 
 function Settings(): IP4Settings
 {
-	return { Port: "", User: "", Client: "", DescribeBatch: 20, MaxChanges: 2000 };
+	return { Port: "", User: "", Client: "", Charset: "utf8", DescribeBatch: 20, MaxChanges: 2000 };
 }
 
 function Call(_signal?: AbortSignal): { SessionId: string; Progress(_n: number, _msg: string): void; Signal: AbortSignal; Log(_msg: string): void }
