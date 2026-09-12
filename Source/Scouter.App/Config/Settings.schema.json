@@ -1,0 +1,72 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Scouter Settings",
+	"type": "object",
+	"properties":
+	{
+		"Ui":
+		{
+			"type": "object",
+			"properties":
+			{
+				"SidebarWidth": { "type": "integer", "minimum": 100, "maximum": 400, "default": 150 },
+				"SidebarCollapsed": { "type": "boolean", "default": false },
+				"SplitterEnabled": { "type": "boolean", "default": true },
+				"NativeFrame": { "type": "boolean", "default": false },
+				"LastPluginId": { "type": "string", "default": "" },
+				"PluginOrder": { "type": "array", "items": { "type": "string" }, "default": [] }
+			},
+			"additionalProperties": true
+		},
+		"Theme":
+		{
+			"type": "object",
+			"properties":
+			{
+				"Id": { "type": "string", "default": "oc-2" },
+				"Scheme": { "type": "string", "enum": ["Dark", "Light", "System"], "default": "System" },
+				"FontSize": { "type": "integer", "minimum": 10, "maximum": 20, "default": 13 },
+				"FontFamily": { "type": "string", "default": "Segoe UI, system-ui, sans-serif" },
+				"MonoFamily": { "type": "string", "default": "Cascadia Code, Consolas, monospace" },
+				"Density": { "type": "string", "enum": ["Normal", "Compact"], "default": "Normal" }
+			},
+			"additionalProperties": true
+		},
+		"App":
+		{
+			"type": "object",
+			"properties":
+			{
+				"CloseToTray": { "type": "boolean", "default": true },
+				"AutoStart": { "type": "boolean", "default": false },
+				"AutoSelectNewPlugin": { "type": "boolean", "default": true }
+			},
+			"additionalProperties": true
+		},
+		"Mcp":
+		{
+			"type": "object",
+			"properties":
+			{
+				"Port": { "type": "integer", "minimum": 1024, "maximum": 65535, "default": 9515 },
+				"AllowedOrigins": { "type": "array", "items": { "type": "string" }, "default": [] },
+				"DefaultApproval": { "type": "string", "enum": ["auto", "ask", "deny"], "default": "ask" },
+				"SessionIdleMinutes": { "type": "integer", "minimum": 1, "maximum": 1440, "default": 30 },
+				"AuditMaxMb": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 },
+				"Upstreams": { "type": "array", "default": [] }
+			},
+			"additionalProperties": true
+		},
+		"Log":
+		{
+			"type": "object",
+			"properties":
+			{
+				"Level": { "type": "string", "enum": ["debug", "info", "warn", "error"], "default": "info" },
+				"RetainDays": { "type": "integer", "minimum": 1, "maximum": 30, "default": 7 }
+			},
+			"additionalProperties": true
+		}
+	},
+	"additionalProperties": true
+}

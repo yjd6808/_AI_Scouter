@@ -1,0 +1,26 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Scouter Theme",
+	"type": "object",
+	"required": ["name", "defs", "theme"],
+	"properties":
+	{
+		"name": { "type": "string" },
+		"defs": { "type": "object", "additionalProperties": { "type": "string" } },
+		"theme":
+		{
+			"type": "object",
+			"additionalProperties":
+			{
+				"type": "object",
+				"properties":
+				{
+					"dark": { "type": "string" },
+					"light": { "type": "string" }
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+	"additionalProperties": false
+}

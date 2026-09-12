@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="hello_main">
+	<StackPanel ContentHost="true" Spacing="8" Margin="12">
+		<TextBlock Name="txt_hello" Text="Hello Plugin" />
+	</StackPanel>
+</UserControl>

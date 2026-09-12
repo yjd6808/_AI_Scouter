@@ -1,0 +1,16 @@
+.gui-layer { position: absolute; inset: 0; }
+.gui-layer[data-layer="Base"] { z-index: 0; }
+.gui-layer[data-layer="Dialog"] { z-index: 100; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.gui-layer[data-layer="Dialog"] > * { pointer-events: auto; }
+.gui-layer[data-layer="Dialog"].has-backdrop::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); }
+.gui-layer[data-layer="Popup"] { z-index: 200; pointer-events: none; }
+.gui-layer[data-layer="Popup"] > * { pointer-events: auto; }
+.gui-layer[data-layer="Toast"] { z-index: 300; pointer-events: none; display: flex; flex-direction: column-reverse; gap: 8px; align-items: flex-end; padding: 16px; }
+.gui-layer[data-layer="Overlay"] { z-index: 400; pointer-events: none; }
+.gui-window { background: var(--background-panel, #fff); border: 1px solid var(--border, #888); border-radius: 6px; box-shadow: var(--shadow, 0 4px 16px rgba(0, 0, 0, 0.3)); min-width: 320px; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; }
+.gui-window__title { height: 32px; display: flex; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--border, #888); }
+.gui-window__body { padding: 12px; overflow: auto; }
+.gui-toast { width: 320px; background: var(--background-panel, #fff); border: 1px solid var(--border, #888); border-left: 3px solid var(--primary, #06c); border-radius: 6px; padding: 8px 12px; pointer-events: auto; }
+.gui-toast__title { font-weight: 600; }
+.gui-presenter { display: contents; }
+.gui-usercontrol { display: flex; flex-direction: column; flex: 1 1 auto; }

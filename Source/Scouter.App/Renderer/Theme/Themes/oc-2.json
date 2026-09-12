@@ -1,0 +1,44 @@
+{
+	"$schema": "scouter://core/theme.schema.json",
+	"name": "oc-2",
+	"defs":
+	{
+		"panel": "#252526",
+		"line": "#3c3c3c"
+	},
+	"theme":
+	{
+		"background-base": { "dark": "#1e1e1e", "light": "#ffffff" },
+		"background-panel": { "dark": "$panel", "light": "#f3f3f3" },
+		"background-hover": { "dark": "#2a2d2e", "light": "#e8e8e8" },
+		"background-active": { "dark": "#37373d", "light": "#d6d6d6" },
+		"text-base": { "dark": "#cccccc", "light": "#1e1e1e" },
+		"text-weak": { "dark": "#8c8c8c", "light": "#6e6e6e" },
+		"text-strong": { "dark": "#ffffff", "light": "#000000" },
+		"border": { "dark": "$line", "light": "#d4d4d4" },
+		"border-weak-base": { "dark": "#2d2d2d", "light": "#e0e0e0" },
+		"border-active": { "dark": "#007acc", "light": "#007acc" },
+		"primary": { "dark": "#0e639c", "light": "#0067b8" },
+		"primary-hover": { "dark": "#1177bb", "light": "#1976c9" },
+		"primary-active": { "dark": "#0d5a8f", "light": "#005a9e" },
+		"primary-foreground": { "dark": "#ffffff", "light": "#ffffff" },
+		"primary-muted": { "dark": "#37373d", "light": "#d6ebff" },
+		"button-background": { "dark": "#3c3c3c", "light": "#e8e8e8" },
+		"button-text": { "dark": "#ffffff", "light": "#1e1e1e" },
+		"button-hover-background": { "dark": "#4c4c4c", "light": "#d6d6d6" },
+		"button-active-background": { "dark": "#5c5c5c", "light": "#c8c8c8" },
+		"input-background": { "dark": "#3c3c3c", "light": "#ffffff" },
+		"error": { "dark": "#f14c4c", "light": "#e51400" },
+		"error-foreground": { "dark": "#ffffff", "light": "#ffffff" },
+		"warning": { "dark": "#cca700", "light": "#9e6a00" },
+		"success": { "dark": "#89d185", "light": "#0e7a0d" },
+		"accent": { "dark": "#4ec9b0", "light": "#00736e" },
+		"syntax-keyword": { "dark": "#569cd6", "light": "#0000ff" },
+		"syntax-string": { "dark": "#ce9178", "light": "#a31515" },
+		"syntax-comment": { "dark": "#6a9955", "light": "#008000" },
+		"syntax-function": { "dark": "#dcdcaa", "light": "#795e26" },
+		"syntax-number": { "dark": "#b5cea8", "light": "#098658" },
+		"syntax-type": { "dark": "#4ec9b0", "light": "#267f99" },
+		"icon-base": { "dark": "#cccccc", "light": "#1e1e1e" }
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions":
+	{
+		"composite": false,
+		"noEmit": true,
+		"types": ["node"]
+	},
+	"include": ["Setup.ts", "Unit/**/*.ts", "Integration/**/*.ts", "E2E/**/*.ts"]
+}

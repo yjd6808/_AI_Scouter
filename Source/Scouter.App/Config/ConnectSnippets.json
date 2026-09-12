@@ -1,0 +1,5 @@
+{
+	"Claude Code": "{\n  \"mcpServers\": {\n    \"scouter\": {\n      \"type\": \"http\",\n      \"url\": \"{{Url}}/mcp\",\n      \"headers\": { \"Authorization\": \"Bearer {{Token}}\" }\n    }\n  }\n}\n",
+	"OpenCode": "{\n  \"$schema\": \"https://opencode.ai/config.json\",\n  \"mcp\": {\n    \"scouter\": {\n      \"type\": \"remote\",\n      \"url\": \"{{Url}}/mcp\",\n      \"headers\": { \"Authorization\": \"Bearer {{Token}}\" }\n    }\n  }\n}\n",
+	"Cursor": "{\n  \"mcpServers\": {\n    \"scouter\": {\n      \"url\": \"{{Url}}/mcp\",\n      \"headers\": { \"Authorization\": \"Bearer {{Token}}\" }\n    }\n  }\n}\n"
+}

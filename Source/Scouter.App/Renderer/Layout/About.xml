@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window xmlns="scouter/gui" Name="about" Title="정보">
+	<DataList>
+		<Data Key="appVersion" Type="String" Value=""/>
+	</DataList>
+	<StackPanel ContentHost="true" Spacing="8" Margin="12">
+		<TextBlock Name="txt_about" Text="Scouter v{@appVersion}" />
+		<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />
+	</StackPanel>
+</Window>

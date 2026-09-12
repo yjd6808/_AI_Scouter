@@ -1,0 +1,15 @@
+{
+	"Id": "McpInspector",
+	"Name": "MCP Inspector",
+	"Version": "0.4.0",
+	"Description": "세션·Tool·호출 로그·직접 호출",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "search",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Tools": [],
+	"Commands": ["Clear"],
+	"Hotkeys": {}
+}

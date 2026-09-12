@@ -1,0 +1,8 @@
+{
+	"name": "@scouter/harness",
+	"version": "0.4.0",
+	"private": true,
+	"type": "module",
+	"main": "dist/Index.js",
+	"types": "dist/Index.d.ts"
+}

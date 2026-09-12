@@ -1,0 +1,1 @@
+{"version":3,"file":"ThemeResolver.d.ts","sourceRoot":"","sources":["ThemeResolver.ts"],"names":[],"mappings":"AAQA,OAAO,KAAK,EAAE,MAAM,EAAE,cAAc,EAAE,WAAW,EAAE,MAAM,SAAS,CAAC;AAEnE,qBAAa,aAAa;WASX,OAAO,CAAC,MAAM,EAAE,MAAM,EAAE,OAAO,EAAE,WAAW,EAAE,SAAS,EAAE,cAAc,GAAG,IAAI,GAAG,cAAc;IA+B7G,OAAO,CAAC,MAAM,CAAC,UAAU;CAazB"}

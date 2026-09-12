@@ -1,0 +1,15 @@
+{
+	"Id": "{{Id}}",
+	"Name": "{{Name}}",
+	"Version": "0.1.0",
+	"Description": "{{Name}} 플러그인.",
+	"Author": "",
+	"Main": "Index.cjs",
+	"Layout": "Layout/Main.xml",
+	"Icon": "",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Tools": [],
+	"Commands": [],
+	"Hotkeys": {}
+}

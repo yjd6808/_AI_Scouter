@@ -1,0 +1,9 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions":
+	{
+		"outDir": "dist",
+		"rootDir": "."
+	},
+	"include": ["Index.ts", "Core/**/*.ts", "Panels/**/*.ts", "Controls/**/*.ts", "Host/**/*.ts", "Xml/**/*.ts", "Theme/**/*.ts"]
+}

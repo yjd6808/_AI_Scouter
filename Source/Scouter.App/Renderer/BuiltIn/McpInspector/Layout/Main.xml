@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="mcp_inspector">
+	<UserControl.Data>
+		<Item Key="toolCount" Type="Int" Value="0" />
+		<Item Key="sessionCount" Type="Int" Value="0" />
+		<Item Key="callCount" Type="Int" Value="0" />
+	</UserControl.Data>
+	<Grid ContentHost="true">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="240"/>
+			<ColumnDefinition Width="4"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		<DockPanel Grid.Column="0">
+			<TextBox DockPanel.Dock="Top" Name="txt_filter" Placeholder="Tool 필터" />
+			<Button DockPanel.Dock="Bottom" Name="btn_audit" Content="감사 로그 열기" Variant="Ghost" />
+			<ListBox Name="tree_tools" />
+		</DockPanel>
+		<GridSplitter Grid.Column="1" />
+		<TabControl Grid.Column="2" Name="tab_main">
+			<TabItem Header="세션">
+				<ListView Name="lst_sessions" SelectionMode="Single" />
+			</TabItem>
+			<TabItem Header="호출 로그">
+				<StackPanel>
+					<VirtualList Name="log_calls" ItemHeight="20" />
+					<TextBox Name="txt_detail" AcceptsReturn="true" IsReadOnly="true" />
+				</StackPanel>
+			</TabItem>
+			<TabItem Header="직접 호출">
+				<StackPanel Name="pnl_call" Spacing="8" Margin="12">
+					<TextBlock Name="txt_tool" Text="" />
+					<Button Name="btn_invoke" Content="호출" Variant="Primary" />
+					<TextBox Name="txt_result" AcceptsReturn="true" IsReadOnly="true" />
+				</StackPanel>
+			</TabItem>
+		</TabControl>
+	</Grid>
+</UserControl>

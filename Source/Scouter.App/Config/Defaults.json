@@ -1,0 +1,7 @@
+{
+	"Ui": { "SidebarWidth": 150, "SidebarCollapsed": false, "SplitterEnabled": true, "NativeFrame": false, "LastPluginId": "", "PluginOrder": [] },
+	"Theme": { "Id": "oc-2", "Scheme": "System", "FontSize": 13, "FontFamily": "Segoe UI, system-ui, sans-serif", "MonoFamily": "Cascadia Code, Consolas, monospace", "Density": "Normal" },
+	"App": { "CloseToTray": true, "AutoStart": false, "AutoSelectNewPlugin": true },
+	"Mcp": { "Port": 9515, "AllowedOrigins": [], "DefaultApproval": "ask", "SessionIdleMinutes": 30, "AuditMaxMb": 20, "Upstreams": [] },
+	"Log": { "Level": "info", "RetainDays": 7 }
+}

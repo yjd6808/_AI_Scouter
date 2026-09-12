@@ -1,0 +1,43 @@
+.gui-listbox { display: flex; flex-direction: column; gap: 0; overflow: auto; outline: none; }
+.gui-listbox__item { height: 28px; display: flex; align-items: center; padding: 0 8px; cursor: pointer; }
+.gui-listbox__item:hover { background: var(--background-hover); }
+.gui-listbox__item.is-selected { background: var(--primary-muted); }
+.gui-combobox { display: inline-flex; }
+.gui-combobox__toggle { display: inline-flex; align-items: center; gap: 6px; min-width: 120px; }
+.gui-combobox__value { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gui-popup { position: absolute; background: var(--background-panel); border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow); display: none; }
+.gui-popup.is-open { display: block; }
+.gui-tabcontrol { display: flex; flex-direction: column; }
+.gui-tabcontrol__strip { display: flex; gap: 2px; border-bottom: 1px solid var(--border); }
+.gui-tab { height: 32px; padding: 0 12px; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-base); cursor: pointer; }
+.gui-tab.is-selected { border-bottom-color: var(--primary); }
+.gui-tabpage { padding: 8px; }
+.gui-listview { display: flex; flex-direction: column; }
+.gui-gridview__header, .gui-gridview__row { display: grid; grid-template-columns: var(--gui-grid-columns, 1fr); }
+.gui-gridview__header { height: 28px; background: var(--background-panel); font-weight: 600; }
+.gui-gridview__headercell { position: relative; display: flex; align-items: center; padding: 0 8px; background: transparent; border: none; color: var(--text-base); cursor: pointer; }
+.gui-gridview__grip { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; }
+.gui-expander__header { height: 28px; display: flex; align-items: center; }
+.gui-groupbox { border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+.gui-groupbox > legend { font-size: 12px; color: var(--text-weak); padding: 0 4px; }
+.gui-textbox { display: inline-flex; }
+.gui-textbox input { height: var(--gui-control-height); padding: 0 8px; background: var(--input-background); border: 1px solid var(--border); border-radius: var(--gui-radius); color: var(--text-base); font-size: var(--gui-font-size); }
+.gui-textbox input:focus { outline: none; border-color: var(--primary); }
+.gui-checkbox, .gui-radio { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.gui-numeric { display: inline-flex; gap: 2px; align-items: center; }
+.gui-progress { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.gui-progress__fill { height: 100%; background: var(--primary); }
+.gui-slider input { accent-color: var(--primary); }
+.gui-label { font-size: var(--gui-font-size); color: var(--text-base); }
+.gui-image img { width: 100%; height: 100%; }
+.gui-badge { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 10px; font-size: 12px; }
+.gui-badge.variant-info { background: var(--primary-muted); }
+.gui-badge.variant-success { background: #2d5a2d; }
+.gui-badge.variant-warn { background: #5a4a00; }
+.gui-badge.variant-error { background: #5a1d1d; }
+.gui-logview { font-family: var(--gui-font-mono); font-size: 12px; display: flex; flex-direction: column; }
+.gui-logview__row { height: 20px; display: flex; gap: 8px; white-space: nowrap; }
+.gui-logview__row.is-warn { color: var(--warning); }
+.gui-logview__row.is-error { color: var(--error); }
+.gui-propertygrid { display: grid; grid-template-columns: minmax(120px, 35%) 1fr; gap: 4px 8px; align-items: center; }
+.gui-propertygrid__error { color: var(--error); font-size: 12px; }

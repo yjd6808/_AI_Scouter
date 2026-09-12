@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window xmlns="scouter/gui" Name="settings" Title="설정">
+	<DataList>
+		<Data Key="sidebarWidth" Type="Int" Value="150"/>
+	</DataList>
+	<StackPanel ContentHost="true" Spacing="8" Margin="12">
+		<TextBlock Text="설정 (P3 읽기 전용, 편집은 P4 PropertyGrid)" />
+		<TextBlock Name="txt_width" Text="사이드바 폭: {@sidebarWidth}" />
+		<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />
+	</StackPanel>
+</Window>

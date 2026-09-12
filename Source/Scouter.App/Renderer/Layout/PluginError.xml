@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window xmlns="scouter/gui" Name="plugin_error" Title="Plugin 오류">
+	<DataList>
+		<Data Key="message" Type="String" Value=""/>
+	</DataList>
+	<StackPanel ContentHost="true" Spacing="8" Margin="12">
+		<TextBlock Name="txt_message" Text="{@message}" />
+		<Button Name="btn_retry" Content="재시도" Variant="Primary" />
+		<Button Name="btn_close" Content="닫기" Variant="Ghost" />
+	</StackPanel>
+</Window>

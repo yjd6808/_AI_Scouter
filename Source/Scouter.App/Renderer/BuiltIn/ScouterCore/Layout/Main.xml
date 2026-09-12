@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="scoutercore_main">
+	<UserControl.Data>
+		<Item Key="category" Type="String" Value="Ui" />
+	</UserControl.Data>
+	<Grid ContentHost="true">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="180"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		<ListBox Grid.Column="0" Name="lst_categories" />
+		<ContentPresenter Grid.Column="1" Name="detail" />
+	</Grid>
+</UserControl>

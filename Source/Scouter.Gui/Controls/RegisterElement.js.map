@@ -1,0 +1,1 @@
+{"version":3,"file":"RegisterElement.js","sourceRoot":"","sources":["RegisterElement.ts"],"names":[],"mappings":"AAAA;;;;;EAKE;AAEF,OAAO,EAAE,GAAG,EAAE,MAAM,aAAa,CAAC;AAGlC,MAAM,UAAU,eAAe,CAAC,IAAY;IAE3C,OAAO,CAAC,OAA4B,EAAE,QAA+B,EAAQ,EAAE;QAE9E,GAAG,CAAC,eAAe,CAAC,IAAI,EAAE,OAAO,CAAC,CAAC;IACpC,CAAC,CAAC;AACH,CAAC"}

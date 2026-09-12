@@ -1,0 +1,11 @@
+appId: com.scouter.app
+productName: Scouter
+directories: { output: release }
+files: ["dist/**", "package.json"]
+win:
+  target: [{ target: nsis, arch: [x64] }]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false

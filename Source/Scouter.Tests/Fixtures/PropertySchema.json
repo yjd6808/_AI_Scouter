@@ -1,0 +1,9 @@
+{
+	"type": "object",
+	"properties":
+	{
+		"sidebarWidth": { "type": "integer", "minimum": 100, "maximum": 400, "x-category": "일반", "x-order": 1 },
+		"themeId": { "enum": ["oc-2", "light"], "x-category": "일반", "x-order": 2 },
+		"closeToTray": { "type": "boolean", "x-category": "일반", "x-order": 3 }
+	}
+}

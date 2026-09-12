@@ -1,0 +1,1 @@
+{"version":3,"file":"INavigationService.d.ts","sourceRoot":"","sources":["INavigationService.ts"],"names":[],"mappings":"AAOA,MAAM,WAAW,kBAAkB;IAElC,QAAQ,CAAC,SAAS,EAAE,MAAM,GAAG,IAAI,CAAC;IAClC,OAAO,EAAE,MAAM,GAAG,IAAI,CAAC;IACvB,YAAY,CAAC,IAAI,EAAE,MAAM,GAAG,IAAI,CAAC;CACjC"}

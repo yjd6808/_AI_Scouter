@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window xmlns="scouter/gui" Name="shell" Background="{$theme.background-base}">
+	<DataList>
+		<Data Key="appVersion" Type="String" Value=""/>
+		<Data Key="mcpSessions" Type="Int" Value="0"/>
+		<Data Key="mcpPort" Type="Int" Value="9515"/>
+		<Data Key="mcpState" Type="String" Value="Idle"/>
+		<Data Key="themeName" Type="String" Value=""/>
+	</DataList>
+
+	<Grid ContentHost="true" Name="root" RowDefinitions="Auto,*,Auto">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Name="col_sidebar" Width="150" MinWidth="48" MaxWidth="400"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+
+		<TitleBar Grid.Row="0" Grid.ColumnSpan="2" Name="title_bar" Title="Scouter" Icon="scouter"/>
+
+		<Border Grid.Row="1" Grid.Column="0" Name="sidebar" Background="{$theme.background-panel}">
+			<DockPanel>
+				<StackPanel DockPanel.Dock="Bottom" Name="sidebar_footer" Spacing="2" Margin="6">
+					<Separator Margin="0,0,0,6"/>
+					<ToggleButton Name="btn_settings" Content="설정" Icon="settings" Variant="Ghost" Command="Shell.OpenSettings"/>
+					<Button Name="btn_collapse" Icon="panel-left-close" Variant="Ghost" Command="Shell.ToggleSidebar" ToolTip="사이드바 접기 (Ctrl+B)"/>
+				</StackPanel>
+				<ScrollViewer VerticalScrollBarVisibility="Auto">
+					<StackPanel Name="plugin_list" Spacing="2" Margin="6"/>
+				</ScrollViewer>
+			</DockPanel>
+		</Border>
+
+		<GridSplitter Grid.Row="1" Grid.Column="0" Name="splitter" ResizeDirection="Columns"/>
+
+		<ContentPresenter Grid.Row="1" Grid.Column="1" Name="content"/>
+
+		<StatusBar Grid.Row="2" Grid.ColumnSpan="2" Name="status_bar">
+			<StatusBarItem><StatusDot Name="dot_mcp" Status="Idle"/></StatusBarItem>
+			<StatusBarItem><TextBlock Text="MCP :{@mcpPort}"/></StatusBarItem>
+			<StatusBarItem><TextBlock Name="txt_sessions" Text="{@mcpSessions} sessions"/></StatusBarItem>
+			<StatusBarItem DockPanel.Dock="Right"><Button Name="btn_about" Variant="Ghost" Content="v{@appVersion}" Command="Shell.OpenAbout"/></StatusBarItem>
+			<StatusBarItem DockPanel.Dock="Right"><Button Name="btn_theme" Variant="Ghost" Content="{@themeName}" Command="Shell.OpenThemePicker"/></StatusBarItem>
+		</StatusBar>
+	</Grid>
+</Window>

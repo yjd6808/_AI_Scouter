@@ -1,0 +1,15 @@
+{
+	"Id": "Hello",
+	"Name": "Hello",
+	"Version": "0.1.0",
+	"Description": "P6 검증용",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "package",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Tools": ["Echo"],
+	"Commands": ["Say"],
+	"Hotkeys": {}
+}

@@ -1,0 +1,15 @@
+{
+	"Id": "ScouterCore",
+	"Name": "Scouter Core",
+	"Version": "0.4.0",
+	"Description": "설정 화면과 운영 도구",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "settings",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Tools": ["SettingsGet", "SettingsSet", "ThemeList", "ThemeSet", "ThemeCreate", "ThemeLint", "LayoutGet", "LayoutSet", "LayoutLint", "ControlCatalog", "PluginList", "PluginReload", "PluginScaffold", "PluginLint", "CommandList", "CommandExecute", "LogQuery", "ConnectSnippet", "Screenshot"],
+	"Commands": ["OpenSettings"],
+	"Hotkeys": {}
+}

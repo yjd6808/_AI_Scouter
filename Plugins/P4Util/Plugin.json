@@ -1,0 +1,16 @@
+{
+	"Id": "P4Util",
+	"Name": "Perforce Utilities",
+	"Version": "0.1.0",
+	"Description": "p4 읽기 전용 유틸리티 7종",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "p4",
+	"MinAppVersion": "0.4.0",
+	"Permissions": ["Process", "Clipboard", "Fs.Write"],
+	"Settings": "Settings.schema.json",
+	"Tools": ["ExtractFiles", "Describe", "OpenedSummary", "ChangeFiles", "Blame", "DiffRange", "ReviewPrompt"],
+	"Commands": ["CopyPrompt"],
+	"Hotkeys": {}
+}

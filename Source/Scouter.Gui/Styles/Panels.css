@@ -1,0 +1,23 @@
+.gui-grid { display: grid; }
+.gui-grid.show-grid-lines > * { outline: 1px dashed var(--border, #888); }
+.gui-grid > [data-halign="Right"] { justify-self: end; }
+.gui-grid > [data-halign="Center"] { justify-self: center; }
+.gui-grid > [data-halign="Left"] { justify-self: start; }
+.gui-stack { display: flex; flex-direction: column; }
+.gui-stack.is-horizontal { flex-direction: row; }
+.gui-wrap { display: flex; flex-wrap: wrap; }
+.gui-wrap.is-vertical { flex-direction: column; }
+.gui-dock-slice { display: flex; }
+.gui-dock-slice.is-row { flex-direction: row; }
+.gui-dock-slice.is-column { flex-direction: column; }
+.gui-dock-slice.is-fill { flex: 1 1 0; }
+.gui-canvas { position: relative; }
+.gui-uniform { display: grid; }
+.gui-border { border: 0 solid transparent; }
+.gui-scroll { overflow: auto; scrollbar-width: thin; }
+.gui-viewbox { position: relative; overflow: hidden; }
+.gui-splitter { background: transparent; }
+.gui-splitter:hover, .gui-splitter.is-dragging { background: var(--border-active, #888); }
+.is-collapsed { display: none !important; }
+.is-hidden { visibility: hidden; }
+.is-disabled { opacity: 0.5; }

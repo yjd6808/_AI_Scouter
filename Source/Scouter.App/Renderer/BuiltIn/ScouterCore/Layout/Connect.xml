@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="connect_view">
+	<StackPanel ContentHost="true" Spacing="8" Margin="12">
+		<TextBlock Name="txt_status" Text="{@statusLine}" />
+		<StackPanel Orientation="Horizontal" Spacing="8">
+			<ComboBox Name="cmb_client" />
+			<Button Name="btn_copy" Content="복사" Variant="Primary" />
+		</StackPanel>
+		<TextBox Name="txt_snippet" AcceptsReturn="true" IsReadOnly="true" />
+		<StackPanel Orientation="Horizontal" Spacing="8">
+			<Button Name="btn_regen_token" Content="토큰 재발급" Variant="Danger" />
+		</StackPanel>
+	</StackPanel>
+</UserControl>

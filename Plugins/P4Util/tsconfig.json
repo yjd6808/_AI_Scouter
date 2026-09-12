@@ -1,0 +1,9 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions":
+	{
+		"composite": false,
+		"noEmit": true
+	},
+	"include": ["Index.ts", "Types.ts", "P4Runner.ts", "ZtagParser.ts", "Tools/**/*.ts", "Views/**/*.ts", "Layout/**/*"]
+}

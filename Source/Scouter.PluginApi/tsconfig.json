@@ -1,0 +1,9 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions":
+	{
+		"outDir": "dist"
+	},
+	"include": ["Index.ts", "ITool.ts", "IPluginContext.ts", "PluginBase.ts"],
+	"references": [{ "path": "../Scouter.Gui" }]
+}

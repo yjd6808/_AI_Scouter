@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="p4util_main">
+	<UserControl.Data>
+		<Item Key="revFrom" Type="Int" Value="1" />
+		<Item Key="revTo" Type="Int" Value="40" />
+		<Item Key="isRunning" Type="Bool" Value="false" />
+		<Item Key="fileCount" Type="Int" Value="0" />
+		<Item Key="stateText" Type="String" Value="대기" />
+	</UserControl.Data>
+	<DockPanel LastChildFill="true">
+		<Border DockPanel.Dock="Top" Padding="12" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="0,0,0,1">
+			<StackPanel Spacing="8">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<Label Content="Depot" Target="#txt_depot" />
+					<TextBox Name="txt_depot" Width="320" Placeholder="//depot/project/..." Text="{$settings.Plugins.P4Util.DefaultDepot}" />
+					<Label Content="Rev" Margin="12,0,0,0" />
+					<NumericUpDown Name="num_rev_from" Width="90" Minimum="1" Value="{@revFrom}" />
+					<TextBlock Text="~" />
+					<NumericUpDown Name="num_rev_to" Width="90" Minimum="1" Value="{@revTo}" />
+					<Button Name="btn_run" Content="파일 목록 추출" Variant="Primary" IsEnabled="!{@isRunning}" />
+					<Button Name="btn_copy_prompt" Content="AI 프롬프트 복사" Variant="Ghost" Command="P4Util.CopyPrompt" />
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<CheckBox Name="chk_add" Content="add" IsChecked="true" />
+					<CheckBox Name="chk_edit" Content="edit" IsChecked="true" />
+					<CheckBox Name="chk_delete" Content="delete" IsChecked="true" />
+					<Label Content="확장자" />
+					<TextBox Name="txt_ext" Width="160" Placeholder=".cpp;.h" />
+					<CheckBox Name="chk_dedupe" Content="중복 제거" IsChecked="true" />
+					<Button Name="btn_cancel" Content="중단" Variant="Danger" Visibility="{{@isRunning} ? `Visible` : `Collapsed`}" />
+				</StackPanel>
+			</StackPanel>
+		</Border>
+		<StatusBar DockPanel.Dock="Bottom">
+			<StatusBarItem>
+				<StatusDot Name="dot_state" Status="Idle" />
+			</StatusBarItem>
+			<StatusBarItem>
+				<TextBlock Name="txt_state" Text="{@stateText}" />
+			</StatusBarItem>
+			<StatusBarItem DockPanel.Dock="Right">
+				<TextBlock Name="txt_count" Text="{{@fileCount} + ` files`}" />
+			</StatusBarItem>
+		</StatusBar>
+		<TabControl Name="tabs">
+			<TabItem Header="{`파일 목록 ` + {@fileCount}}">
+				<ListView Name="lst_files" SelectionMode="Extended" />
+			</TabItem>
+			<TabItem Header="로그">
+				<LogView Name="log_output" />
+			</TabItem>
+		</TabControl>
+	</DockPanel>
+</UserControl>

@@ -1,0 +1,24 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Scouter Plugin Manifest",
+	"type": "object",
+	"required": ["Id", "Name", "Version", "Main", "Layout"],
+	"properties":
+	{
+		"Id": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+		"Name": { "type": "string", "minLength": 1 },
+		"Version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+		"Description": { "type": "string", "default": "" },
+		"Author": { "type": "string", "default": "" },
+		"Main": { "type": "string", "default": "Index.ts" },
+		"Layout": { "type": "string", "default": "Layout/Main.xml" },
+		"Icon": { "type": "string", "default": "" },
+		"MinAppVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$", "default": "0.4.0" },
+		"Permissions": { "type": "array", "items": { "type": "string", "enum": ["Process", "Fs.Read", "Fs.Write", "Clipboard", "Settings", "Secrets", "Network", "Tools.Invoke"] }, "default": [] },
+		"Settings": { "type": "string" },
+		"Tools": { "type": "array", "items": { "type": "string" }, "default": [] },
+		"Commands": { "type": "array", "items": { "type": "string" }, "default": [] },
+		"Hotkeys": { "type": "object", "additionalProperties": { "type": "string" }, "default": {} }
+	},
+	"additionalProperties": false
+}
