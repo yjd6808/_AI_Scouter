@@ -10,9 +10,14 @@ import { MonacoTheme } from "./MonacoTheme";
 
 export class MonacoLoader
 {
+	// ==================== 정적 ====================
+	public static readonly DefaultFontSize = 13;
+
 	// ==================== 멤버 ====================
 	private static s_module_: Promise<typeof Monaco> | null = null;
 	private static s_pending_: { Tokens: ReadonlyMap<string, string>; Dark: boolean } | null = null;
+	private static s_fontSize_ = MonacoLoader.DefaultFontSize;
+	private static readonly s_editors_ = new Set<{ updateOptions(_opts: { fontSize: number }): void }>();
 
 	// ==================== 공개 메서드 ====================
 
@@ -44,6 +49,56 @@ export class MonacoLoader
 		{
 			MonacoLoader.ApplyPending(_m);
 		});
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 에디터 폰트 크기를 바꾼다. 살아있는 에디터·가상 리스트에 즉시 반영한다.
+	// @param _px: 픽셀
+	public static ApplyFontSize(_px: number): void
+	{
+		MonacoLoader.s_fontSize_ = _px;
+		for (const editor of MonacoLoader.s_editors_)
+		{
+			try
+			{
+				editor.updateOptions({ fontSize: _px });
+			}
+			catch
+			{
+				continue;
+			}
+		}
+		try
+		{
+			window.dispatchEvent(new CustomEvent("scouter:fontsize", { detail: _px }));
+		}
+		catch
+		{
+			// happy-dom 미지원 환경은 무시.
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 현재 폰트 크기를 구한다.
+	public static FontSize(): number
+	{
+		return MonacoLoader.s_fontSize_;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 살아있는 에디터를 등록한다. Dispose 시 Untrack 호출.
+	// @param _editor: 에디터
+	public static Track(_editor: { updateOptions(_opts: { fontSize: number }): void }): void
+	{
+		MonacoLoader.s_editors_.add(_editor);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 등록된 에디터를 뺀다.
+	// @param _editor: 에디터
+	public static Untrack(_editor: { updateOptions(_opts: { fontSize: number }): void }): void
+	{
+		MonacoLoader.s_editors_.delete(_editor);
 	}
 
 	// ==================== 내부 ====================

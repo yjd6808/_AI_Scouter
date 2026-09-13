@@ -22,7 +22,7 @@ export class Icon extends UIElement
 	// ==================== 생성 · 소멸 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// svg > use 구조를 만든다.
+	// svg > use 구조를 만든다. 기본 크기는 CSS 변수(--gui-icon-size)를 따른다.
 	public constructor()
 	{
 		super();
@@ -31,7 +31,8 @@ export class Icon extends UIElement
 		this.use_ = document.createElementNS("http://www.w3.org/2000/svg", "use");
 		svg.append(this.use_);
 		this.Element.append(svg);
-		this.ApplySize(this.Size);
+		this.Element.style.width = "var(--gui-icon-size, 16px)";
+		this.Element.style.height = "var(--gui-icon-size, 16px)";
 	}
 
 	// ==================== 속성 ====================

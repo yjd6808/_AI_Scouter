@@ -5,11 +5,14 @@
 	설명: Paths. IPC app:get-paths 1회 후 캐시 + 파생 경로.
 */
 
+import * as path from "node:path";
+
 export interface IAppPaths
 {
 	UserData: string;
 	Home: string;
 	Exe: string;
+	AppPath: string;
 	Resources: string;
 	Logs: string;
 	Temp: string;
@@ -31,9 +34,29 @@ export class Paths
 	public static get Version(): string { return Paths.Require().Version; }
 	public static get IsPackaged(): boolean { return Paths.Require().IsPackaged; }
 	public static get Args(): string[] { return Paths.Require().Args; }
+	public static get AppPath(): string { return Paths.Require().AppPath; }
+	public static get Resources(): string { return Paths.Require().Resources; }
 	public static get ScouterHome(): string { return `${Paths.UserData}/.scouter`; }
 	public static get LogsDir(): string { return `${Paths.ScouterHome}/logs`; }
 	public static get SettingsFile(): string { return `${Paths.ScouterHome}/settings.json`; }
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// exe가 든 폴더를 구한다. 모르면 빈 문자열.
+	public static get ExeDir(): string
+	{
+		const exe = Paths.Require().Exe;
+		return exe.length > 0 ? path.dirname(exe) : "";
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 배포판 외부 Plugin 폴더를 구한다. 패키징일 때만. 없으면 null.
+	public static get ExePluginDir(): string | null
+	{
+		if (!Paths.Require().IsPackaged)
+			return null;
+		const dir = Paths.ExeDir;
+		return dir.length > 0 ? path.join(dir, "Plugins") : null;
+	}
 
 	// ==================== 공개 메서드 ====================
 
@@ -70,7 +93,7 @@ export class Paths
 	private static Fallback(): IAppPaths
 	{
 		const tmp = process.env["TEMP"] ?? process.env["TMPDIR"] ?? "/tmp";
-		return { UserData: tmp, Home: tmp, Exe: "", Resources: "", Logs: tmp, Temp: tmp, Version: "0.4.0", IsPackaged: false, Args: process.argv };
+		return { UserData: tmp, Home: tmp, Exe: "", AppPath: "", Resources: "", Logs: tmp, Temp: tmp, Version: "0.4.0", IsPackaged: false, Args: process.argv };
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

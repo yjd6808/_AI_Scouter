@@ -76,4 +76,24 @@ void describe("Shell E2E", () =>
 		const state = await Get("/test/settings?path=Ui.SidebarCollapsed") as { Value?: boolean };
 		assert.equal(state.Value, true);
 	});
+
+	void it("접으면 사이드바가 숨고 펼치기 탭으로 돌아온다", async () =>
+	{
+		const hidden = await Get("/test/find?name=sidebar") as { Visible?: boolean; Rect?: { Width?: number } };
+		assert.equal(hidden.Visible, false);
+		assert.equal(hidden.Rect?.Width, 0);
+		await Post("/test/click", { Name: "btn_expand" });
+		const shown = await Get("/test/find?name=sidebar") as { Visible?: boolean };
+		assert.equal(shown.Visible, true);
+	});
+
+	void it("스플리터 드래그로 사이드바 너비가 바뀐다", async () =>
+	{
+		const before = await Get("/test/settings?path=Ui.SidebarWidth") as { Value?: number };
+		const script = "(() => { const el = document.querySelector('[data-testid=\"splitter\"]'); if (el === null) return 'no-splitter'; const r = el.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const fire = (t, cx) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, cancelable: true, clientX: cx, clientY: y })); fire('pointerdown', x); fire('pointermove', x + 60); fire('pointerup', x + 60); return 'ok'; })()";
+		const drag = await Post("/test/eval", { Script: script }) as { Ok?: boolean; Value?: unknown };
+		assert.equal(drag.Value, "ok");
+		const after = await Get("/test/settings?path=Ui.SidebarWidth") as { Value?: number };
+		assert.ok(Math.abs((after.Value ?? 0) - ((before.Value ?? 0) + 60)) <= 20);
+	});
 });

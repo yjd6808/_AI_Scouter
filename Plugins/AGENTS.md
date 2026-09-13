@@ -77,7 +77,7 @@ export default class XPlugin extends PluginBase
 
 - 단위: `Source/Scouter.Tests/Unit/Plugin/{Id}.test.ts`. 외부연동은 가짜 객체 주입
   (Notes `MemoryFs` 참조). 파일 1개에 `describe("{Id}")`.
-- E2E: `Source/Scouter.Tests/E2E/{Id}.test.ts`. 포트 규칙: 9521 Shell, 9522 Mcp, 9523/9524 P4Util, 9525 팔레트, 9526 Notes 사용 중 — **9527번부터** 새 번호.
+- E2E: `Source/Scouter.Tests/E2E/{Id}.test.ts`. 포트 규칙: 9521 Shell, 9522 Mcp, 9523/9524 P4Util, 9525 팔레트, 9526 Notes, 9527 Theme, 9528 ToastLab 사용 중 — **9529번부터** 새 번호.
   스폰 인자: `dist/main/Main.cjs --test --hidden --no-auth --port {N} --plugin-dir Plugins`.
   승인 필요 Tool이면 `before`에서 `POST /test/approval {Policy:"allow"}`.
   `--plugin-dir Plugins`라 새 플러그인은 자동 발견. StorageDir은 pid별 temp라 격리됨.
@@ -105,3 +105,11 @@ npm run lint → npm run typecheck → npm run build → npm run test:unit → n
 | E2E에서 Tool 없음 | `OnActivate` 10초 타임아웃 초과, 또는 `Tools` 선언·등록 불일치 |
 | 설정이 안 먹음 | 스냅샷 저장. getter로 바꿀 것 (§3) |
 | `tsc -b`에 새 플러그인 누락 | §6 미등록 |
+
+## 11. 배포판에 넣기 (exe 기준)
+
+- 설치된 앱(`Scouter.exe` 옆 `Plugins/` 폴더)에 `{Id}/` 통째로 복사 → 앱 재시작 후 자동 로드(이미 있던 파일 수정은 300ms 디바운스 핫리로드).
+- 뼈대는 §1과 동일. `tsconfig`·`.cache` 없이 소스만 넣는다(앱이 esbuild로 번들).
+- 첫 실행에 권한 다이얼로그가 뜬다(§2 `Permissions` 최소 선언).
+- `~/.scouter/plugins`와 Id가 겹치면 exe 쪽이 아닌 나중 스캔이 우선(Discovery 규칙). 겹치지 않게 할 것.
+- exe 폴더 쓰기 권한이 없으면(관리자 설치 등) 로드 실패 → 로그 확인 후 `~/.scouter/plugins` 사용.

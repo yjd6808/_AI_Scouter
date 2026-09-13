@@ -46,11 +46,11 @@ export class ToastService
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 에러 토스트. 수동 닫기.
+	// 에러 토스트. App 표시 시간을 따른다.
 	// @param _msg: 메시지
 	public static Error(_msg: string): void
 	{
-		UIManager.ShowToast({ Title: _msg, Variant: ToastKind.Error, DurationMs: 0 });
+		UIManager.ShowToast({ Title: _msg, Variant: ToastKind.Error });
 	}
 }
 

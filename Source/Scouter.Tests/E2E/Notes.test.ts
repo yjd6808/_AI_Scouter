@@ -39,6 +39,20 @@ async function WaitReady(): Promise<void>
 	throw new Error("[E2E] ping 타임아웃");
 }
 
+async function Get(_path: string): Promise<unknown>
+{
+	const res = await fetch(`${kBase}${_path}`);
+	return res.json();
+}
+
+async function Post(_path: string, _body: unknown): Promise<unknown>
+{
+	const headers = new Headers();
+	headers.append("content-type", "application/json");
+	const res = await fetch(`${kBase}${_path}`, { method: "POST", headers, body: JSON.stringify(_body) });
+	return res.json();
+}
+
 void describe("Notes E2E", () =>
 {
 	before(async () =>
@@ -70,6 +84,46 @@ void describe("Notes E2E", () =>
 			const searched = await client.callTool({ name: "Notes__Search", arguments: { Query: mark } });
 			const found = (searched.content as Array<{ text?: string }>)[0]?.text ?? "";
 			assert.ok(found.includes("e2e"));
+		}
+		finally
+		{
+			await client.close();
+		}
+	});
+
+	void it("노트 화면의 목록·본문이 패널을 채운다", async () =>
+	{
+		await Post("/test/click", { Name: "nav_Notes" });
+		await new Promise((_resolve) => setTimeout(_resolve, 500));
+		const list = await Get("/test/find?name=lst_notes") as { Rect?: { Width?: number; Height?: number } };
+		const body = await Get("/test/find?name=txt_body") as { Rect?: { Width?: number; Height?: number } };
+		assert.ok((list.Rect?.Height ?? 0) > 100);
+		assert.ok((body.Rect?.Height ?? 0) > 300);
+		assert.ok((body.Rect?.Width ?? 0) > 200);
+	});
+
+	void it("화면에서 제목·본문 쓰고 저장하면 읽힌다", async () =>
+	{
+		const name = `e2e-ui-${Date.now()}`;
+		const typedTitle = await Post("/test/eval", {
+			Script: "(() => { const el = document.querySelector('[data-testid=\"txt_title\"] input'); if (el === null) return false; el.value = '" + name + "'; el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()",
+		}) as { Ok?: boolean; Value?: unknown };
+		assert.equal(typedTitle.Value, true);
+		await Post("/test/click", { Name: "btn_new" });
+		const typedBody = await Post("/test/eval", {
+			Script: "(() => { const el = document.querySelector('[data-testid=\"txt_body\"] textarea'); if (el === null) return false; el.value = 'ui-body'; el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()",
+		}) as { Ok?: boolean; Value?: unknown };
+		assert.equal(typedBody.Value, true);
+		await Post("/test/click", { Name: "btn_save" });
+		await new Promise((_resolve) => setTimeout(_resolve, 800));
+		const client = new Client({ name: "e2e", version: "0.0.1" }, { capabilities: {} });
+		const transport = new StreamableHTTPClientTransport(new URL(`${kBase}/mcp`));
+		await client.connect(transport as unknown as Transport);
+		try
+		{
+			const back = await client.callTool({ name: "Notes__Read", arguments: { Note: name } });
+			const first = (back.content as Array<{ text?: string }>)[0]?.text ?? "";
+			assert.ok(first.includes("ui-body"));
 		}
 		finally
 		{

@@ -12,7 +12,7 @@
 | 글로벌 핫키 | `globalShortcut.register("Ctrl+Shift+Space")` | 설정 `Hotkeys.Global.Show`; 창 보이기/숨기기. 등록 실패(충돌) 시 Toast |
 | 단일 인스턴스 | `app.requestSingleInstanceLock()` | 2번째 실행은 기존 창 `show()+focus()`, `--test`에서는 미사용 |
 | 자동 업데이트 | `electron-updater` ^6 (`autoUpdater`) | `App.Update.Channel`(stable/none), generic provider `App.Update.Url`(사내 파일서버/HTTP). IPC `app:update-check` / `app:update-status`. 설치는 사용자 확인 후 `quitAndInstall` |
-| 패키징 | `electron-builder` ^25 NSIS | `oneClick:false`, `perMachine:false`, `allowToChangeInstallationDirectory:true`; `extraResources`: `esbuild` 바이너리(14), `Plugins/P4Util`(번들 안 함, 소스 그대로 → 첫 실행 시 `~/.scouter/plugins`로 복사 제안), `Themes/` |
+| 패키징 | `electron-builder` ^25 NSIS | `oneClick:false`, `perMachine:false`, `allowToChangeInstallationDirectory:true`; `extraResources`: `esbuild` 바이너리(14), `Plugins/P4Util`(번들 안 함, 소스 그대로 → 첫 실행 시 `~/.scouter/plugins`로 복사 제안), `Themes/`; 배포판 외부 Plugin은 `<exe>/Plugins` 스캔(External, 첫 실행 시 폴더 생성) |
 | 코드 사이닝 | 보류 | 방화벽/스마트스크린 경고는 사용자 확인 항목 |
 | 로그 회전 | 자체 `FileSink`(08) | `app-YYYYMMDD.log` 일별, 7일 보관, 최대 20MB/일; `mcp-audit.jsonl` 20MB 롤링(15). electron-log 안 쓰기 |
 | 충돌 리포트 | `process.on("uncaughtException")`, `webContents.on("render-process-gone")` | `~/.scouter/logs/crash-{ts}.json`(스택, 버전, 마지막 로그 200줄). 원격 전송 없음 |

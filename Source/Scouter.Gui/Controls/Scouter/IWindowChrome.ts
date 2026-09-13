@@ -14,4 +14,7 @@ export interface IWindowChrome
 	Close(): void;
 	IsMaximized(): Promise<boolean>;
 	MaximizedChanged: SimpleEvent<boolean>;
+	ToggleTopmost?(): Promise<boolean>;
+	IsTopmost?(): Promise<boolean>;
+	TopmostChanged?: SimpleEvent<boolean>;
 }

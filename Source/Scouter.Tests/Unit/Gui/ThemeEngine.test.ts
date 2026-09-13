@@ -47,6 +47,21 @@ void describe("ThemeEngine", () =>
 		assert.match(css, /--gui-control-height:24px;/);
 	});
 
+	void it("폰트 크기에 컨트롤 높이가 연동된다", () =>
+	{
+		const resolved = ThemeResolver.Resolve(MakeTheme(), "Light", null);
+		const normal13 = ThemeCss.Build(resolved, { FontSize: 13, FontFamily: "A", MonoFamily: "B" }, "Normal");
+		assert.match(normal13, /--gui-control-height:28px;/);
+		assert.match(normal13, /--gui-icon-size:16px;/);
+		assert.match(normal13, /--gui-font-sm:12px;/);
+		const normal20 = ThemeCss.Build(resolved, { FontSize: 20, FontFamily: "A", MonoFamily: "B" }, "Normal");
+		assert.match(normal20, /--gui-control-height:43px;/);
+		assert.match(normal20, /--gui-icon-size:23px;/);
+		assert.match(normal20, /--gui-font-sm:19px;/);
+		const compact20 = ThemeCss.Build(resolved, { FontSize: 20, FontFamily: "A", MonoFamily: "B" }, "Compact");
+		assert.match(compact20, /--gui-control-height:37px;/);
+	});
+
 	void it("Lint 형식·대비", () =>
 	{
 		const bad: ITheme = { ...MakeTheme(), Tokens: Tokens([["text-base", { dark: "red" }]]) };

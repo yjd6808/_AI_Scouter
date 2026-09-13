@@ -9,6 +9,7 @@ import { UIProperty } from "../Core/UIProperty";
 import { RoutedEvent, RoutedEventArgs, RoutingStrategy, PointerEventArgs } from "../Core/RoutedEvent";
 import { InputDispatcher } from "../Core/InputDispatcher";
 import { ContentControl } from "./ContentControl";
+import { Control } from "./Control";
 import { Icon } from "./Icon";
 import { Visibility } from "../Core/UITypes";
 import type { ICommandSource } from "../Xml/LoadContext";
@@ -84,7 +85,7 @@ export class ButtonBase extends ContentControl
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 누름 시작. 캡처 + pressed 표시. Press 모드면 즉시 발화.
 	// @param _a: 인자
-	private HandleDown(_a: PointerEventArgs): void
+	protected HandleDown(_a: PointerEventArgs): void
 	{
 		if (!this.IsEnabled)
 			return;
@@ -99,7 +100,7 @@ export class ButtonBase extends ContentControl
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 뗌. 히트면 발화.
 	// @param _a: 인자
-	private HandleUp(_a: PointerEventArgs): void
+	protected HandleUp(_a: PointerEventArgs): void
 	{
 		if (!this.isPressed_)
 			return;
@@ -116,7 +117,7 @@ export class ButtonBase extends ContentControl
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 등록 속성 변경을 DOM에 반영한다.
+	// 등록 속성 변경을 DOM에 반영한다. ToggleButton 계열 Variant도 variant-* 클래스로 둔다.
 	// @param _prop: 속성
 	// @param _value: 값
 	protected override ApplyProperty(_prop: UIProperty<unknown>, _value: unknown): void
@@ -126,6 +127,13 @@ export class ButtonBase extends ContentControl
 		{
 			this.icon_.Name = _value as string;
 			this.icon_.Visibility = (_value as string).length > 0 ? Visibility.Visible : Visibility.Collapsed;
+		}
+		else if (_prop === Control.VariantProperty)
+		{
+			this.Element.classList.remove("variant-default", "variant-primary", "variant-danger", "variant-ghost");
+			const variant = (_value as string).toLowerCase();
+			if (variant.length > 0)
+				this.Element.classList.add(`variant-${variant}`);
 		}
 	}
 }

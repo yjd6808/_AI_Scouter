@@ -6,6 +6,7 @@
 */
 
 import { UIElement } from "./UIElement";
+import { IconSprite } from "../Controls/IconSprite";
 
 type ElementCtor = new () => UIElement;
 
@@ -69,5 +70,6 @@ export class Gui
 		for (const fn of Gui.s_pending_)
 			fn();
 		Gui.s_pending_.length = 0;
+		IconSprite.Ensure();
 	}
 }

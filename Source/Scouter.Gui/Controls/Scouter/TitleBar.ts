@@ -6,6 +6,8 @@
 */
 
 import { UIProperty } from "../../Core/UIProperty";
+import type { IDisposable } from "../../Core/Disposable";
+import { Visibility } from "../../Core/UITypes";
 import { Control } from "../Control";
 import { RegisterElement } from "../RegisterElement";
 import { Button } from "../Button";
@@ -22,16 +24,18 @@ export class TitleBar extends Control
 
 	// ==================== 멤버 ====================
 	private chrome_: IWindowChrome | null = null;
+	private chromeBag_: IDisposable[] = [];
 	private readonly icon_: Icon;
 	private readonly title_: TextBlock;
 	private readonly min_: Button;
+	private readonly pin_: Button;
 	private readonly max_: Button;
 	private readonly close_: Button;
 
 	// ==================== 생성 · 소멸 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 드래그 영역 + 버튼 3개를 만든다.
+	// 드래그 영역 + 버튼 4개를 만든다.
 	public constructor()
 	{
 		super();
@@ -40,18 +44,28 @@ export class TitleBar extends Control
 		this.title_ = new TextBlock();
 		this.title_.Element.classList.add("gui-titlebar__title");
 		this.min_ = TitleBar.MakeChromeButton("minus", "최소화");
+		this.pin_ = TitleBar.MakeChromeButton("pin", "항상 위");
 		this.max_ = TitleBar.MakeChromeButton("square", "최대화");
 		this.close_ = TitleBar.MakeChromeButton("x", "닫기");
 		this.close_.Element.classList.add("is-close");
 		this.AddChild(this.icon_);
 		this.AddChild(this.title_);
 		this.AddChild(this.min_);
+		this.AddChild(this.pin_);
 		this.AddChild(this.max_);
 		this.AddChild(this.close_);
 		this.min_.Click.Add(() => { this.chrome_?.Minimize(); });
+		this.pin_.Click.Add(() => { void this.ToggleTopmostAsync(); });
 		this.max_.Click.Add(() => { this.chrome_?.ToggleMaximize(); });
 		this.close_.Click.Add(() => { this.chrome_?.Close(); });
 		this.ApplyTitle(this.Title);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 크롬 구독을 끊는다.
+	protected override OnDispose(): void
+	{
+		this.DetachChrome();
 	}
 
 	// ==================== 속성 ====================
@@ -60,12 +74,26 @@ export class TitleBar extends Control
 	public get Chrome(): IWindowChrome | null { return this.chrome_; }
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 창 크롬을 꽂는다. 최대화 상태를 읽어 아이콘을 맞춘다.
+	// 창 크롬을 꽂는다. 최대화·고정 상태를 읽어 아이콘을 맞춘다.
 	public set Chrome(_v: IWindowChrome | null)
 	{
+		this.DetachChrome();
 		this.chrome_ = _v;
-		if (_v !== null)
-			void _v.IsMaximized().then((_max) => { this.ApplyMaximized(_max); });
+		if (_v === null)
+			return;
+		this.chromeBag_.push(_v.MaximizedChanged.Add((_max) => { this.ApplyMaximized(_max); }));
+		if (_v.TopmostChanged !== undefined)
+			this.chromeBag_.push(_v.TopmostChanged.Add((_top) => { this.ApplyTopmost(_top); }));
+		void _v.IsMaximized().then((_max) => { this.ApplyMaximized(_max); });
+		if (_v.IsTopmost !== undefined)
+		{
+			this.pin_.Visibility = Visibility.Visible;
+			void _v.IsTopmost().then((_top) => { this.ApplyTopmost(_top); });
+		}
+		else
+		{
+			this.pin_.Visibility = Visibility.Collapsed;
+		}
 	}
 
 	// ==================== 내부 ====================
@@ -98,6 +126,36 @@ export class TitleBar extends Control
 	private ApplyMaximized(_max: boolean): void
 	{
 		this.max_.Icon = _max ? "copy" : "square";
+		this.max_.ToolTip = _max ? "복원" : "최대화";
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 고정 아이콘을 바꾼다.
+	// @param _top: 항상 위 여부
+	private ApplyTopmost(_top: boolean): void
+	{
+		this.pin_.Icon = _top ? "pin-off" : "pin";
+		this.pin_.ToolTip = _top ? "항상 위 해제" : "항상 위";
+		this.pin_.Element.classList.toggle("is-active", _top);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 고정을 뒤집고 아이콘을 맞춘다. 크롬 미지원이면 무시.
+	private async ToggleTopmostAsync(): Promise<void>
+	{
+		const chrome = this.chrome_;
+		if (chrome?.ToggleTopmost === undefined)
+			return;
+		this.ApplyTopmost(await chrome.ToggleTopmost());
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 크롬 구독을 끊는다.
+	private DetachChrome(): void
+	{
+		for (const entry of this.chromeBag_)
+			entry.Dispose();
+		this.chromeBag_ = [];
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

@@ -7,6 +7,7 @@
 
 import type { IJsonSchemaNode } from "@scouter/gui";
 import schemaJson from "../../../Config/Settings.schema.json" with { type: "json" };
+import { ThemeManager } from "../../Theme/ThemeManager";
 
 export interface ISettingsCategory
 {
@@ -30,13 +31,31 @@ export class SettingsCatalog
 			out.push({
 				Id: group,
 				Title: SettingsCatalog.TitleOf(group),
-				Schema: { type: "object", properties: node.properties ?? {} },
+				Schema: { type: "object", properties: SettingsCatalog.PropsOf(group, node.properties) },
 			});
 		}
 		return out;
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 그룹 속성을 복사한다. 테마 Id에는 후보 목록을 enum으로 단다.
+	// @param _group: 그룹 Id
+	// @param _props: 원본 속성
+	private static PropsOf(_group: string, _props?: Record<string, IJsonSchemaNode>): Record<string, IJsonSchemaNode>
+	{
+		const cloned: Record<string, IJsonSchemaNode> = {};
+		for (const [key, node] of Object.entries(_props ?? {}))
+			cloned[key] = { ...node };
+		if (_group === "Theme" && cloned["Id"] !== undefined)
+		{
+			const ids = ThemeManager.List().map((_t) => _t.Id);
+			if (ids.length > 0)
+				cloned["Id"] = { ...cloned["Id"], enum: ids };
+		}
+		return cloned;
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 그룹 표시 이름.

@@ -8,8 +8,8 @@
 import * as path from "node:path";
 import { DisposableBag } from "@scouter/gui";
 import type { IDisposable } from "@scouter/gui";
-import { UIManager, ToastService, RegisterWindow, UserControl, DataList } from "@scouter/gui";
-import type { IPluginContext, IPluginManifest, ITool } from "@scouter/plugin-api";
+import { UIManager, ToastService, RegisterWindow, UserControl, DataList, WindowRegistry, ToastKind } from "@scouter/gui";
+import type { IPluginContext, IPluginManifest, ITool, TNotifyKind, IMessageBoxOptions, TMessageBoxResult } from "@scouter/plugin-api";
 import { Settings } from "../Services/Settings";
 import { Storage } from "../Services/Storage";
 import { Secrets } from "../Services/Secrets";
@@ -21,6 +21,8 @@ import { Process } from "../Services/Process";
 import { Fs } from "../Services/Fs";
 import { Clipboard } from "../Services/Clipboard";
 import { Schedule } from "../Services/Schedule";
+import { GlobalToast } from "../Services/GlobalToast";
+import { MessageBox } from "../Services/MessageBox";
 import { ToolRegistry } from "./ToolRegistry";
 import { ResourceRegistry } from "./ResourceRegistry";
 import { PromptRegistry } from "./PromptRegistry";
@@ -53,6 +55,7 @@ export class PluginContext implements IPluginContext
 	private readonly host_: IPluginHost;
 	private readonly bag_ = new DisposableBag();
 	private readonly storage_: Storage;
+	private readonly windows_: string[] = [];
 
 	// ==================== 생성 · 소멸 ====================
 
@@ -75,6 +78,9 @@ export class PluginContext implements IPluginContext
 		ResourceRegistry.RemoveAll(this.Manifest.Id);
 		PromptRegistry.RemoveAll(this.Manifest.Id);
 		Schedule.RemoveAll(this.Manifest.Id);
+		for (const name of this.windows_)
+			WindowRegistry.Unregister(name);
+		this.windows_.length = 0;
 		this.bag_.Dispose();
 	}
 
@@ -343,7 +349,9 @@ export class PluginContext implements IPluginContext
 	public readonly Ui = {
 		RegisterWindow: (_name: string, _ctor: new () => unknown): void =>
 		{
-			RegisterWindow(`${this.Manifest.Id}/${_name}`)(_ctor as new () => UserControl, {} as ClassDecoratorContext);
+			const full = `${this.Manifest.Id}/${_name}`;
+			RegisterWindow(full)(_ctor as new () => UserControl, {} as ClassDecoratorContext);
+			this.windows_.push(full);
 		},
 		Show: (_name: string, _data?: unknown): unknown =>
 		{
@@ -351,6 +359,25 @@ export class PluginContext implements IPluginContext
 			return UIManager.Show(_name, data);
 		},
 		Toast: (_msg: string): void => { ToastService.Info(`[${this.Manifest.Id}] ${_msg}`); },
+		Notify: (_kind: TNotifyKind, _msg: string): void =>
+		{
+			if (_kind === "success")
+				ToastService.Success(_msg);
+			else if (_kind === "warn")
+				ToastService.Warn(_msg);
+			else if (_kind === "error")
+				ToastService.Error(_msg);
+			else
+				ToastService.Info(_msg);
+		},
+		NotifyGlobal: (_kind: TNotifyKind, _title: string, _message?: string): Promise<boolean> =>
+		{
+			return GlobalToast.NotifyAsync({ Title: _title, Message: _message, Variant: PluginContext.ToastVariant(_kind) });
+		},
+		MessageBox: (_opts: IMessageBoxOptions): Promise<TMessageBoxResult> =>
+		{
+			return MessageBox.ShowAsync(_opts);
+		},
 		Confirm: (_msg: string): Promise<boolean> => Promise.resolve(window.confirm(_msg)),
 	};
 
@@ -360,6 +387,20 @@ export class PluginContext implements IPluginContext
 	};
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 알림 종류를 ToastKind로 바꾼다.
+	// @param _kind: 종류
+	private static ToastVariant(_kind: TNotifyKind): ToastKind
+	{
+		if (_kind === "success")
+			return ToastKind.Success;
+		if (_kind === "warn")
+			return ToastKind.Warn;
+		if (_kind === "error")
+			return ToastKind.Error;
+		return ToastKind.Info;
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 경로를 초기화한다. 매니저가 생성 직후 호출.

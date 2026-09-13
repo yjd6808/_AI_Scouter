@@ -5,12 +5,12 @@
 	설명: TextBlock. 읽기 전용 텍스트.
 */
 
-import { UIElement } from "../Core/UIElement";
 import { UIProperty } from "../Core/UIProperty";
+import { Control } from "./Control";
 import { RegisterElement } from "./RegisterElement";
 
 @RegisterElement("TextBlock")
-export class TextBlock extends UIElement
+export class TextBlock extends Control
 {
 	// ==================== 정적 ====================
 	public static readonly TextProperty = UIProperty.Register<string>("Text", TextBlock, { Default: "" });

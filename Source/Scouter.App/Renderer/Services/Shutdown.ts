@@ -6,6 +6,7 @@
 */
 
 import { Ipc } from "./Ipc";
+import { Settings } from "./Settings";
 import { McpHttpServer } from "../Mcp/McpHttpServer";
 import { IpcChannels } from "../../Shared/IpcChannels";
 
@@ -25,9 +26,12 @@ export class Shutdown
 		Shutdown.s_armed_ = true;
 		Ipc.On(IpcChannels.AppBeforeQuit, () =>
 		{
-			void McpHttpServer.StopForTestAsync().finally(() =>
+			void Settings.FlushAsync().finally(() =>
 			{
-				Ipc.Send(IpcChannels.AppQuitReady);
+				void McpHttpServer.StopForTestAsync().finally(() =>
+				{
+					Ipc.Send(IpcChannels.AppQuitReady);
+				});
 			});
 		});
 	}

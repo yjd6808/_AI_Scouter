@@ -57,6 +57,8 @@ export class CodeEditor extends Control
 	// 에디터를 걷어낸다.
 	public override Dispose(): void
 	{
+		if (this.editor_ !== null)
+			MonacoLoader.Untrack(this.editor_);
 		this.editor_?.dispose();
 		this.editor_ = null;
 		super.Dispose();
@@ -142,8 +144,10 @@ export class CodeEditor extends Control
 			lineNumbers: "on",
 			wordWrap: "off",
 			fontFamily: "var(--gui-font-mono)",
+			fontSize: MonacoLoader.FontSize(),
 			theme: "scouter",
 		});
+		MonacoLoader.Track(this.editor_);
 		this.pendingText_ = null;
 		this.editor_.onDidChangeModelContent(() =>
 		{

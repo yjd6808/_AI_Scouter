@@ -117,11 +117,31 @@ export interface IContextPaths
 	Temp: string;
 }
 
+export type TNotifyKind = "info" | "success" | "warn" | "error";
+
+export type TMessageBoxScope = "App" | "Global";
+export type TMessageBoxKind = "ok" | "yesno";
+export type TMessageBoxResult = "ok" | "yes" | "no" | "timeout" | "closed";
+
+export interface IMessageBoxOptions
+{
+	Scope: TMessageBoxScope;
+	Title: string;
+	Message?: string | undefined;
+	Kind?: TMessageBoxKind | undefined;
+	DurationMs?: number | undefined;
+	Topmost?: boolean | undefined;
+	OnResult?: ((_result: TMessageBoxResult) => void) | undefined;
+}
+
 export interface IContextUi
 {
 	RegisterWindow(_name: string, _ctor: new () => unknown): void;
 	Show(_name: string, _data?: unknown): unknown;
 	Toast(_msg: string): void;
+	Notify(_kind: TNotifyKind, _msg: string): void;
+	NotifyGlobal(_kind: TNotifyKind, _title: string, _message?: string): Promise<boolean>;
+	MessageBox(_opts: IMessageBoxOptions): Promise<TMessageBoxResult>;
 	Confirm(_msg: string): Promise<boolean>;
 }
 

@@ -28,13 +28,16 @@ export class ContentPresenter extends UIElement
 	public get Content(): UIElement | null { return this.content_; }
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 내용을 교체한다. 이전 내용은 Dispose 없이 뗀다.
+	// 내용을 교체한다. 이전 내용은 Dispose 없이 뗀다. display:contents라 Grid 배치를 자식에 넘긴다.
 	public set Content(_v: UIElement | null)
 	{
 		this.Detach();
 		this.content_ = _v;
 		if (_v !== null)
+		{
 			this.AddChild(_v);
+			this.ForwardGridArea();
+		}
 	}
 
 	// ==================== 공개 메서드 ====================
@@ -50,5 +53,18 @@ export class ContentPresenter extends UIElement
 			this.content_ = null;
 		}
 		return prev;
+	}
+
+	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Grid 행열 위치를 자식에 복사한다. 부모 Grid는 발표자에게만 붙음 속성을 건다.
+	private ForwardGridArea(): void
+	{
+		const content = this.content_;
+		if (content === null)
+			return;
+		content.Element.style.gridRow = this.Element.style.gridRow;
+		content.Element.style.gridColumn = this.Element.style.gridColumn;
 	}
 }

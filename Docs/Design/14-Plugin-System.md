@@ -64,7 +64,7 @@ classDiagram
 		-plugins_ : Map~string,PluginHandle~
 	}
 	class PluginHandle { +Manifest; +Dir; +Source; +State : Loading|Active|Error|Disabled; +Instance : PluginBase|null; +Context : PluginContext; +Error?; +LoadMs }
-	class PluginDiscovery { <<static>> +Scan(dirs) PluginCandidate[] ; 순서 BuiltIn → ~/.scouter/plugins → --plugin-dir }
+	class PluginDiscovery { <<static>> +Scan(dirs) PluginCandidate[] ; 순서 BuiltIn → ~/.scouter/plugins → --plugin-dir(개발) / exe/Plugins(배포) }
 	class ManifestValidator { <<static>> +Validate(json) Manifest; -ajv }
 	class PluginBundler { <<static>> +BuildAsync(dir, manifest) Promise~string~ ; esbuild, 해시 캐시 }
 	class PermissionStore { <<static>> +IsGranted(id, perms) boolean; +GrantAsync(id, perms) Promise~boolean~ ; ~/.scouter/permissions.json }
@@ -149,7 +149,7 @@ sequenceDiagram
 	participant B as PluginBundler
 	participant P as Plugin(Index.mjs)
 	participant C as PluginContext
-	PM->>D: Scan([BuiltIn, ~/.scouter/plugins, --plugin-dir]) (--safe면 BuiltIn만)
+	PM->>D: Scan([BuiltIn, ~/.scouter/plugins, --plugin-dir | exe/Plugins]) (--safe면 BuiltIn만)
 	loop 각 후보 (병렬, Promise.allSettled)
 		PM->>V: Validate(Plugin.json) → Manifest (실패: State=Error, 계속)
 		PM->>PM: MinAppVersion 확인, Id 중복이면 나중 것 우선(경고)

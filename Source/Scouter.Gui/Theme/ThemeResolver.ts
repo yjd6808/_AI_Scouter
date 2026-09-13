@@ -2,10 +2,10 @@
 	작성자: 윤정도
 	생성일: 2026-09-12
 	=====
-	설명: ThemeResolver. defs 참조 해석 + 폴백 채움.
+	설명: ThemeResolver. defs 참조 해석 + 폴백 채움. 데스크톱 테마는 별칭 매핑.
 */
 
-import { kCoreTokens } from "./Theme";
+import { kCoreTokens, kDesktopCoreAliases } from "./Theme";
 import type { ITheme, IResolvedTheme, ThemeScheme } from "./Theme";
 
 export class ThemeResolver
@@ -19,6 +19,8 @@ export class ThemeResolver
 	// @param _fallback: 폴백 해석
 	public static Resolve(_theme: ITheme, _scheme: ThemeScheme, _fallback: IResolvedTheme | null): IResolvedTheme
 	{
+		if (_theme.Desktop !== undefined)
+			return ThemeResolver.ResolveDesktop(_theme, _scheme, _fallback);
 		const out = new Map<string, string>();
 		const missing: string[] = [];
 		const keys = new Set([...kCoreTokens, ...Object.keys(_theme.Tokens)]);
@@ -42,6 +44,33 @@ export class ThemeResolver
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 데스크톱 테마를 푼다. 코어 토큰은 별칭으로, 나머지는 통째로 얹는다.
+	// @param _theme: 테마
+	// @param _scheme: 스킴
+	// @param _fallback: 폴백 해석
+	private static ResolveDesktop(_theme: ITheme, _scheme: ThemeScheme, _fallback: IResolvedTheme | null): IResolvedTheme
+	{
+		const desktop = _theme.Desktop;
+		if (desktop === undefined)
+			throw new Error("[ThemeResolver] 데스크톱 토큰 없음");
+		const src = _scheme === "Dark" ? desktop.Dark : desktop.Light;
+		const other = _scheme === "Dark" ? desktop.Light : desktop.Dark;
+		const out = new Map<string, string>();
+		for (const token of kCoreTokens)
+		{
+			const desktopKey = kDesktopCoreAliases.get(token) ?? token;
+			const value = src[desktopKey] ?? other[desktopKey] ?? _fallback?.Tokens.get(token) ?? "#ff00ff";
+			out.set(token, value);
+		}
+		for (const [key, value] of Object.entries(src))
+		{
+			if (!out.has(key))
+				out.set(key, value);
+		}
+		return { Id: _theme.Id, Scheme: _scheme, Tokens: out };
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// defs 참조를 최대 8단계까지 푼다. 순환이면 null.

@@ -5,7 +5,7 @@
 	설명: ShellWindow. 사이드바·프레젠터·명령·설정 구독을 묶는다.
 */
 
-import { Window, Grid, GridSplitter, StackPanel, ContentPresenter, TitleBar, DataList, UIManager, RegisterWindow, Visibility, GridLength } from "@scouter/gui";
+import { Window, Border, Button, Grid, GridSplitter, StackPanel, ContentPresenter, TextBox, TitleBar, DataList, UIManager, UILayerKind, RegisterWindow, Visibility, GridLength } from "@scouter/gui";
 import type { UserControl } from "@scouter/gui";
 import { Settings } from "../Services/Settings";
 import { Paths } from "../Services/Paths";
@@ -28,6 +28,7 @@ export class ShellWindow extends Window
 	// ==================== 멤버 ====================
 	private sidebar_!: SidebarController;
 	private presenter_!: ContentPresenter;
+	private expandTab_: Button | null = null;
 	private readonly views_ = new Map<string, UserControl>();
 	private viewOrder_: string[] = [];
 
@@ -87,6 +88,13 @@ export class ShellWindow extends Window
 		void UIManager.ShowDialogAsync("About");
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 지금 열린 Plugin Id를 구한다. 없으면 빈 문자열. F5 리로드용.
+	public CurrentPluginId(): string
+	{
+		return (this.presenter_.Content as UserControl | null)?.PluginId ?? "";
+	}
+
 	// ==================== 확장점 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -96,6 +104,8 @@ export class ShellWindow extends Window
 	{
 		this.presenter_ = this.RequireName(ContentPresenter, "content");
 		this.sidebar_ = new SidebarController(this.RequireName(StackPanel, "plugin_list"), this);
+		const filter = this.RequireName(TextBox, "txt_plugin_filter");
+		filter.TextChanged.Add(() => { this.sidebar_.Filter(filter.Text); });
 		this.RequireName(GridSplitter, "splitter").DragCompleted.Add(() => { this.OnSplitterCompleted(); });
 		this.RequireName(TitleBar, "title_bar").Chrome = new IpcWindowChrome();
 		if (!ShellWindow.s_commandsRegistered_)
@@ -117,26 +127,30 @@ export class ShellWindow extends Window
 		});
 		_data.Set("appVersion", Paths.Version);
 		_data.Set("mcpPort", Settings.Get<number>("Mcp.Port"));
+		this.ClearExpandTab();
 		this.ApplySidebarWidth();
 		this.ApplyNativeFrame();
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 첫 화면을 정한다. 마지막 Plugin, 없으면 환영 뷰.
+	// 첫 화면을 정한다. 마지막 Plugin, 없으면 환영 뷰. 복원 뒤 사이드바에 포커스.
 	protected override OnShown(): void
 	{
 		this.RebuildFromPlugins();
 		const last = Settings.Get<string>("Ui.LastPluginId", "");
-		this.Navigate(PluginManager.Has(last) ? last : (PluginManager.List()[0]?.Id ?? "Shell/Welcome"));
+		const target = PluginManager.Has(last) ? last : (PluginManager.List()[0]?.Id ?? "Shell/Welcome");
+		this.Navigate(target);
+		this.sidebar_.Focus(target);
 	}
 
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// Plugin 목록으로 사이드바를 다시 그린다.
+	// Plugin 목록으로 사이드바를 다시 그린다. 내장(코어)이 위, 외부가 아래.
 	private RebuildFromPlugins(): void
 	{
-		const active = PluginManager.List().filter((_p) => _p.State === "Active");
+		const active = PluginManager.List().filter((_p) => _p.State === "Active" || _p.State === "Error");
+		active.sort((_a, _b) => ShellWindow.RankSource(_a.Source) - ShellWindow.RankSource(_b.Source));
 		for (const id of [...this.views_.keys()])
 		{
 			if (id !== "Shell/Welcome" && !active.some((_p) => _p.Id === id))
@@ -151,7 +165,18 @@ export class ShellWindow extends Window
 				this.views_.delete(id);
 			}
 		}
-		this.sidebar_.Rebuild(active.map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: "package" })));
+		this.sidebar_.Rebuild(active.map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: "package", Source: _p.Source, State: _p.State })));
+		const current = (this.presenter_.Content as UserControl | null)?.PluginId ?? Settings.Get<string>("Ui.LastPluginId", "");
+		if (current.length > 0 && this.sidebar_.Find(current) !== null)
+			this.sidebar_.Select(current);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 사이드바 정렬 가중치. 내장이 0, 외부가 1.
+	// @param _source: Plugin 출처
+	private static RankSource(_source: string): number
+	{
+		return _source === "BuiltIn" ? 0 : 1;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -176,19 +201,71 @@ export class ShellWindow extends Window
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 사이드바 열 폭을 적용한다. 접힘이면 48.
+	// 사이드바 열을 적용한다. 접힘이면 통째로 숨긴다(Collapsed).
 	private ApplySidebarWidth(): void
 	{
 		const collapsed = Settings.Get<boolean>("Ui.SidebarCollapsed");
-		const width = collapsed ? 48 : Settings.Get<number>("Ui.SidebarWidth");
 		const grid = this.TryFindGrid();
 		if (grid === null)
 			return;
 		const col = grid.ColumnDefinitions.Get(0);
-		col.MinWidth = collapsed ? 48 : 100;
-		col.MaxWidth = collapsed ? 48 : 400;
-		col.Length = GridLength.Pixel(width);
+		const gap = grid.ColumnDefinitions.Get(1);
+		const sidebar = this.FindName(Border, "sidebar");
+		const splitter = this.FindName(GridSplitter, "splitter");
+		if (collapsed)
+		{
+			col.MinWidth = 0;
+			col.MaxWidth = 0;
+			col.Length = GridLength.Pixel(0);
+			gap.Length = GridLength.Pixel(0);
+			if (sidebar !== null)
+				sidebar.Visibility = Visibility.Collapsed;
+			if (splitter !== null)
+				splitter.Visibility = Visibility.Collapsed;
+			this.SetExpandTab(true);
+		}
+		else
+		{
+			const width = Settings.Get<number>("Ui.SidebarWidth");
+			col.MinWidth = 48;
+			col.MaxWidth = 600;
+			col.Length = GridLength.Pixel(width);
+			gap.Length = GridLength.Pixel(8);
+			if (sidebar !== null)
+				sidebar.Visibility = Visibility.Visible;
+			if (splitter !== null)
+				splitter.Visibility = Visibility.Visible;
+			this.SetExpandTab(false);
+		}
 		grid.InvalidateTemplate();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 펼치기 탭을 띄우거나 내린다. 접힘 상태에서만 좌측에 둔다.
+	// @param _show: 표시 여부
+	private SetExpandTab(_show: boolean): void
+	{
+		if (_show && this.expandTab_ === null)
+		{
+			const btn = new Button();
+			btn.Name = "btn_expand";
+			btn.Icon = "chevrons-right";
+			btn.ToolTip = "사이드바 펼치기 (Ctrl+B)";
+			btn.Element.classList.add("gui-expandtab");
+			btn.Click.Add(() => { Settings.Set("Ui.SidebarCollapsed", false); });
+			UIManager.LayerElement(UILayerKind.Overlay)?.append(btn.Element);
+			this.expandTab_ = btn;
+		}
+		else if (!_show)
+			this.ClearExpandTab();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 펼치기 탭을 버린다. 리로드 대비.
+	private ClearExpandTab(): void
+	{
+		this.expandTab_?.Dispose();
+		this.expandTab_ = null;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

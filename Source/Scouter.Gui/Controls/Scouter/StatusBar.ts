@@ -15,11 +15,12 @@ export class StatusBar extends DockPanel
 	// ==================== 생성 · 소멸 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 상태줄을 만든다.
+	// 상태줄을 만든다. 항목은 한 줄에 좌·우로 붙는다.
 	public constructor()
 	{
 		super();
 		this.Element.classList.add("gui-statusbar");
+		this.LastChildFill = false;
 	}
 }
 

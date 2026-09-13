@@ -47,4 +47,21 @@ void describe("TextBox", () =>
 		assert.equal(committed, 1);
 		box.Dispose();
 	});
+
+	void it("AcceptsReturn이면 textarea로 바뀌고 maxLength -1이 안 터진다", () =>
+	{
+		const box = new TextBox();
+		document.body.append(box.Element);
+		box.AcceptsReturn = true;
+		const area = box.Element.querySelector("textarea");
+		assert.notEqual(area, null);
+		assert.equal(box.Element.classList.contains("is-multiline"), true);
+		box.MaxLength = 10;
+		assert.equal((box.Element.querySelector("textarea") as HTMLTextAreaElement).maxLength, 10);
+		box.MaxLength = 0;
+		assert.equal((box.Element.querySelector("textarea") as HTMLTextAreaElement).hasAttribute("maxlength"), false);
+		box.AcceptsReturn = false;
+		assert.notEqual(box.Element.querySelector("input"), null);
+		box.Dispose();
+	});
 });

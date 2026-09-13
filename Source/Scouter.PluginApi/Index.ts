@@ -10,6 +10,7 @@ export type {
 	IPluginContext, IPluginManifest, IContextSettings, IContextStorage, IContextSecrets,
 	IContextLogger, IContextEvents, IContextTools, IContextResources, IContextPrompts,
 	IContextCommands, IContextShell, IContextFs, IContextClipboard, IContextSchedule,
-	IContextPaths, IContextUi, IContextApp,
+	IContextPaths, IContextUi, IContextApp, TNotifyKind,
+	TMessageBoxScope, TMessageBoxKind, TMessageBoxResult, IMessageBoxOptions,
 } from "./IPluginContext";
 export { PluginBase } from "./PluginBase";

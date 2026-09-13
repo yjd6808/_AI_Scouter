@@ -72,13 +72,18 @@ export class GridSplitter extends UIElement
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 이전 트랙 요소의 현재 px를 실측한다.
+	// 이전 트랙 요소의 현재 px를 실측한다. 자식 순서가 트랙 순서와 다를 수 있어
+	// 붙임 속성으로 트랙을 차지하는 요소를 찾는다(가로지르는 spanned 요소 제외 우선).
 	// @param _grid: 소속 Grid
 	// @param _isCols: 열이면 true
 	// @param _index: 스플리터의 행열 인덱스
 	private MeasureSibling(_grid: Grid, _isCols: boolean, _index: number): number
 	{
-		const target = _grid.Children[_index - 1];
+		const prev = _index - 1;
+		const at = (_c: UIElement): number => _isCols ? Grid.ColumnProperty.Get(_c) : Grid.RowProperty.Get(_c);
+		const span = (_c: UIElement): number => _isCols ? Grid.ColumnSpanProperty.Get(_c) : Grid.RowSpanProperty.Get(_c);
+		const target = _grid.Children.find((_c) => at(_c) === prev && span(_c) === 1)
+			?? _grid.Children.find((_c) => at(_c) <= prev && prev < at(_c) + span(_c));
 		if (target === undefined)
 			return 0;
 		const rect = target.Element.getBoundingClientRect();

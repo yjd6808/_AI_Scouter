@@ -2,18 +2,19 @@
 	작성자: 윤정도
 	생성일: 2026-09-12
 	=====
-	설명: VirtualList. 고정 높이 가상 렌더.
+	설명: VirtualList. 고정 높이 가상 렌더. ItemHeight 0이면 폰트 연동 자동 높이.
 */
 
 import { UIElement } from "../../Core/UIElement";
 import { UIProperty } from "../../Core/UIProperty";
 import { RegisterElement } from "../RegisterElement";
+import { MonacoLoader } from "./MonacoLoader";
 
 @RegisterElement("VirtualList")
 export class VirtualList extends UIElement
 {
 	// ==================== 정적 ====================
-	public static readonly ItemHeightProperty = UIProperty.Register<number>("ItemHeight", VirtualList, { Default: 20, Parse: (_text) => Number(_text) });
+	public static readonly ItemHeightProperty = UIProperty.Register<number>("ItemHeight", VirtualList, { Default: 0, Parse: (_text) => Number(_text) });
 	public static readonly OverscanProperty = UIProperty.Register<number>("Overscan", VirtualList, { Default: 5, Parse: (_text) => Number(_text) });
 
 	// ==================== 멤버 ====================
@@ -24,11 +25,12 @@ export class VirtualList extends UIElement
 	private readonly pool_ = new Map<number, UIElement>();
 	private raf_ = 0;
 	private onScroll_: (() => void) | null = null;
+	private onFont_: ((_e: Event) => void) | null = null;
 
 	// ==================== 생성 · 소멸 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 뷰포트+스페이서를 만든다.
+	// 뷰포트+스페이서를 만든다. 자동 높이면 폰트 변경에 다시 그린다.
 	public constructor()
 	{
 		super();
@@ -44,6 +46,12 @@ export class VirtualList extends UIElement
 			this.ScheduleRender();
 		};
 		this.viewport_.addEventListener("scroll", this.onScroll_, { passive: true });
+		this.onFont_ = () =>
+		{
+			if (this.GetValue(VirtualList.ItemHeightProperty) <= 0)
+				this.ScheduleRender();
+		};
+		window.addEventListener("scouter:fontsize", this.onFont_);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +60,8 @@ export class VirtualList extends UIElement
 	{
 		if (this.onScroll_ !== null)
 			this.viewport_.removeEventListener("scroll", this.onScroll_);
+		if (this.onFont_ !== null)
+			window.removeEventListener("scouter:fontsize", this.onFont_);
 		if (this.raf_ !== 0)
 			cancelAnimationFrame(this.raf_);
 		for (const el of this.pool_.values())
@@ -83,11 +93,21 @@ export class VirtualList extends UIElement
 	// ==================== 공개 메서드 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// 유효 행 높이를 구한다. 0 이하면 폰트 연동 자동 높이.
+	public EffectiveItemHeight(): number
+	{
+		const fixed = this.GetValue(VirtualList.ItemHeightProperty);
+		if (fixed > 0)
+			return fixed;
+		return Math.max(12, MonacoLoader.FontSize() * 1.54);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// 인덱스로 스크롤한다.
 	// @param _index: 인덱스
 	public ScrollToIndex(_index: number): void
 	{
-		this.viewport_.scrollTop = _index * this.GetValue(VirtualList.ItemHeightProperty);
+		this.viewport_.scrollTop = _index * this.EffectiveItemHeight();
 		this.Render();
 	}
 
@@ -120,7 +140,7 @@ export class VirtualList extends UIElement
 		const template = this.itemTemplate_;
 		if (template === null)
 			return;
-		const itemH = this.GetValue(VirtualList.ItemHeightProperty);
+		const itemH = this.EffectiveItemHeight();
 		const over = this.GetValue(VirtualList.OverscanProperty);
 		const top = this.viewport_.scrollTop;
 		const first = Math.max(0, Math.floor(top / itemH) - over);

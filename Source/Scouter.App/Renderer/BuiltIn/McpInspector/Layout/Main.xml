@@ -6,10 +6,13 @@
 		<Item Key="callCount" Type="Int" Value="0" />
 	</UserControl.Data>
 	<Grid ContentHost="true">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="240"/>
-			<ColumnDefinition Width="4"/>
-			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="240" MinWidth="160" MaxWidth="480"/>
+			<ColumnDefinition Width="8" MinWidth="8" MaxWidth="8"/>
+			<ColumnDefinition Width="*" MinWidth="200"/>
 		</Grid.ColumnDefinitions>
 		<DockPanel Grid.Column="0">
 			<TextBox DockPanel.Dock="Top" Name="txt_filter" Placeholder="Tool 필터" />
@@ -23,7 +26,7 @@
 			</TabItem>
 			<TabItem Header="호출 로그">
 				<StackPanel>
-					<VirtualList Name="log_calls" ItemHeight="20" />
+					<VirtualList Name="log_calls" />
 					<CodeEditor Name="txt_detail" Language="json" ReadOnly="true" />
 				</StackPanel>
 			</TabItem>

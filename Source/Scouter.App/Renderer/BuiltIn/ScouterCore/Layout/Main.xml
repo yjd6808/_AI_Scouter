@@ -4,11 +4,14 @@
 		<Item Key="category" Type="String" Value="Ui" />
 	</UserControl.Data>
 	<Grid ContentHost="true">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="180"/>
-			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="200" MinWidth="180" MaxWidth="280"/>
+			<ColumnDefinition Width="*" MinWidth="320"/>
 		</Grid.ColumnDefinitions>
-		<ListBox Grid.Column="0" Name="lst_categories" />
-		<ContentPresenter Grid.Column="1" Name="detail" />
+		<ListBox Grid.Column="0" Name="lst_categories" Margin="12" />
+		<ContentPresenter Grid.Column="1" Name="detail" Margin="12" />
 	</Grid>
 </UserControl>

@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Window xmlns="scouter/gui" Name="settings" Title="설정">
-	<DataList>
-		<Data Key="sidebarWidth" Type="Int" Value="150"/>
-	</DataList>
 	<StackPanel ContentHost="true" Spacing="8" Margin="12">
-		<TextBlock Text="설정 (P3 읽기 전용, 편집은 P4 PropertyGrid)" />
-		<TextBlock Name="txt_width" Text="사이드바 폭: {@sidebarWidth}" />
+		<TextBlock Text="테마" />
+		<ComboBox Name="cmb_theme" />
+		<TextBlock Text="스킴 (다크·라이트·시스템)" />
+		<ComboBox Name="cmb_scheme" />
+		<TextBlock Text="글꼴 크기" />
+		<NumericUpDown Name="num_fontsize" Minimum="10" Maximum="20" />
+		<TextBlock Text="밀도" />
+		<ComboBox Name="cmb_density" />
+		<Button Name="btn_open_theme_picker" Content="테마 고르기..." Variant="Ghost" />
 		<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />
 	</StackPanel>
 </Window>

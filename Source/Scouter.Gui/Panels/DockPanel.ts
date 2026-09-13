@@ -69,26 +69,29 @@ export class DockPanel extends Panel
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 자식 순서대로 방향이 바뀔 때마다 slice를 열고 채운다. 논리 Parent는 유지.
+	// 자식 순서대로 방향·극성이 바뀔 때마다 slice를 열고 채운다. 논리 Parent는 유지.
 	private RebuildSlices(): void
 	{
 		while (this.Element.firstChild !== null)
 			this.Element.firstChild.remove();
 		let slice: HTMLDivElement | null = null;
-		let sliceDir = "";
+		let sliceKey = "";
 		const children = [...this.Children];
 		for (let idx = 0; idx < children.length; ++idx)
 		{
 			const child = children[idx] as UIElement;
 			const dock = DockPanel.DockProperty.Get(child);
 			const isLast = idx === children.length - 1;
-			const dir = isLast && this.LastChildFill ? "fill" : (dock === Dock.Left || dock === Dock.Right ? "row" : "column");
-			if (slice === null || sliceDir !== dir)
+			const isFill = isLast && this.LastChildFill;
+			const dir = isFill ? "fill" : (dock === Dock.Left || dock === Dock.Right ? "row" : "column");
+			const edge = isFill ? "" : (dock === Dock.Left || dock === Dock.Top ? " is-start" : " is-end");
+			const key = `${dir}|${edge}`;
+			if (slice === null || sliceKey !== key)
 			{
 				slice = document.createElement("div");
-				slice.className = `gui-dock-slice is-${dir}`;
+				slice.className = `gui-dock-slice is-${dir}${edge}`;
 				this.Element.append(slice);
-				sliceDir = dir;
+				sliceKey = key;
 			}
 			slice.append(child.Element);
 		}

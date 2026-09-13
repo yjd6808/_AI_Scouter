@@ -12,6 +12,10 @@ export const IpcChannels = {
 	WindowHide: "window:hide",
 	WindowIsMaximized: "window:is-maximized",
 	WindowMaximizedChanged: "window:maximized-changed",
+	WindowToggleTopmost: "window:toggle-topmost",
+	WindowSetTopmost: "window:set-topmost",
+	WindowIsTopmost: "window:is-topmost",
+	WindowTopmostChanged: "window:topmost-changed",
 	WindowToggleDevTools: "window:toggle-devtools",
 	WindowAttention: "window:attention",
 	AppGetPaths: "app:get-paths",
@@ -30,6 +34,18 @@ export const IpcChannels = {
 	DialogOpen: "dialog:open",
 	DialogSave: "dialog:save",
 	ThemeSystemChanged: "theme:system-changed",
+	NotifyShow: "notify:show",
+	NotifyReady: "notify:ready",
+	NotifyPush: "notify:push",
+	NotifyHeight: "notify:height",
+	NotifyEmpty: "notify:empty",
+	NotifyClick: "notify:click",
+	MessageShow: "message:show",
+	MessageReady: "message:ready",
+	MessagePush: "message:push",
+	MessageResult: "message:result",
+	MessageHeight: "message:height",
+	MessageClosed: "message:closed",
 } as const;
 
 export interface IUpdateStatus
@@ -52,4 +68,24 @@ export interface IAttentionRequest
 {
 	Flash?: boolean;
 	Notify?: { Title: string; Body: string };
+}
+
+export interface INotifyPush
+{
+	Id: number;
+	Title: string;
+	Message?: string;
+	Variant: string;
+	DurationMs: number;
+	ThemeCss: string;
+}
+
+export interface IMessageShow
+{
+	Id: number;
+	Title: string;
+	Message?: string;
+	Kind: string;
+	DurationMs: number;
+	ThemeCss: string;
 }

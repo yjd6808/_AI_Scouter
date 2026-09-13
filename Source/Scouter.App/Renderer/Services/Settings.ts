@@ -92,6 +92,18 @@ export class Settings
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// 대기 중인 저장을 즉시 쓴다. 종료 직전 플러시용.
+	public static async FlushAsync(): Promise<void>
+	{
+		if (Settings.s_timer_ !== null)
+		{
+			clearTimeout(Settings.s_timer_);
+			Settings.s_timer_ = null;
+		}
+		await Settings.SaveAsync();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// 키를 기본값으로 되돌린다. 키 생략 시 전체.
 	// @param _key: 키
 	public static Reset(_key?: string): void

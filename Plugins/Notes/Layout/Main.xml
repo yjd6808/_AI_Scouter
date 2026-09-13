@@ -20,12 +20,15 @@
 			</StatusBarItem>
 		</StatusBar>
 		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="220"/>
-				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="220" MinWidth="160" MaxWidth="320"/>
+				<ColumnDefinition Width="*" MinWidth="200"/>
 			</Grid.ColumnDefinitions>
-			<ListBox Name="lst_notes" Grid.Column="0" />
-			<TextBox Name="txt_body" Grid.Column="1" AcceptsReturn="true" Margin="12" />
+			<ListBox Name="lst_notes" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="12" />
+			<TextBox Name="txt_body" Grid.Column="1" AcceptsReturn="true" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="12" />
 		</Grid>
 	</DockPanel>
 </UserControl>

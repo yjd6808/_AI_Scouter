@@ -25,6 +25,13 @@ export interface ITheme
 	Tokens: Record<string, { dark?: string; light?: string }>;
 	HasLight: boolean;
 	HasDark: boolean;
+	Desktop?: IDesktopTokens;
+}
+
+export interface IDesktopTokens
+{
+	Dark: Record<string, string>;
+	Light: Record<string, string>;
 }
 
 export interface IResolvedTheme
@@ -55,3 +62,29 @@ export const kCoreTokens: string[] = [
 	"syntax-keyword", "syntax-string", "syntax-comment", "syntax-function", "syntax-number", "syntax-type",
 	"icon-base", "icon-weak-base",
 ];
+
+// 데스크톱(seeds·palette) 토큰명을 코어 토큰명으로 잇는다.
+export const kDesktopCoreAliases: ReadonlyMap<string, string> = new Map<string, string>([
+	["background-panel", "surface-float-base"],
+	["background-hover", "surface-base-hover"],
+	["background-active", "surface-base-active"],
+	["background-inverted", "surface-raised-strong"],
+	["border", "border-base"],
+	["border-active", "border-active"],
+	["primary", "surface-brand-base"],
+	["primary-hover", "surface-brand-hover"],
+	["primary-active", "surface-interactive-base"],
+	["primary-foreground", "text-on-brand-base"],
+	["primary-muted", "surface-interactive-weak"],
+	["button-background", "surface-raised-strong"],
+	["button-text", "text-base"],
+	["button-hover-background", "surface-raised-strong-hover"],
+	["button-active-background", "surface-base-active"],
+	["input-background", "input-base"],
+	["error", "syntax-critical"],
+	["error-foreground", "text-on-critical-base"],
+	["warning", "syntax-warning"],
+	["success", "syntax-success"],
+	["accent", "text-interactive-base"],
+	["accent-foreground", "text-on-interactive-base"],
+]);

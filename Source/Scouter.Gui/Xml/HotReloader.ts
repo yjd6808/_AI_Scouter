@@ -55,6 +55,8 @@ export class HotReloader
 		const name = _provider.NameOf(_path);
 		if (name === null)
 			return;
+		if (UIManager.Find(name) === null)
+			return;
 		try
 		{
 			const ok = await UIManager.ReloadByLayout(name);

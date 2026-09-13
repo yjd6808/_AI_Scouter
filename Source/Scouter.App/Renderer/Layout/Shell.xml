@@ -8,21 +8,23 @@
 		<Data Key="themeName" Type="String" Value=""/>
 	</DataList>
 
-	<Grid ContentHost="true" Name="root" RowDefinitions="Auto,*,Auto">
+	<Grid ContentHost="true" Name="root" RowDefinitions="Auto,Auto,*,Auto">
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Name="col_sidebar" Width="150" MinWidth="48" MaxWidth="400"/>
-			<ColumnDefinition Width="4"/>
+			<ColumnDefinition Name="col_sidebar" Width="150" MinWidth="48" MaxWidth="600"/>
+			<ColumnDefinition Width="8" MinWidth="8" MaxWidth="8"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 
 		<TitleBar Grid.Row="0" Grid.ColumnSpan="3" Name="title_bar" Title="Scouter" Icon="scouter"/>
 
-		<Border Grid.Row="1" Grid.Column="0" Name="sidebar" Background="{$theme.background-panel}">
+		<Separator Grid.Row="1" Grid.ColumnSpan="3" Name="title_divider" Margin="0"/>
+
+		<Border Grid.Row="2" Grid.Column="0" Name="sidebar" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="0,0,1,0">
 			<DockPanel>
+				<Button DockPanel.Dock="Top" Name="btn_collapse" Content="접기" Icon="chevrons-left" Variant="Primary" Command="Shell.ToggleSidebar" ToolTip="사이드바 접기 (Ctrl+B)" Margin="6,6,6,4"/>
+				<TextBox DockPanel.Dock="Top" Name="txt_plugin_filter" Placeholder="검색" Margin="6,0,6,0"/>
 				<StackPanel DockPanel.Dock="Bottom" Name="sidebar_footer" Spacing="2" Margin="6">
-					<Separator Margin="0,0,0,6"/>
-					<ToggleButton Name="btn_settings" Content="설정" Icon="settings" Variant="Ghost" Command="Shell.OpenSettings"/>
-					<Button Name="btn_collapse" Icon="panel-left-close" Variant="Ghost" Command="Shell.ToggleSidebar" ToolTip="사이드바 접기 (Ctrl+B)"/>
+					<ToggleButton Name="btn_settings" Content="설정" Icon="settings" Command="Shell.OpenSettings"/>
 				</StackPanel>
 				<ScrollViewer VerticalScrollBarVisibility="Auto">
 					<StackPanel Name="plugin_list" Spacing="2" Margin="6"/>
@@ -30,11 +32,11 @@
 			</DockPanel>
 		</Border>
 
-		<GridSplitter Grid.Row="1" Grid.Column="1" Name="splitter" ResizeDirection="Columns"/>
+		<GridSplitter Grid.Row="2" Grid.Column="1" Name="splitter" ResizeDirection="Columns"/>
 
-		<ContentPresenter Grid.Row="1" Grid.Column="2" Name="content"/>
+		<ContentPresenter Grid.Row="2" Grid.Column="2" Name="content"/>
 
-		<StatusBar Grid.Row="2" Grid.ColumnSpan="3" Name="status_bar">
+		<StatusBar Grid.Row="3" Grid.ColumnSpan="3" Name="status_bar">
 			<StatusBarItem><StatusDot Name="dot_mcp" Status="Idle"/></StatusBarItem>
 			<StatusBarItem><TextBlock Text="MCP :{@mcpPort}"/></StatusBarItem>
 			<StatusBarItem><TextBlock Name="txt_sessions" Text="{@mcpSessions} sessions"/></StatusBarItem>

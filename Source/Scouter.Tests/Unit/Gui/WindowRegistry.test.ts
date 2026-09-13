@@ -26,4 +26,15 @@ void describe("WindowRegistry", () =>
 	{
 		assert.throws(() => { WindowRegistry.Register("Test/RegA", RegA); });
 	});
+
+	void it("Unregister 뒤 재등록된다", () =>
+	{
+		assert.equal(WindowRegistry.Unregister("Test/RegTmp"), false);
+		WindowRegistry.Register("Test/RegTmp", RegA);
+		assert.equal(WindowRegistry.Resolve("Test/RegTmp"), RegA);
+		assert.equal(WindowRegistry.Unregister("Test/RegTmp"), true);
+		assert.equal(WindowRegistry.Resolve("Test/RegTmp"), null);
+		WindowRegistry.Register("Test/RegTmp", RegA);
+		assert.equal(WindowRegistry.Unregister("Test/RegTmp"), true);
+	});
 });

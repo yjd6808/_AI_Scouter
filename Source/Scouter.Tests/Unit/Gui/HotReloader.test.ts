@@ -45,4 +45,26 @@ void describe("HotReloader", () =>
 		root.remove();
 		UIManager.Reset();
 	});
+
+	void it("열려 있지 않은 레이아웃은 토스트 없음", async () =>
+	{
+		UIManager.Reset();
+		const root = document.createElement("div");
+		document.body.append(root);
+		const provider = new MapLayoutProvider();
+		provider.Add("Cold/Main", "<Window><Grid><StackPanel Name=\"cold_list\"/></Grid></Window>");
+		UIManager.Init(root, provider);
+		const watcher = new FakeWatcher();
+		const toasts: string[] = [];
+		HotReloader.Start(provider, watcher, (_msg, _isError) =>
+		{
+			toasts.push(_msg);
+		});
+		watcher.Handler?.("Cold/Main");
+		await new Promise((_resolve) => setTimeout(_resolve, 30));
+		assert.equal(toasts.length, 0);
+		HotReloader.Stop();
+		root.remove();
+		UIManager.Reset();
+	});
 });

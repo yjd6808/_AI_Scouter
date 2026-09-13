@@ -7,7 +7,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { UIManager, Window, MapLayoutProvider, RegisterWindow, ToastKind } from "@scouter/gui";
+import { UIManager, Window, MapLayoutProvider, RegisterWindow, ToastKind, UILayerKind } from "@scouter/gui";
 
 @RegisterWindow("Test/Shell")
 class ShellWindow extends Window
@@ -51,6 +51,57 @@ void describe("UIManager", () =>
 		assert.notEqual(dialog, null);
 		UIManager.Close(dialog as Window, "AllowOnce");
 		assert.equal(await pending, "AllowOnce");
+		UIManager.Reset();
+	});
+
+	void it("닫으면 백드롭이 걷힌다", () =>
+	{
+		SetupRoot();
+		const layer = UIManager.LayerElement(UILayerKind.Dialog) as HTMLElement;
+		const pending = UIManager.ShowDialog<string>("Test/Dialog");
+		void pending;
+		assert.equal(layer.classList.contains("has-backdrop"), true);
+		UIManager.Close(UIManager.Active as Window, "x");
+		assert.equal(layer.classList.contains("has-backdrop"), false);
+		UIManager.Reset();
+	});
+
+	void it("마지막 다이얼로그가 닫히면 Base inert가 풀린다", () =>
+	{
+		SetupRoot();
+		const base = UIManager.LayerElement(UILayerKind.Base) as HTMLElement;
+		const pending = UIManager.ShowDialog<string>("Test/Dialog");
+		void pending;
+		assert.equal(base.hasAttribute("inert"), true);
+		UIManager.Close(UIManager.Active as Window, "x");
+		assert.equal(base.hasAttribute("inert"), false);
+		UIManager.Reset();
+	});
+
+	void it("같은 다이얼로그는 하나만 열린다", async () =>
+	{
+		SetupRoot();
+		const layer = UIManager.LayerElement(UILayerKind.Dialog) as HTMLElement;
+		const first = UIManager.ShowDialog<string>("Test/Dialog");
+		const second = UIManager.ShowDialog<string>("Test/Dialog");
+		assert.equal(layer.childElementCount, 1);
+		UIManager.Close(UIManager.Active as Window, "AllowOnce");
+		assert.equal(await first, "AllowOnce");
+		assert.equal(await second, "AllowOnce");
+		UIManager.Reset();
+	});
+
+	void it("로드 중 연타해도 다이얼로그는 하나만 열린다", async () =>
+	{
+		SetupRoot();
+		const layer = UIManager.LayerElement(UILayerKind.Dialog) as HTMLElement;
+		const first = UIManager.ShowDialogAsync<string>("Test/AsyncDialog");
+		const second = UIManager.ShowDialogAsync<string>("Test/AsyncDialog");
+		await new Promise((_resolve) => setTimeout(_resolve, 20));
+		assert.equal(layer.childElementCount, 1);
+		UIManager.Close(UIManager.Active as Window, "AllowOnce");
+		assert.equal(await first, "AllowOnce");
+		assert.equal(await second, "AllowOnce");
 		UIManager.Reset();
 	});
 

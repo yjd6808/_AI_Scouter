@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window xmlns="scouter/gui" Name="message_box" Title="확인">
+	<DataList>
+		<Data Key="title" Type="String" Value=""/>
+		<Data Key="message" Type="String" Value=""/>
+		<Data Key="mode" Type="String" Value="ok"/>
+	</DataList>
+	<StackPanel ContentHost="true" Spacing="8" Margin="12">
+		<TextBlock Name="txt_title" Text="{@title}" />
+		<TextBlock Name="txt_message" Text="{@message}" />
+		<StackPanel Orientation="Horizontal" Spacing="8">
+			<Button Name="btn_ok" Content="확인" Variant="Primary" IsDefault="true" />
+			<Button Name="btn_yes" Content="예" Variant="Primary" IsDefault="true" />
+			<Button Name="btn_no" Content="아니요" Variant="Default" IsCancel="true" />
+		</StackPanel>
+	</StackPanel>
+</Window>

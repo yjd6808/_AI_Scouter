@@ -9,6 +9,9 @@ import { describe, it, after } from "node:test";
 import assert from "node:assert/strict";
 import { unlink } from "node:fs/promises";
 import { Settings } from "../../../Scouter.App/Renderer/Services/Settings";
+import { ToastPolicy } from "../../../Scouter.App/Renderer/Services/ToastPolicy";
+import { GlobalToast } from "../../../Scouter.App/Renderer/Services/GlobalToast";
+import { UIManager } from "@scouter/gui";
 import { EventBus } from "../../../Scouter.App/Renderer/Services/EventBus";
 import { CommandRegistry } from "../../../Scouter.App/Renderer/Services/CommandRegistry";
 import { Hotkeys } from "../../../Scouter.App/Renderer/Services/Hotkeys";
@@ -18,13 +21,16 @@ import defaults from "../../../Scouter.App/Config/Defaults.json" with { type: "j
 void describe("Services", () =>
 {
 	const file = `${process.env["TEMP"] ?? "/tmp"}/scouter-test-settings-${process.pid}.json`;
-	after(() =>
+	after(async () =>
 	{
-		void unlink(file).catch(() => undefined);
+		await Settings.FlushAsync();
+		await unlink(file).catch(() => undefined);
+		await unlink(`${file}.tmp`).catch(() => undefined);
 	});
 
 	void it("Settings 기본값·검증·Changed", async () =>
 	{
+		await unlink(file).catch(() => undefined);
 		await Settings.Load(file, schema, defaults);
 		assert.equal(Settings.Get<number>("Ui.SidebarWidth"), 150);
 		let changed = "";
@@ -34,6 +40,28 @@ void describe("Services", () =>
 		assert.throws(() => { Settings.Set("Ui.SidebarWidth", 9999); });
 		assert.equal(Settings.Get<number>("Ui.SidebarWidth"), 220);
 		assert.equal(Settings.Has("Ui.SidebarWidth"), true);
+	});
+
+	void it("ToastPolicy 인앱·바탕화면 시간을 나눈다", () =>
+	{
+		ToastPolicy.Sync();
+		Settings.Set("Ui.AppToastDurationSec", 7);
+		assert.equal(UIManager.DefaultToastDurationMs, 7000);
+		assert.equal(ToastPolicy.GlobalDurationMs, 4000);
+		Settings.Set("Ui.GlobalToastDurationSec", 9);
+		assert.equal(UIManager.DefaultToastDurationMs, 7000);
+		assert.equal(ToastPolicy.GlobalDurationMs, 9000);
+		Settings.Set("Ui.AppToastDurationSec", 0);
+		assert.equal(UIManager.DefaultToastDurationMs, 0);
+		Settings.Set("Ui.AppToastDurationSec", 4);
+		Settings.Set("Ui.GlobalToastDurationSec", 4);
+		assert.equal(UIManager.DefaultToastDurationMs, 4000);
+		assert.equal(ToastPolicy.GlobalDurationMs, 4000);
+	});
+
+	void it("GlobalToast는 Main 없으면 false", async () =>
+	{
+		assert.equal(await GlobalToast.NotifyAsync({ Title: "x" }), false);
 	});
 
 	void it("EventBus 와일드카드·해제", () =>

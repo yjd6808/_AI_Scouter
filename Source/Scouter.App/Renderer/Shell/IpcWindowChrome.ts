@@ -16,17 +16,22 @@ export class IpcWindowChrome implements IWindowChrome
 	// ==================== 생성 · 소멸 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 최대화 변경 수신을 건다.
+	// 최대화·고정 변경 수신을 건다.
 	public constructor()
 	{
 		Ipc.On("window:maximized-changed", (..._args) =>
 		{
 			this.MaximizedChanged.Invoke(_args[0] as boolean);
 		});
+		Ipc.On(IpcChannels.WindowTopmostChanged, (..._args) =>
+		{
+			this.TopmostChanged.Invoke(_args[0] as boolean);
+		});
 	}
 
 	// ==================== 이벤트 ====================
 	public readonly MaximizedChanged = new SimpleEvent<boolean>();
+	public readonly TopmostChanged = new SimpleEvent<boolean>();
 
 	// ==================== 공개 메서드 ====================
 
@@ -59,5 +64,19 @@ export class IpcWindowChrome implements IWindowChrome
 	public async IsMaximized(): Promise<boolean>
 	{
 		return (await Ipc.Invoke<boolean>("window:is-maximized")) ?? false;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 항상 위를 뒤집고 결과를 반환한다.
+	public async ToggleTopmost(): Promise<boolean>
+	{
+		return (await Ipc.Invoke<boolean>(IpcChannels.WindowToggleTopmost)) ?? false;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 항상 위 여부를 묻는다.
+	public async IsTopmost(): Promise<boolean>
+	{
+		return (await Ipc.Invoke<boolean>(IpcChannels.WindowIsTopmost)) ?? false;
 	}
 }

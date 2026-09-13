@@ -27,7 +27,7 @@ export class TextBox extends Control
 	// ==================== 생성 · 소멸 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// input을 만든다. AcceptsReturn이면 textarea로 교체(P4 전체, P3는 input).
+	// input을 만든다. AcceptsReturn이면 textarea로 교체한다.
 	public constructor()
 	{
 		super();
@@ -35,20 +35,9 @@ export class TextBox extends Control
 		this.input_ = document.createElement("input");
 		this.input_.setAttribute("type", "text");
 		this.Element.append(this.input_);
-		this.input_.addEventListener("input", () =>
-		{
-			this.OnNativeInput();
-		});
-		this.input_.addEventListener("keydown", (_e) =>
-		{
-			if (_e.key === "Enter" && !this.AcceptsReturn)
-				this.RaiseEvent(this.TextCommitted, new RoutedEventArgs(this));
-		});
-		this.input_.addEventListener("blur", () =>
-		{
-			this.RaiseEvent(this.TextCommitted, new RoutedEventArgs(this));
-		});
+		this.BindNative(this.input_);
 		this.ApplyText(this.Text);
+		this.EnsureMultiline();
 	}
 
 	// ==================== 속성 ====================
@@ -60,6 +49,8 @@ export class TextBox extends Control
 	public set IsReadOnly(_v: boolean) { this.SetValue(TextBox.IsReadOnlyProperty, _v); }
 	public get AcceptsReturn(): boolean { return this.GetValue(TextBox.AcceptsReturnProperty); }
 	public set AcceptsReturn(_v: boolean) { this.SetValue(TextBox.AcceptsReturnProperty, _v); }
+	public get MaxLength(): number { return this.GetValue(TextBox.MaxLengthProperty); }
+	public set MaxLength(_v: number) { this.SetValue(TextBox.MaxLengthProperty, _v); }
 
 	// ==================== 이벤트 ====================
 	public readonly TextChanged = new RoutedEvent<RoutedEventArgs>("TextChanged", RoutingStrategy.Bubble);
@@ -75,6 +66,62 @@ export class TextBox extends Control
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 네이티브 입력을 묶는다. input·textarea 공용.
+	// @param _el: 네이티브 요소
+	private BindNative(_el: HTMLInputElement | HTMLTextAreaElement): void
+	{
+		_el.addEventListener("input", () =>
+		{
+			this.OnNativeInput();
+		});
+		_el.addEventListener("keydown", (_e: Event) =>
+		{
+			const key = (_e as KeyboardEvent).key;
+			if (key === "Enter" && !this.AcceptsReturn)
+				this.RaiseEvent(this.TextCommitted, new RoutedEventArgs(this));
+		});
+		_el.addEventListener("blur", () =>
+		{
+			this.RaiseEvent(this.TextCommitted, new RoutedEventArgs(this));
+		});
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// AcceptsReturn에 맞춰 input·textarea를 바꾼다. 값·속성은 유지.
+	private EnsureMultiline(): void
+	{
+		const want = this.AcceptsReturn;
+		const isArea = this.input_ instanceof HTMLTextAreaElement;
+		this.Element.classList.toggle("is-multiline", want);
+		if (want === isArea)
+			return;
+		const next: HTMLInputElement | HTMLTextAreaElement = want
+			? document.createElement("textarea")
+			: document.createElement("input");
+		if (next instanceof HTMLInputElement)
+			next.setAttribute("type", "text");
+		next.value = this.input_.value;
+		next.placeholder = this.input_.placeholder;
+		next.readOnly = this.input_.readOnly;
+		if (this.input_.maxLength >= 0)
+			next.maxLength = this.input_.maxLength;
+		this.input_.replaceWith(next);
+		this.BindNative(next);
+		this.input_ = next;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 최대 길이를 쓴다. 0 이하면 제한 없음. textarea는 -1 대입이 throw라 속성을 뗀다.
+	// @param _max: 최대 길이
+	private ApplyMaxLength(_max: number): void
+	{
+		if (_max <= 0)
+			this.input_.removeAttribute("maxlength");
+		else
+			this.input_.maxLength = _max;
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 네이티브 입력 → Text 갱신 → TextChanged.
@@ -109,6 +156,8 @@ export class TextBox extends Control
 		else if (_prop === TextBox.IsReadOnlyProperty)
 			this.input_.readOnly = _value as boolean;
 		else if (_prop === TextBox.MaxLengthProperty)
-			this.input_.maxLength = _value as number <= 0 ? -1 : _value as number;
+			this.ApplyMaxLength(_value as number);
+		else if (_prop === TextBox.AcceptsReturnProperty)
+			this.EnsureMultiline();
 	}
 }

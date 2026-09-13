@@ -5,8 +5,10 @@
 	설명: GlobalHotkey. 설정 핫키를 Main에 동기화한다.
 */
 
+import { ToastService } from "@scouter/gui";
 import { Settings } from "./Settings";
 import { Ipc } from "./Ipc";
+import { Log } from "./Log";
 import { IpcChannels } from "../../Shared/IpcChannels";
 
 export class GlobalHotkey
@@ -34,10 +36,18 @@ export class GlobalHotkey
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 현재 설정값을 전송한다.
+	// 현재 설정값을 전송한다. 등록 실패(충돌)는 토스트·로그로 알린다.
 	private static Apply(): void
 	{
 		const accelerator = Settings.Get<string>("Hotkeys.Global.Show", "Ctrl+Shift+Space");
-		void Ipc.Invoke<{ Ok?: boolean }>(IpcChannels.AppSetGlobalHotkey, { Accelerator: accelerator });
+		void Ipc.Invoke<{ Ok?: boolean }>(IpcChannels.AppSetGlobalHotkey, { Accelerator: accelerator })
+			.then((_back) =>
+			{
+				if ((_back?.Ok ?? false) || accelerator.length === 0)
+					return;
+				Log.Warn("GlobalHotkey", `등록 실패(충돌 가능): ${accelerator}`);
+				ToastService.Warn(`전역 단축키 등록 실패: ${accelerator} (설정 Hotkeys.Global.Show 확인)`);
+			})
+			.catch(() => undefined);
 	}
 }

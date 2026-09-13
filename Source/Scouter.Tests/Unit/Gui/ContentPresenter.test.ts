@@ -7,7 +7,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { ContentPresenter, UserControl } from "@scouter/gui";
+import { ContentPresenter, Grid, UserControl } from "@scouter/gui";
 
 class ViewA extends UserControl
 {
@@ -35,5 +35,25 @@ void describe("ContentPresenter", () =>
 		presenter.Dispose();
 		a.Dispose();
 		b.Dispose();
+	});
+
+	void it("Grid 배치를 자식에 넘긴다", async () =>
+	{
+		const grid = new Grid();
+		grid.SetValue(Grid.RowDefinitionsProperty, "Auto,*");
+		grid.SetValue(Grid.ColumnDefinitionsProperty, "150,*");
+		document.body.append(grid.Element);
+		const presenter = new ContentPresenter();
+		Grid.RowProperty.Set(presenter, 1);
+		Grid.ColumnProperty.Set(presenter, 1);
+		grid.AddChild(presenter);
+		await new Promise((_resolve) => setTimeout(_resolve, 0));
+		const view = new ViewA();
+		presenter.Content = view;
+		assert.equal(view.Element.style.gridRow, presenter.Element.style.gridRow);
+		assert.equal(view.Element.style.gridColumn, presenter.Element.style.gridColumn);
+		assert.ok(view.Element.style.gridRow.length > 0);
+		grid.Dispose();
+		view.Dispose();
 	});
 });

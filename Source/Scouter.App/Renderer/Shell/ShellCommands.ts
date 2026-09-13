@@ -2,13 +2,14 @@
 	작성자: 윤정도
 	생성일: 2026-09-12
 	=====
-	설명: Shell.* 명령 9개. 사이드바·다이얼로그·이동을 묶는다.
+	설명: Shell.* 명령 10개. 사이드바·다이얼로그·이동·리로드를 묶는다.
 */
 
 import { CommandRegistry } from "../Services/CommandRegistry";
 import { Settings } from "../Services/Settings";
 import { Ipc } from "../Services/Ipc";
 import { UIManager } from "@scouter/gui";
+import { PluginManager } from "../Plugin/PluginManager";
 import type { ShellWindow } from "./ShellWindow";
 
 export class ShellCommands
@@ -51,6 +52,15 @@ export class ShellCommands
 				const active = UIManager.Active;
 				if (active !== null)
 					void UIManager.Reload(active);
+			},
+		});
+		CommandRegistry.Register({
+			Id: "Shell.ReloadPlugin", Title: "Plugin 다시 로드", Category: "Shell", Hotkey: "F5",
+			Execute: () =>
+			{
+				const id = _shell.CurrentPluginId();
+				if (id.length > 0)
+					void PluginManager.ReloadAsync(id);
 			},
 		});
 		CommandRegistry.Register({

@@ -9,6 +9,7 @@ import type * as Monaco from "monaco-editor";
 import { UIProperty } from "../../Core/UIProperty";
 import { RegisterElement } from "../RegisterElement";
 import { CodeEditor } from "./CodeEditor";
+import { MonacoLoader } from "./MonacoLoader";
 
 @RegisterElement("DiffView")
 export class DiffView extends CodeEditor
@@ -35,6 +36,8 @@ export class DiffView extends CodeEditor
 	// diff 에디터를 걷어낸다.
 	public override Dispose(): void
 	{
+		if (this.diff_ !== null)
+			MonacoLoader.Untrack(this.diff_);
 		this.diff_?.dispose();
 		this.diff_ = null;
 		super.Dispose();
@@ -59,8 +62,10 @@ export class DiffView extends CodeEditor
 			readOnly: this.ReadOnly,
 			renderSideBySide: this.SideBySide,
 			fontFamily: "var(--gui-font-mono)",
+			fontSize: MonacoLoader.FontSize(),
 			theme: "scouter",
 		});
+		MonacoLoader.Track(diff);
 		const original = _monaco.editor.createModel(this.Original, this.Language);
 		const modified = _monaco.editor.createModel(this.Modified, this.Language);
 		diff.setModel({ original: original, modified: modified });

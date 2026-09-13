@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' http://127.0.0.1:*" />
+	<title>Scouter 알림</title>
+	<style id="notify-theme"></style>
+	<style>
+		html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+		#global-toasts { display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+		#global-toasts .gui-toast { width: auto; cursor: pointer; }
+	</style>
+</head>
+<body><div id="global-toasts"></div></body>
+</html>

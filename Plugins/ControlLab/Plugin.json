@@ -1,0 +1,15 @@
+{
+	"Id": "ControlLab",
+	"Name": "Control Lab",
+	"Version": "0.1.0",
+	"Description": "모든 GUI 컨트롤 테스트용",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "package",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Tools": ["Log", "State"],
+	"Commands": [],
+	"Hotkeys": {}
+}

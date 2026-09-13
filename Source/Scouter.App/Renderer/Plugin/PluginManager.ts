@@ -28,6 +28,7 @@ import { TestApiServer } from "../TestApi/TestApiServer";
 
 export type PluginState = "Loading" | "Active" | "Error" | "Disabled";
 export type PluginSource = "BuiltIn" | "User" | "External";
+export type PluginNotice = "Dirty" | "Error";
 
 export interface IPluginHandle
 {
@@ -99,6 +100,7 @@ export class PluginManager
 	private static s_permQueue_: Promise<void> = Promise.resolve();
 	private static readonly s_viewGraphs_ = new Map<UserControl, BindingGraph>();
 	private static s_dirs_: Array<{ Dir: string | null; Source: "BuiltIn" | "User" | "External" }> = [];
+	private static readonly s_notices_ = new Map<string, PluginNotice>();
 
 	// ==================== 속성 ====================
 	public static get Changed(): SimpleEvent<void> { return PluginManager.s_changed_; }
@@ -114,7 +116,7 @@ export class PluginManager
 		PluginManager.s_dirs_ = [
 			{ Dir: Args.Safe ? null : _builtIn, Source: "BuiltIn" },
 			{ Dir: Args.Safe ? null : userDir, Source: "User" },
-			{ Dir: Args.Safe ? null : (Args.PluginDir ?? (Paths.IsPackaged ? null : "Plugins")), Source: "External" },
+			{ Dir: Args.Safe ? null : (Args.PluginDir ?? (Paths.IsPackaged ? Paths.ExePluginDir : "Plugins")), Source: "External" },
 		];
 		PluginManager.s_permStore_ = new PermissionStore(path.join(Paths.ScouterHome, "permissions.json"));
 		const candidates = await PluginDiscovery.Scan(PluginManager.s_dirs_);
@@ -185,6 +187,11 @@ export class PluginManager
 		{
 			Log.Error("Plugin", `리로드 실패: ${_id}`, { error: String(_e) });
 		}
+		const fresh = PluginManager.s_plugins_.get(_id);
+		if (fresh !== undefined && fresh.State === "Active")
+			PluginManager.ClearNotice(_id);
+		else
+			PluginManager.SetNotice(_id, "Error");
 		PluginManager.s_changed_.Invoke(undefined);
 	}
 
@@ -212,6 +219,33 @@ export class PluginManager
 	public static Get(_id: string): IPluginHandle | null
 	{
 		return PluginManager.s_plugins_.get(_id) ?? null;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 변경·오류 표시를 구한다. 없으면 null.
+	// @param _id: Plugin Id
+	public static NoticeOf(_id: string): PluginNotice | null
+	{
+		return PluginManager.s_notices_.get(_id) ?? null;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 다시 로드 필요 표시를 단다. 오류 표시는 Dirty로 바뀐다.
+	// @param _id: Plugin Id
+	public static MarkDirty(_id: string): void
+	{
+		PluginManager.SetNotice(_id, "Dirty");
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 표시를 지운다. 없으면 조용히 넘긴다.
+	// @param _id: Plugin Id
+	public static ClearNotice(_id: string): void
+	{
+		if (!PluginManager.s_notices_.has(_id))
+			return;
+		PluginManager.s_notices_.delete(_id);
+		PluginManager.s_changed_.Invoke(undefined);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -259,6 +293,18 @@ export class PluginManager
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 표시를 쓴다. 같으면 조용히 넘긴다. 사이드바가 Changed로 다시 그린다.
+	// @param _id: Plugin Id
+	// @param _notice: 표시
+	private static SetNotice(_id: string, _notice: PluginNotice): void
+	{
+		if (PluginManager.s_notices_.get(_id) === _notice)
+			return;
+		PluginManager.s_notices_.set(_id, _notice);
+		PluginManager.s_changed_.Invoke(undefined);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 내장 Plugin 코드를 직접 import한다. 번들하면 싱글톤이 복제되므로 금지.
@@ -358,6 +404,7 @@ export class PluginManager
 			handle.Error = String(_e);
 			handle.LoadMs = Date.now() - started;
 			Log.Error("Plugin", `${manifest.Id} 실패`, { error: String(_e) });
+			PluginManager.SetNotice(manifest.Id, "Error");
 		}
 		return handle;
 	}

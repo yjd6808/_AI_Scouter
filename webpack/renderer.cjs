@@ -11,13 +11,15 @@ module.exports = (_env, _argv) =>
 	return {
 		...base,
 		target: "electron-renderer",
-		entry: { renderer: "./Source/Scouter.App/Renderer/Bootstrap.ts" },
+		entry: { renderer: "./Source/Scouter.App/Renderer/Bootstrap.ts", notify: "./Source/Scouter.App/Renderer/Notify/Host.ts", message: "./Source/Scouter.App/Renderer/Message/Host.ts" },
 		output: { path: path.resolve(__dirname, "../dist/renderer"), filename: "[name].js", chunkFilename: "[name].[contenthash].js", clean: true, publicPath: "./" },
 		module: { rules: [...base.module.rules, { test: /\.css$/, use: ["style-loader", "css-loader"] }, { test: /\.ttf$/, type: "asset/resource" }] },
 		externals: { esbuild: "commonjs esbuild" },
 		plugins:
 		[
-			new HtmlPlugin({ template: "./Source/Scouter.App/Renderer/Index.html", filename: "Index.html" }),
+			new HtmlPlugin({ template: "./Source/Scouter.App/Renderer/Index.html", filename: "Index.html", chunks: ["renderer"] }),
+			new HtmlPlugin({ template: "./Source/Scouter.App/Renderer/Notify/Host.html", filename: "Notify.html", chunks: ["notify"] }),
+			new HtmlPlugin({ template: "./Source/Scouter.App/Renderer/Message/Host.html", filename: "Message.html", chunks: ["message"] }),
 			new MonacoWebpackPlugin({ languages: ["typescript", "javascript", "json", "xml", "markdown", "cpp", "csharp", "powershell", "shell", "yaml"], features: ["find", "folding", "bracketMatching", "wordHighlighter", "clipboard", "contextmenu"], filename: "monaco/[name].worker.js" }),
 			new CopyPlugin({ patterns: [
 				{ from: "Source/Scouter.App/Renderer/Layout", to: "Layout", noErrorOnMissing: true },

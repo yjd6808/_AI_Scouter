@@ -7,7 +7,20 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { UIManager, MapLayoutProvider } from "@scouter/gui";
+import { UIManager, MapLayoutProvider, Window, RegisterWindow, StackPanel, WindowRegistry } from "@scouter/gui";
+import type { DataList } from "@scouter/gui";
+
+let failNextInit = false;
+
+@RegisterWindow("Test/ReloadInitFail")
+class FailInitWindow extends Window
+{
+	protected override OnInit(_data: DataList): void
+	{
+		if (failNextInit)
+			throw new Error("[FailInit] RequireName 실패: boom_box");
+	}
+}
 
 void describe("Reload", () =>
 {
@@ -34,6 +47,27 @@ void describe("Reload", () =>
 		const win = UIManager.Show("Test/ReloadOk");
 		assert.equal(await UIManager.Reload(win), true);
 		assert.equal(win.IsLoaded, true);
+		root.remove();
+		UIManager.Reset();
+	});
+
+	void it("Init이 터지면 false + 이전 내용으로 롤백", async () =>
+	{
+		UIManager.Reset();
+		const root = document.createElement("div");
+		document.body.append(root);
+		const provider = new MapLayoutProvider();
+		provider.Add("Test/ReloadInitFail", "<Window><Grid><StackPanel Name=\"rb_list\"/></Grid></Window>");
+		UIManager.Init(root, provider);
+		assert.equal(WindowRegistry.Resolve("Test/ReloadInitFail"), FailInitWindow);
+		failNextInit = false;
+		const win = await UIManager.ShowAsync("Test/ReloadInitFail");
+		failNextInit = true;
+		assert.equal(await UIManager.Reload(win), false);
+		assert.match(UIManager.LastReloadErrors[0] ?? "", /boom_box/);
+		assert.notEqual(win.FindName(StackPanel, "rb_list"), null);
+		failNextInit = false;
+		assert.equal(await UIManager.Reload(win), true);
 		root.remove();
 		UIManager.Reset();
 	});

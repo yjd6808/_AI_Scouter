@@ -1,0 +1,15 @@
+{
+	"Id": "ToastLab",
+	"Name": "Toast Lab",
+	"Version": "0.1.0",
+	"Description": "우측 하단 알림 팝업(토스트) 테스트용",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "bell",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Tools": ["Notify", "Message"],
+	"Commands": [],
+	"Hotkeys": {}
+}

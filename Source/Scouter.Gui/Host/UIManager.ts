@@ -38,6 +38,7 @@ interface IDialogEntry
 {
 	Window: Window;
 	Resolve: (_result: unknown) => void;
+	Promise: Promise<unknown>;
 	PrevFocus: Element | null;
 	Timer: ReturnType<typeof setTimeout> | null;
 }
@@ -53,15 +54,19 @@ export class UIManager
 	private static readonly s_graphs_ = new Map<Window, BindingGraph>();
 	private static s_contextFactory_: (() => LoadContext) | null = null;
 	private static readonly s_dialogs_ = new Map<Window, IDialogEntry>();
+	private static readonly s_dialogOpening_ = new Map<string, Promise<unknown>>();
 	private static s_shownHandlers_: Array<(_w: Window) => void> = [];
 	private static s_closedHandlers_: Array<(_w: Window) => void> = [];
 	private static s_lastReloadErrors_: string[] = [];
+	private static s_defaultToastMs_ = 4000;
 	private static s_inited_ = false;
 
 	// ==================== 속성 ====================
 	public static get Root(): UIElement | null { return UIManager.s_root_; }
 	public static get LayoutProvider(): ILayoutProvider | null { return UIManager.s_provider_; }
 	public static get LastReloadErrors(): ReadonlyArray<string> { return UIManager.s_lastReloadErrors_; }
+	public static get DefaultToastDurationMs(): number { return UIManager.s_defaultToastMs_; }
+	public static set DefaultToastDurationMs(_v: number) { UIManager.s_defaultToastMs_ = Math.max(0, Math.round(_v)); }
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 최상위 모달·메인을 구한다.
@@ -126,28 +131,49 @@ export class UIManager
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 모달로 올리고 결과를 기다린다. 타임아웃 0이면 무한 대기.
+	// 모달로 올리고 결과를 기다린다. 같은 이름이 열려 있으면 새로 만들지 않고 그 결과를 공유한다.
 	// @param _name: 창 이름
 	// @param _data: 초기 데이터
 	// @param _timeoutMs: 타임아웃 (기본 0)
 	public static ShowDialog<T>(_name: string, _data?: DataList, _timeoutMs = 0): Promise<T>
 	{
+		const open = UIManager.FindOpenDialog(_name);
+		if (open !== null)
+		{
+			UIManager.FocusFirst(open.Window);
+			return open.Promise as Promise<T>;
+		}
 		const win = UIManager.Create(_name);
 		win.InitForManager(_data ?? win.DataList);
 		return UIManager.ShowDialogLoaded<T>(win, _timeoutMs);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// XML을 읽어 모달로 올린다. 다이얼로그 XML용.
+	// XML을 읽어 모달로 올린다. 로드 중 연타해도 1개만 열린다.
 	// @param _name: 창 이름
 	// @param _data: 데이터 오버라이드
 	// @param _timeoutMs: 타임아웃 (기본 0)
 	public static async ShowDialogAsync<T>(_name: string, _data?: Record<string, unknown>, _timeoutMs = 0): Promise<T>
 	{
-		const win = UIManager.Create(_name);
-		await UIManager.LoadInto(win, _name, _data);
-		win.InitForManager(win.DataList);
-		return UIManager.ShowDialogLoaded<T>(win, _timeoutMs);
+		const open = UIManager.FindOpenDialog(_name);
+		if (open !== null)
+		{
+			UIManager.FocusFirst(open.Window);
+			return open.Promise as Promise<T>;
+		}
+		const inflight = UIManager.s_dialogOpening_.get(_name);
+		if (inflight !== undefined)
+			return inflight as Promise<T>;
+		const pending = UIManager.OpenDialogAsync<T>(_name, _data, _timeoutMs);
+		UIManager.s_dialogOpening_.set(_name, pending);
+		try
+		{
+			return await pending;
+		}
+		finally
+		{
+			UIManager.s_dialogOpening_.delete(_name);
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -195,29 +221,54 @@ export class UIManager
 		win.NotifyShown();
 		UIManager.EmitShown(win);
 		UIManager.FocusFirst(win);
-		return new Promise<T>((_resolve) =>
-		{
-			const entry: IDialogEntry = {
-				Window: win,
-				Resolve: (_result: unknown) =>
-				{
-					if (entry.Timer !== null)
-						clearTimeout(entry.Timer);
-					UIManager.s_dialogs_.delete(win);
-					_resolve(_result as T);
-				},
-				PrevFocus: prevFocus,
-				Timer: null,
-			};
-			if (_timeoutMs > 0)
+		let resolvePromise: (_value: T) => void = () => undefined;
+		const promise = new Promise<T>((_resolve) => { resolvePromise = _resolve; });
+		const entry: IDialogEntry = {
+			Window: win,
+			Resolve: (_result: unknown) =>
 			{
-				entry.Timer = setTimeout(() =>
-				{
-					UIManager.Close(win, undefined);
-				}, _timeoutMs);
-			}
-			UIManager.s_dialogs_.set(win, entry);
-		});
+				if (entry.Timer !== null)
+					clearTimeout(entry.Timer);
+				UIManager.s_dialogs_.delete(win);
+				resolvePromise(_result as T);
+			},
+			Promise: promise,
+			PrevFocus: prevFocus,
+			Timer: null,
+		};
+		if (_timeoutMs > 0)
+		{
+			entry.Timer = setTimeout(() =>
+			{
+				UIManager.Close(win, undefined);
+			}, _timeoutMs);
+		}
+		UIManager.s_dialogs_.set(win, entry);
+		return promise;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// XML을 읽어 모달로 올린다. ShowDialogAsync 공용 뒷단. 로드 실패는 그대로 던진다.
+	// @param _name: 창 이름
+	// @param _data: 데이터 오버라이드
+	// @param _timeoutMs: 타임아웃
+	private static async OpenDialogAsync<T>(_name: string, _data: Record<string, unknown> | undefined, _timeoutMs: number): Promise<T>
+	{
+		const win = UIManager.Create(_name);
+		await UIManager.LoadInto(win, _name, _data);
+		win.InitForManager(win.DataList);
+		return UIManager.ShowDialogLoaded<T>(win, _timeoutMs);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 열린 다이얼로그 항목을 구한다. 없으면 null.
+	// @param _name: 창 이름
+	private static FindOpenDialog(_name: string): IDialogEntry | null
+	{
+		const win = UIManager.s_windows_.get(_name);
+		if (win === undefined || !win.Element.isConnected)
+			return null;
+		return UIManager.s_dialogs_.get(win) ?? null;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -230,10 +281,12 @@ export class UIManager
 			return false;
 		const entry = UIManager.s_dialogs_.get(_window);
 		UIManager.RemoveFromLayers(_window);
+		UIManager.UpdateBackdrop();
 		_window.NotifyClosed();
 		UIManager.EmitClosed(_window);
 		if (entry !== undefined)
 		{
+			UIManager.s_dialogs_.delete(_window);
 			if (UIManager.s_dialogs_.size === 0)
 			{
 				UIManager.SetBaseInert(false);
@@ -262,6 +315,7 @@ export class UIManager
 				win.Dispose();
 			}
 		}
+		UIManager.UpdateBackdrop();
 		if (_layer === undefined || _layer === UILayerKind.Dialog)
 			UIManager.SetBaseInert(false);
 	}
@@ -332,7 +386,32 @@ export class UIManager
 		}
 		UIManager.s_xml_.set(name, xml);
 		_window.DataList.Restore(snapshot);
-		_window.InitForManager(_window.DataList);
+		try
+		{
+			_window.InitForManager(_window.DataList);
+		}
+		catch (_e)
+		{
+			UIManager.s_lastReloadErrors_ = [_e instanceof Error ? _e.message : String(_e)];
+			if (prev !== undefined)
+			{
+				try
+				{
+					_window.ClearChildren();
+					const rollback = UIManager.CreateContext();
+					rollback.Graph = graph;
+					XmlLoader.LoadWindowInto(_window, prev, rollback);
+					UIManager.s_xml_.set(name, prev);
+					_window.DataList.Restore(snapshot);
+					_window.InitForManager(_window.DataList);
+				}
+				catch
+				{
+					// 롤백마저 실패하면 비운 채로 둔다. 에러는 위에 기록됨.
+				}
+			}
+			return false;
+		}
 		_window.NotifyShown();
 		return true;
 	}
@@ -371,7 +450,7 @@ export class UIManager
 			toast.append(msg);
 		}
 		layer.Element.append(toast);
-		const ms = _opts.DurationMs ?? 4000;
+		const ms = _opts.DurationMs ?? UIManager.s_defaultToastMs_;
 		if (ms > 0)
 		{
 			setTimeout(() =>
@@ -472,9 +551,8 @@ export class UIManager
 		const layer = UIManager.s_layers_.get(_layer);
 		if (layer === undefined)
 			throw new Error(`[UIManager] 레이어 없음: ${_layer}`);
-		if (_layer === UILayerKind.Dialog)
-			layer.Element.classList.add("has-backdrop");
 		layer.Push(_win);
+		UIManager.UpdateBackdrop();
 		_win.NotifyLoaded();
 	}
 
@@ -498,6 +576,16 @@ export class UIManager
 				return name;
 		}
 		return null;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 다이얼로그 백드롭을 갱신한다. 빈 레이어에는 dim을 남기지 않는다.
+	private static UpdateBackdrop(): void
+	{
+		const layer = UIManager.s_layers_.get(UILayerKind.Dialog);
+		if (layer === undefined)
+			return;
+		layer.Element.classList.toggle("has-backdrop", layer.Count > 0);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -555,6 +643,7 @@ export class UIManager
 		UIManager.s_xml_.clear();
 		UIManager.s_graphs_.clear();
 		UIManager.s_dialogs_.clear();
+		UIManager.s_dialogOpening_.clear();
 		UIManager.s_shownHandlers_ = [];
 		UIManager.s_closedHandlers_ = [];
 		UIManager.s_root_ = null;

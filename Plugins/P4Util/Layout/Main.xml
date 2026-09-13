@@ -14,9 +14,9 @@
 					<Label Content="Depot" Target="#txt_depot" />
 					<TextBox Name="txt_depot" Width="320" Placeholder="//depot/project/..." Text="{$settings.Plugins.P4Util.DefaultDepot}" />
 					<Label Content="Rev" Margin="12,0,0,0" />
-					<NumericUpDown Name="num_rev_from" Width="90" Minimum="1" Value="{@revFrom}" />
+					<NumericUpDown Name="num_rev_from" Width="110" Minimum="1" Value="{@revFrom}" />
 					<TextBlock Text="~" />
-					<NumericUpDown Name="num_rev_to" Width="90" Minimum="1" Value="{@revTo}" />
+					<NumericUpDown Name="num_rev_to" Width="110" Minimum="1" Value="{@revTo}" />
 					<Button Name="btn_run" Content="파일 목록 추출" Variant="Primary" IsEnabled="!{@isRunning}" />
 					<Button Name="btn_copy_prompt" Content="AI 프롬프트 복사" Variant="Ghost" Command="P4Util.CopyPrompt" />
 				</StackPanel>

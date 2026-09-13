@@ -19,6 +19,8 @@ export interface IMainWindowOps
 	Maximize(): void;
 	Unmaximize(): void;
 	IsMaximized(): boolean;
+	SetTopmost(_on: boolean): void;
+	IsTopmost(): boolean;
 	Close(): void;
 	Hide(): void;
 	Show(): void;
@@ -37,6 +39,7 @@ export interface IAppInfo
 	UserData: string;
 	Home: string;
 	Exe: string;
+	AppPath: string;
 	Resources: string;
 	Logs: string;
 	Temp: string;
@@ -82,6 +85,21 @@ export class IpcHost
 			return _win.IsMaximized();
 		});
 		_ipc.Handle(IpcChannels.WindowIsMaximized, () => _win.IsMaximized());
+		_ipc.Handle(IpcChannels.WindowToggleTopmost, () =>
+		{
+			const next = !_win.IsTopmost();
+			_win.SetTopmost(next);
+			_win.Send(IpcChannels.WindowTopmostChanged, next);
+			return next;
+		});
+		_ipc.Handle(IpcChannels.WindowIsTopmost, () => _win.IsTopmost());
+		_ipc.Handle(IpcChannels.WindowSetTopmost, (_payload) =>
+		{
+			const on = ((_payload ?? {}) as { On?: unknown }).On === true;
+			_win.SetTopmost(on);
+			_win.Send(IpcChannels.WindowTopmostChanged, on);
+			return on;
+		});
 		_ipc.Handle(IpcChannels.WindowClose, () => { _win.Close(); });
 		_ipc.Handle(IpcChannels.WindowHide, () => { _win.Hide(); });
 		_ipc.Handle(IpcChannels.WindowToggleDevTools, () => { _win.ToggleDevTools(); });

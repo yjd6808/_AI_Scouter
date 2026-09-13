@@ -9,12 +9,14 @@
 			"type": "object",
 			"properties":
 			{
-				"SidebarWidth": { "type": "integer", "minimum": 100, "maximum": 400, "default": 150 },
+				"SidebarWidth": { "type": "integer", "minimum": 48, "maximum": 600, "default": 150 },
 				"SidebarCollapsed": { "type": "boolean", "default": false },
 				"SplitterEnabled": { "type": "boolean", "default": true },
 				"NativeFrame": { "type": "boolean", "default": false },
 				"LastPluginId": { "type": "string", "default": "" },
-				"PluginOrder": { "type": "array", "items": { "type": "string" }, "default": [] }
+				"PluginOrder": { "type": "array", "items": { "type": "string" }, "default": [] },
+				"AppToastDurationSec": { "type": "integer", "minimum": 0, "maximum": 120, "default": 4, "description": "인앱 토스트 표시 시간(초). 0이면 계속 표시." },
+				"GlobalToastDurationSec": { "type": "integer", "minimum": 0, "maximum": 120, "default": 4, "description": "바탕화면 토스트 표시 시간(초). 0이면 계속 표시." }
 			},
 			"additionalProperties": true
 		},

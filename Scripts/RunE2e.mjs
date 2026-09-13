@@ -33,7 +33,14 @@ if (files.length === 0)
 	console.log("no e2e files");
 	process.exit(0);
 }
-const result = spawnSync(process.execPath,
-	["--import", "tsx", "--test", "--test-reporter", "spec", ...files],
-	{ stdio: "inherit" });
-process.exit(result.status ?? 1);
+// 파일마다 별도 프로세스로 차례로 돌린다. 포트·세션 간섭 방지.
+let failed = false;
+for (const file of files)
+{
+	const result = spawnSync(process.execPath,
+		["--import", "tsx", "--test", "--test-reporter", "spec", file],
+		{ stdio: "inherit" });
+	if ((result.status ?? 1) !== 0)
+		failed = true;
+}
+process.exit(failed ? 1 : 0);

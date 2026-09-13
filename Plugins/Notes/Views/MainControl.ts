@@ -61,26 +61,35 @@ export class MainControl extends UserControl
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 제목란으로 새 노트를 연다.
+	// 제목란으로 새 노트를 연다. 제목란은 저장 대상 이름으로 쓴다.
 	private OnNew(): void
 	{
-		const title = this.RequireName(TextBox, "txt_title").Text.trim();
+		const titleBox = this.RequireName(TextBox, "txt_title");
+		const title = titleBox.Text.trim();
 		this.current_ = title.length > 0 ? title : (MainControl.s_fallback_?.() ?? "inbox");
+		titleBox.Text = this.current_;
 		this.RequireName(TextBox, "txt_body").Text = "";
-		this.RequireName(TextBox, "txt_title").Text = "";
+		this.RequireName(TextBox, "txt_body").Focus();
 		this.data_.Set("stateText", `새 노트: ${this.current_}`);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 본문을 저장한다.
+	// 본문을 저장한다. 제목란이 비어 있을 때만 목록 선택·기본값을 쓴다.
 	private async OnSaveAsync(): Promise<void>
 	{
 		const store = MainControl.s_store_;
-		if (store === null || this.current_.length === 0)
+		if (store === null)
 		{
-			this.data_.Set("stateText", "목록에서 노트를 고르거나 새 노트를 여세요");
+			this.data_.Set("stateText", "저장소가 없습니다");
 			return;
 		}
+		const titleBox = this.RequireName(TextBox, "txt_title");
+		const typed = titleBox.Text.trim();
+		if (typed.length > 0)
+			this.current_ = typed;
+		else if (this.current_.length === 0)
+			this.current_ = MainControl.s_fallback_?.() ?? "inbox";
+		titleBox.Text = this.current_;
 		try
 		{
 			await store.WriteAsync(this.current_, this.RequireName(TextBox, "txt_body").Text);
@@ -107,6 +116,8 @@ export class MainControl extends UserControl
 			list.SetItems(infos.map((_i) => _i.Name));
 			this.data_.Set("noteCount", infos.length);
 			this.data_.Set("stateText", "대기");
+			if (this.current_.length === 0 && infos.length > 0 && list.SelectedIndex < 0)
+				list.SelectedIndex = 0;
 		}
 		catch (_e)
 		{
@@ -125,6 +136,7 @@ export class MainControl extends UserControl
 		if (typeof selected !== "string")
 			return;
 		this.current_ = selected;
+		this.RequireName(TextBox, "txt_title").Text = selected;
 		this.RequireName(TextBox, "txt_body").Text = await store.ReadAsync(selected);
 		this.data_.Set("stateText", selected);
 	}

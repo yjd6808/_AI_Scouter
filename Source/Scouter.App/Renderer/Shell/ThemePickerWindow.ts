@@ -2,10 +2,11 @@
 	작성자: 윤정도
 	생성일: 2026-09-12
 	=====
-	설명: 테마 피커. 선택마다 미리보기, 적용/취소.
+	설명: 테마 피커. 선택마다 미리보기, 적용/취소. 스킴 즉시 적용.
 */
 
-import { Window, ListBox, Button, TextBox, DataList, RegisterWindow } from "@scouter/gui";
+import { Window, ListBox, Button, ComboBox, TextBox, DataList, RegisterWindow } from "@scouter/gui";
+import type { ThemeMode } from "@scouter/gui";
 import { ThemeManager } from "../Theme/ThemeManager";
 import { Settings } from "../Services/Settings";
 
@@ -14,6 +15,7 @@ export class ThemePickerWindow extends Window
 {
 	// ==================== 멤버 ====================
 	private original_ = "oc-2";
+	private originalScheme_: ThemeMode = "System";
 	private list_!: ListBox;
 
 	// ==================== 확장점 ====================
@@ -24,6 +26,16 @@ export class ThemePickerWindow extends Window
 	protected override OnInit(_data: DataList): void
 	{
 		this.original_ = Settings.Get<string>("Theme.Id", "oc-2");
+		this.originalScheme_ = Settings.Get<ThemeMode>("Theme.Scheme", "System");
+		const scheme = this.RequireName(ComboBox, "cmb_scheme");
+		scheme.SetItems(["System", "Dark", "Light"]);
+		scheme.SelectedItem = this.originalScheme_;
+		scheme.SelectionChanged.Add(() =>
+		{
+			const item = scheme.SelectedItem;
+			if (typeof item === "string")
+				Settings.Set("Theme.Scheme", item);
+		});
 		this.list_ = this.RequireName(ListBox, "lst_themes");
 		this.RefreshList("");
 		this.list_.SelectionChanged.Add(() =>
@@ -47,6 +59,7 @@ export class ThemePickerWindow extends Window
 		this.FindName(Button, "btn_cancel")?.Click.Add(() =>
 		{
 			ThemeManager.Set(this.original_);
+			Settings.Set("Theme.Scheme", this.originalScheme_);
 			this.Close(false);
 		});
 	}

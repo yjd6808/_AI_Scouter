@@ -65,13 +65,14 @@ export class TabControl extends Selector
 	// ==================== 공개 메서드 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 자식은 본문 div에 붙인다. 논리 트리는 그대로.
+	// 자식은 본문 div에 붙인다. 논리 트리는 그대로. TabItem은 항목으로도 받아들인다.
 	// @param _child: 자식
 	// @param _index: 위치
 	public override AddChild(_child: UIElement, _index?: number): void
 	{
 		super.AddChild(_child, _index);
 		this.body_.append(_child.Element);
+		this.AdoptTab(_child);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -112,6 +113,26 @@ export class TabControl extends Selector
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 직접 붙은 TabItem을 항목으로 받아들인다. XML 선언·코드 추가 공용.
+	// SetItems가 만든 래퍼는 생성기가 이미 알므로 건너뛴다. 맨 끝에 둔다.
+	// @param _child: 자식
+	private AdoptTab(_child: UIElement): void
+	{
+		if (!(_child instanceof TabItem))
+			return;
+		if (this.generator_.IndexFromContainer(_child) >= 0)
+			return;
+		if (this.items_.includes(_child))
+			return;
+		this.items_.push(_child);
+		this.generator_.Realize(this.items_.length - 1, _child);
+		if (this.SelectedIndex < 0)
+			this.SelectIndices([0], SelectionSource.Code);
+		else
+			this.RefreshTabs();
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 자식 구성이 바뀌면 스트립을 다시 만든다.

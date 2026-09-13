@@ -36,6 +36,14 @@ export class WindowRegistry
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// 등록을 푼다. Plugin 언로드·핫리로드용. 없으면 false.
+	// @param _name: 창 이름
+	public static Unregister(_name: string): boolean
+	{
+		return WindowRegistry.s_map_.delete(_name);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// 등록된 전 이름을 반환한다.
 	public static Names(): string[]
 	{

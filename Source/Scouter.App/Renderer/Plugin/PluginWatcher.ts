@@ -2,7 +2,7 @@
 	작성자: 윤정도
 	생성일: 2026-09-12
 	=====
-	설명: PluginWatcher. ts/json/css는 재번들, xml은 핫리로드.
+	설명: PluginWatcher. xml은 자동 리로드, ts/json/css는 Dirty 표시 후 수동 리로드.
 */
 
 import { watch } from "chokidar";
@@ -14,7 +14,7 @@ export class PluginWatcher
 {
 	// ==================== 정적 ====================
 	private static s_watcher_: FSWatcher | null = null;
-	private static readonly s_pending_ = new Map<string, ReturnType<typeof setTimeout>>();
+	private static readonly s_pending_ = new Map<string, { Timer: ReturnType<typeof setTimeout>; Kind: "Reload" | "Dirty" }>();
 
 	// ==================== 공개 메서드 ====================
 
@@ -46,37 +46,65 @@ export class PluginWatcher
 	// 감시를 멈춘다.
 	public static Stop(): void
 	{
-		for (const timer of PluginWatcher.s_pending_.values())
-			clearTimeout(timer);
+		for (const pending of PluginWatcher.s_pending_.values())
+			clearTimeout(pending.Timer);
 		PluginWatcher.s_pending_.clear();
 		void PluginWatcher.s_watcher_?.close();
 		PluginWatcher.s_watcher_ = null;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 파일 종류별 동작을 정한다. xml만 자동 리로드, ts/json/css는 Dirty 표시.
+	// @param _file: 변경 파일
+	public static KindOf(_file: string): "Reload" | "Dirty" | "Ignore"
+	{
+		const lower = _file.toLowerCase();
+		if (lower.endsWith(".xml"))
+			return "Reload";
+		if (lower.endsWith(".ts") || lower.endsWith(".json") || lower.endsWith(".css"))
+			return "Dirty";
+		return "Ignore";
+	}
+
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 변경 1건을 디바운스 후 리로드한다.
+	// 변경 1건을 디바운스한다. xml은 리로드, 나머지는 Dirty 표시. 리로드가 우선.
 	// @param _file: 변경 파일
 	private static OnChange(_file: string): void
 	{
 		const id = PluginWatcher.IdOf(_file);
 		if (id === null)
 			return;
+		const kind = PluginWatcher.KindOf(_file);
+		if (kind === "Ignore")
+			return;
 		const prev = PluginWatcher.s_pending_.get(id);
 		if (prev !== undefined)
-			clearTimeout(prev);
-		PluginWatcher.s_pending_.set(id, setTimeout(() =>
-		{
-			PluginWatcher.s_pending_.delete(id);
-			void PluginManager.ReloadAsync(id).then(
-				() =>
+			clearTimeout(prev.Timer);
+		const merged = prev !== undefined && prev.Kind === "Reload" ? "Reload" : kind;
+		PluginWatcher.s_pending_.set(id, {
+			Timer: setTimeout(() =>
+			{
+				PluginWatcher.s_pending_.delete(id);
+				if (merged === "Reload")
 				{
-					Log.Info("Plugin", `${id} 핫리로드`);
-				},
-				() => undefined,
-			);
-		}, 300));
+					void PluginManager.ReloadAsync(id).then(
+						() =>
+						{
+							Log.Info("Plugin", `${id} 핫리로드`);
+						},
+						() => undefined,
+					);
+				}
+				else
+				{
+					PluginManager.MarkDirty(id);
+					Log.Info("Plugin", `${id} 변경 감지(다시 로드 필요)`);
+				}
+			}, 300),
+			Kind: merged,
+		});
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

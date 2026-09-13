@@ -34,7 +34,7 @@ export class ListBoxItem extends ContentControl
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 선택 표시를 바꾼다.
 	// @param _selected: 선택 여부
-	public SetSelected(_selected: boolean): void
+	public SetSelected(_selected: boolean)
 	{
 		this.SetValue(ListBoxItem.IsSelectedProperty, _selected);
 	}
@@ -80,7 +80,7 @@ export class ListBox extends Selector
 			const native = _a.Native.target as Element | null;
 			if (native !== null && typeof native.closest === "function" && native.closest(".gui-gridview__header") !== null)
 				return;
-			const idx = this.IndexFromEvent(_a.GetPosition(this));
+			const idx = this.IndexFromPointer(native);
 			if (idx >= 0)
 				this.ClickIndex(idx, _a.Shift, _a.Ctrl);
 		});
@@ -151,18 +151,6 @@ export class ListBox extends Selector
 		super.PrepareContainer(_container, _item);
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// 컨테이너 선택 표시.
-	// @param _index: 인덱스
-	// @param _selected: 선택 여부
-	protected override SetContainerSelected(_index: number, _selected: boolean): void
-	{
-		super.SetContainerSelected(_index, _selected);
-		const container = this.ContainerFromIndex(_index);
-		if (container instanceof ListBoxItem)
-			container.SetSelected(_selected);
-	}
-
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -204,11 +192,25 @@ export class ListBox extends Selector
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 좌표에서 인덱스를 찾는다. 고정 28px 가정(P4).
-	// @param _pos: 상대 좌표
-	private IndexFromEvent(_pos: { X: number; Y: number }): number
+	// 포인터 아래 행을 찾는다. 좌표 계산 대신 DOM 순서로 굳힌다. 스크롤·가변 높이에 안전.
+	// @param _target: 이벤트 대상
+	private IndexFromPointer(_target: EventTarget | null): number
 	{
-		const idx = Math.floor(_pos.Y / 28);
-		return idx >= 0 && idx < this.Items.length ? idx : -1;
+		let node = _target as Node | null;
+		while (node !== null && node !== this.Element)
+		{
+			if (node.parentNode === this.Element)
+			{
+				const kids = this.Element.children;
+				for (let idx = 0; idx < kids.length; ++idx)
+				{
+					if (kids[idx] === node)
+						return idx < this.items_.length ? idx : -1;
+				}
+				return -1;
+			}
+			node = node.parentNode;
+		}
+		return -1;
 	}
 }

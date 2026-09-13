@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="toastlab_main">
+	<UserControl.Data>
+		<Item Key="fireCount" Type="Int" Value="0" />
+		<Item Key="lastResult" Type="String" Value="" />
+	</UserControl.Data>
+	<StackPanel Spacing="8" Margin="12">
+		<TextBox Name="txt_title" Placeholder="제목" />
+		<TextBox Name="txt_message" Placeholder="내용(선택)" AcceptsReturn="true" />
+		<StackPanel Orientation="Horizontal" Spacing="8">
+			<Button Name="btn_info" Content="정보" Variant="Default" />
+			<Button Name="btn_success" Content="성공" Variant="Default" />
+			<Button Name="btn_warn" Content="경고" Variant="Default" />
+			<Button Name="btn_error" Content="오류" Variant="Danger" />
+		</StackPanel>
+		<CheckBox Name="chk_global" Content="바탕화면 알림도 띄우기" />
+		<StackPanel Orientation="Horizontal" Spacing="8">
+			<Button Name="btn_msg_app" Content="앱 확인창" Variant="Primary" />
+			<Button Name="btn_msg_global" Content="바탕화면 확인창" Variant="Primary" />
+		</StackPanel>
+		<TextBlock Text="{{@fireCount} + `회 발생`}" />
+		<TextBlock Name="txt_result" Text="{@lastResult}" />
+	</StackPanel>
+</UserControl>

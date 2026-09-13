@@ -6,7 +6,7 @@
 */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { UIManager, UIElement } from "@scouter/gui";
+import { UIManager, UIElement, ElementRegistry } from "@scouter/gui";
 import type { McpHttpServer } from "../Mcp/McpHttpServer";
 import { Settings } from "../Services/Settings";
 import { Log } from "../Services/Log";
@@ -79,7 +79,11 @@ function FindByName(_name: string): UIElement | null
 		if (inShell !== null)
 			return inShell;
 	}
-	return FindInDialogs(_name);
+	const inDialogs = FindInDialogs(_name);
+	if (inDialogs !== null)
+		return inDialogs;
+	const dom = document.querySelector(`[data-testid="${_name}"]`);
+	return dom instanceof Element ? ElementRegistry.FromDom(dom) : null;
 }
 
 function FindInTree(_root: UIElement, _name: string): UIElement | null

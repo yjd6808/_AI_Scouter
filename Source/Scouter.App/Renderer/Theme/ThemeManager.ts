@@ -15,6 +15,7 @@ import { MonacoLoader } from "@scouter/gui";
 import { Settings } from "../Services/Settings";
 import { EventBus } from "../Services/EventBus";
 import { ThemeLoader } from "./ThemeLoader";
+import { kDesktopThemes } from "./DesktopThemes";
 import oc2Json from "./Themes/oc-2.json" with { type: "json" };
 
 export interface IThemeChanged
@@ -30,6 +31,7 @@ export class ThemeManager
 	private static readonly s_themes_ = new Map<string, ITheme>();
 	private static readonly s_raws_ = new Map<string, IThemeJson>();
 	private static s_current_: ITheme | null = null;
+	private static s_preview_: ITheme | null = null;
 	private static s_resolved_: IResolvedTheme | null = null;
 	private static s_style_: HTMLStyleElement | null = null;
 	private static s_media_: MediaQueryList | null = null;
@@ -61,6 +63,7 @@ export class ThemeManager
 		ThemeManager.s_themes_.set(oc2.Id, oc2);
 		ThemeManager.s_raws_.set(oc2.Id, oc2Json);
 		ThemeManager.s_current_ = oc2;
+		ThemeManager.LoadBundledDesktop();
 		for (const theme of await ThemeLoader.LoadDirAsync(_userDir, "User"))
 			ThemeManager.s_themes_.set(theme.Id, theme);
 		ThemeManager.s_style_ = document.createElement("style");
@@ -120,8 +123,9 @@ export class ThemeManager
 		const found = ThemeManager.s_themes_.get(_id);
 		if (found === undefined)
 			return false;
+		ThemeManager.s_preview_ = found;
 		ThemeManager.s_current_ = found;
-		ThemeManager.Apply();
+		ThemeManager.Render(found);
 		return true;
 	}
 
@@ -134,36 +138,78 @@ export class ThemeManager
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 지금 CSS를 다시 쓴다. 바뀌었을 때만 DOM 터치.
+	// 지금 CSS를 다시 쓴다. 설정 Id를 기준으로 삼는다. 바뀌었을 때만 DOM 터치.
 	public static Apply(): void
 	{
 		if (ThemeManager.s_current_ === null || ThemeManager.s_style_ === null)
+			return;
+		const id = Settings.Get<string>("Theme.Id", "oc-2");
+		const saved = ThemeManager.s_themes_.get(id) ?? ThemeManager.s_themes_.get("oc-2") ?? null;
+		if (ThemeManager.s_preview_ !== null && saved !== null && ThemeManager.s_preview_.Id !== saved.Id)
+		{
+			ThemeManager.Render(ThemeManager.s_preview_);
+			return;
+		}
+		if (saved !== null)
+			ThemeManager.s_current_ = saved;
+		ThemeManager.s_preview_ = null;
+		ThemeManager.Render(ThemeManager.s_current_);
+	}
+
+	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 테마 1개를 화면에 그린다. 미리보기·확정 공용.
+	// @param _theme: 테마
+	private static Render(_theme: ITheme): void
+	{
+		if (ThemeManager.s_style_ === null)
 			return;
 		const mode = Settings.Get<ThemeMode>("Theme.Scheme", "System");
 		const wantDark = mode === "Dark" || (mode === "System" && (ThemeManager.s_media_?.matches ?? true));
 		const scheme: ThemeScheme = wantDark ? "Dark" : "Light";
 		const fallback = ThemeManager.s_themes_.get("oc-2");
 		const fallbackResolved = fallback !== undefined ? ThemeResolver.Resolve(fallback, "Dark", null) : null;
-		const useScheme = (scheme === "Light" && !ThemeManager.s_current_.HasLight) ? "Dark" : (scheme === "Dark" && !ThemeManager.s_current_.HasDark ? "Light" : scheme);
-		ThemeManager.s_resolved_ = ThemeResolver.Resolve(ThemeManager.s_current_, useScheme, fallbackResolved);
+		const useScheme = (scheme === "Light" && !_theme.HasLight) ? "Dark" : (scheme === "Dark" && !_theme.HasDark ? "Light" : scheme);
+		ThemeManager.s_resolved_ = ThemeResolver.Resolve(_theme, useScheme, fallbackResolved);
 		const typo: ITypography = {
 			FontSize: Settings.Get<number>("Theme.FontSize", 13),
 			FontFamily: Settings.Get<string>("Theme.FontFamily", "Segoe UI, system-ui, sans-serif"),
 			MonoFamily: Settings.Get<string>("Theme.MonoFamily", "Cascadia Code, Consolas, monospace"),
 		};
 		const css = ThemeCss.Build(ThemeManager.s_resolved_, typo, Settings.Get<DensityKind>("Theme.Density", "Normal"));
+		MonacoLoader.ApplyFontSize(typo.FontSize);
 		if (css !== ThemeManager.s_style_.textContent)
 		{
 			ThemeManager.s_style_.textContent = css;
-			document.documentElement.dataset["theme"] = ThemeManager.s_current_.Id;
+			document.documentElement.dataset["theme"] = _theme.Id;
 			document.documentElement.dataset["scheme"] = useScheme.toLowerCase();
 			MonacoLoader.ApplyTheme(ThemeManager.s_resolved_.Tokens, useScheme === "Dark");
-			ThemeManager.s_changed_.Invoke({ Id: ThemeManager.s_current_.Id, Name: ThemeManager.s_current_.Name, Scheme: useScheme });
-			EventBus.Publish("Scouter.ThemeChanged", { Id: ThemeManager.s_current_.Id, Scheme: useScheme });
+			ThemeManager.s_changed_.Invoke({ Id: _theme.Id, Name: _theme.Name, Scheme: useScheme });
+			EventBus.Publish("Scouter.ThemeChanged", { Id: _theme.Id, Scheme: useScheme });
 		}
 	}
 
-	// ==================== 내부 ====================
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Bundled desktop themes (seeds/palette) registration. Invalid entries are skipped.
+	private static LoadBundledDesktop(): void
+	{
+		for (const entry of kDesktopThemes)
+		{
+			try
+			{
+				ThemeManager.s_themes_.set(entry.Id, ThemeLoader.ParseDesktop(entry.Id, entry.Json, "BuiltIn"));
+			}
+			catch
+			{
+				continue;
+			}
+		}
+		const current = Settings.Get<string>("Theme.Id", "oc-2");
+		const found = ThemeManager.s_themes_.get(current);
+		if (found !== undefined)
+			ThemeManager.s_current_ = found;
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 사용자 테마 파일 1개를 다시 읽는다.
@@ -174,9 +220,9 @@ export class ThemeManager
 			return;
 		try
 		{
-			const json = JSON.parse(await fs.readFile(_file, "utf-8")) as IThemeJson;
+			const json: unknown = JSON.parse(await fs.readFile(_file, "utf-8"));
 			const id = path.basename(_file, ".json");
-			ThemeManager.s_themes_.set(id, ThemeLoader.Parse(id, json, "User"));
+			ThemeManager.s_themes_.set(id, ThemeLoader.ParseFile(id, json, "User"));
 			if (ThemeManager.s_current_?.Id === id)
 				ThemeManager.Apply();
 		}

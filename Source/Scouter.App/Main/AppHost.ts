@@ -10,6 +10,8 @@ import * as path from "node:path";
 import { app, BrowserWindow, dialog, globalShortcut, ipcMain, nativeTheme, Notification, shell } from "electron";
 import { LaunchArgs } from "./LaunchArgs";
 import { MainWindow } from "./MainWindow";
+import { GlobalToastWindow } from "./GlobalToastWindow";
+import { GlobalMessageBoxWindow } from "./GlobalMessageBoxWindow";
 import { TrayController } from "./TrayController";
 import { UpdateController } from "./UpdateController";
 import { IpcHost } from "./IpcHost";
@@ -101,6 +103,17 @@ export class AppHost
 		log.Info("AppHost", `start v${app.getVersion()} packaged=${app.isPackaged}`);
 		try
 		{
+			// esbuild binary for runtime plugin bundling (extraResources esbuild-bin).
+			const esbuildBin = path.join(process.resourcesPath, "esbuild-bin", "esbuild.exe");
+			if (app.isPackaged && fs.existsSync(esbuildBin))
+				process.env["ESBUILD_BINARY_PATH"] = esbuildBin;
+		}
+		catch
+		{
+			// 무시.
+		}
+		try
+		{
 			fs.mkdirSync(path.join(userData, ".scouter", "plugins"), { recursive: true });
 		}
 		catch
@@ -109,6 +122,12 @@ export class AppHost
 		}
 		AppHost.SeedBundledPlugins();
 		const win = MainWindow.Create(_args);
+		GlobalToastWindow.Arm(() =>
+		{
+			win.show();
+			win.focus();
+		});
+		GlobalMessageBoxWindow.Arm();
 		const updater = new UpdateController((_status) => { win.webContents.send(IpcChannels.AppUpdateStatus, _status); });
 		const ipc: IIpcMain = {
 			Handle: (_channel: string, _fn: (..._args: unknown[]) => unknown) =>
@@ -123,8 +142,7 @@ export class AppHost
 		const tray = new TrayController();
 		if (!_args.Test)
 		{
-			const iconPath = path.join(process.resourcesPath, "Assets", "tray-16.png");
-			tray.Create(iconPath, {
+			tray.Create(AppHost.TrayIconPath(), {
 				OnOpen: () => { MainWindow.ToggleVisible(); },
 				OnSettings: () =>
 				{
@@ -190,6 +208,15 @@ export class AppHost
 			return;
 		try
 		{
+			// exe-side drop folder for distributed plugins.
+			fs.mkdirSync(path.join(path.dirname(app.getPath("exe")), "Plugins"), { recursive: true });
+		}
+		catch
+		{
+			// 무시.
+		}
+		try
+		{
 			const from = path.join(process.resourcesPath, "Plugins", "P4Util");
 			const to = path.join(app.getPath("userData"), ".scouter", "plugins", "P4Util");
 			if (fs.existsSync(from) && !fs.existsSync(to))
@@ -199,6 +226,31 @@ export class AppHost
 		{
 			// 무시.
 		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 트레이 아이콘 경로를 구한다. 패키지·개발 실행 모두에서 찾는다.
+	private static TrayIconPath(): string
+	{
+		const names = ["tray-16.png", "tray-32.png"];
+		const dirs = [path.join(process.resourcesPath, "Assets"), path.join(app.getAppPath(), "Assets")];
+		for (const dir of dirs)
+		{
+			for (const name of names)
+			{
+				const full = path.join(dir, name);
+				try
+				{
+					if (fs.existsSync(full))
+						return full;
+				}
+				catch
+				{
+					// 다음 후보.
+				}
+			}
+		}
+		return path.join(process.resourcesPath, "Assets", "tray-16.png");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -212,6 +264,8 @@ export class AppHost
 			Maximize: () => { _win.maximize(); },
 			Unmaximize: () => { _win.unmaximize(); },
 			IsMaximized: () => _win.isMaximized(),
+			SetTopmost: (_on: boolean) => { _win.setAlwaysOnTop(_on); },
+			IsTopmost: () => _win.isAlwaysOnTop(),
 			Close: () => { _win.close(); },
 			Hide: () => { _win.hide(); },
 			Show: () => { _win.show(); },
@@ -241,6 +295,7 @@ export class AppHost
 		return {
 			Paths: (): IAppInfo => ({
 				UserData: app.getPath("userData"), Home: app.getPath("home"), Exe: app.getPath("exe"),
+				AppPath: app.getAppPath(),
 				Resources: process.resourcesPath, Logs: app.getPath("logs"), Temp: app.getPath("temp"),
 				Version: AppVersion(), IsPackaged: app.isPackaged, Args: process.argv,
 			}),
