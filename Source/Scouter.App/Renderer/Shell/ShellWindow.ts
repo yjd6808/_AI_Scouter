@@ -17,6 +17,7 @@ import { ShellCommands } from "./ShellCommands";
 import { IpcWindowChrome } from "./IpcWindowChrome";
 import { WelcomeControl } from "./WelcomeControl";
 import { PluginManager } from "../Plugin/PluginManager";
+import { PluginOrder } from "../Plugin/PluginOrder";
 import { McpHttpServer } from "../Mcp/McpHttpServer";
 
 @RegisterWindow("Shell")
@@ -57,6 +58,7 @@ export class ShellWindow extends Window
 			return;
 		if (!this.viewOrder_.includes(_pluginId))
 			this.viewOrder_.push(_pluginId);
+		this.RecordClick(_pluginId);
 		this.presenter_.Content = view;
 		this.sidebar_.Select(_pluginId);
 		Settings.Set("Ui.LastPluginId", _pluginId);
@@ -146,11 +148,10 @@ export class ShellWindow extends Window
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// Plugin 목록으로 사이드바를 다시 그린다. 내장(코어)이 위, 외부가 아래.
+	// Plugin 목록으로 사이드바를 다시 그린다. 시스템은 위(항상 알파벳), 외부는 아래(정렬기준).
 	private RebuildFromPlugins(): void
 	{
 		const active = PluginManager.List().filter((_p) => _p.State === "Active" || _p.State === "Error");
-		active.sort((_a, _b) => ShellWindow.RankSource(_a.Source) - ShellWindow.RankSource(_b.Source));
 		for (const id of [...this.views_.keys()])
 		{
 			if (id !== "Shell/Welcome" && !active.some((_p) => _p.Id === id))
@@ -165,18 +166,38 @@ export class ShellWindow extends Window
 				this.views_.delete(id);
 			}
 		}
-		this.sidebar_.Rebuild(active.map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: "package", Source: _p.Source, State: _p.State })));
+		const sort = PluginOrder.NormalizeSort(Settings.Get<unknown>("Ui.SidebarSort", "Custom"));
+		const ids = active.map((_p) => _p.Id);
+		const seen = Settings.Get<Record<string, number>>("Ui.PluginFirstSeen", {});
+		const ensuredSeen = PluginOrder.EnsureFirstSeen(seen, ids, Date.now());
+		if (JSON.stringify(ensuredSeen) !== JSON.stringify(seen))
+			Settings.Set("Ui.PluginFirstSeen", ensuredSeen);
+		const builtIn = PluginOrder.SortBuiltIn(active.filter((_p) => _p.Source === "BuiltIn"));
+		const external = active.filter((_p) => _p.Source !== "BuiltIn");
+		const order = Settings.Get<string[]>("Ui.PluginOrder", []);
+		const ensured = PluginOrder.EnsureExternalOrder(order, external.map((_p) => _p.Id));
+		if (ensured.length !== order.length)
+			Settings.Set("Ui.PluginOrder", ensured);
+		const clicks = Settings.Get<Record<string, number>>("Ui.PluginClicks", {});
+		const sortedExternal = PluginOrder.SortExternal(external, ensured, clicks, ensuredSeen, sort);
+		this.sidebar_.Rebuild([...builtIn, ...sortedExternal].map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: "package", Source: _p.Source, State: _p.State })), {
+			SortMode: sort,
+			OnOrderChanged: (_ids) => { Settings.Set("Ui.PluginOrder", _ids); },
+		});
 		const current = (this.presenter_.Content as UserControl | null)?.PluginId ?? Settings.Get<string>("Ui.LastPluginId", "");
 		if (current.length > 0 && this.sidebar_.Find(current) !== null)
 			this.sidebar_.Select(current);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 사이드바 정렬 가중치. 내장이 0, 외부가 1.
-	// @param _source: Plugin 출처
-	private static RankSource(_source: string): number
+	// 이동 클릭을 셈한다. 클릭 많은 순 정렬용. 환영 뷰는 세지 않는다.
+	// @param _pluginId: Plugin Id
+	private RecordClick(_pluginId: string): void
 	{
-		return _source === "BuiltIn" ? 0 : 1;
+		if (!PluginManager.Has(_pluginId))
+			return;
+		const clicks = Settings.Get<Record<string, number>>("Ui.PluginClicks", {});
+		Settings.Set("Ui.PluginClicks", { ...clicks, [_pluginId]: (clicks[_pluginId] ?? 0) + 1 });
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -194,6 +215,8 @@ export class ShellWindow extends Window
 	{
 		if (_key === "Ui.SidebarCollapsed" || _key === "Ui.SidebarWidth")
 			this.ApplySidebarWidth();
+		if (_key === "Ui.SidebarSort" || _key === "Ui.PluginOrder" || _key === "Ui.PluginClicks" || _key === "Ui.PluginFirstSeen")
+			this.RebuildFromPlugins();
 		if (_key === "Ui.NativeFrame")
 			this.ApplyNativeFrame();
 		if (_key === "Mcp.Port")

@@ -1,5 +1,5 @@
 {
-	"Ui": { "SidebarWidth": 150, "SidebarCollapsed": false, "SplitterEnabled": true, "NativeFrame": false, "LastPluginId": "", "PluginOrder": [], "AppToastDurationSec": 4, "GlobalToastDurationSec": 4 },
+	"Ui": { "SidebarWidth": 150, "SidebarCollapsed": false, "SplitterEnabled": true, "NativeFrame": false, "LastPluginId": "", "PluginOrder": [], "SidebarSort": "Custom", "PluginClicks": {}, "PluginFirstSeen": {}, "AppToastDurationSec": 4, "GlobalToastDurationSec": 4 },
 	"Theme": { "Id": "oc-2", "Scheme": "System", "FontSize": 13, "FontFamily": "Segoe UI, system-ui, sans-serif", "MonoFamily": "Cascadia Code, Consolas, monospace", "Density": "Normal" },
 	"App": { "CloseToTray": true, "AutoStart": false, "StartHidden": false, "AutoSelectNewPlugin": true, "Update": { "Channel": "stable", "Url": "" } },
 	"Hotkeys": { "Global": { "Show": "Ctrl+Shift+Space" } },

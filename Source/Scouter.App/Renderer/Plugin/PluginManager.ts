@@ -121,6 +121,7 @@ export class PluginManager
 		PluginManager.s_permStore_ = new PermissionStore(path.join(Paths.ScouterHome, "permissions.json"));
 		const candidates = await PluginDiscovery.Scan(PluginManager.s_dirs_);
 		await Promise.allSettled(candidates.map((_c) => PluginManager.LoadCandidate(_c)));
+		PluginManager.SortById();
 		PluginManager.s_changed_.Invoke(undefined);
 	}
 
@@ -304,6 +305,17 @@ export class PluginManager
 			return;
 		PluginManager.s_notices_.set(_id, _notice);
 		PluginManager.s_changed_.Invoke(undefined);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 병렬 로드 완료 순서를 Id 알파벳순으로 굳힌다. 리로드 꼼수(맨 아래로 밀림) 방지.
+	private static SortById(): void
+	{
+		const collator = new Intl.Collator("ko");
+		const sorted = [...PluginManager.s_plugins_.entries()].sort((_a, _b) => collator.compare(_a[0], _b[0]));
+		PluginManager.s_plugins_.clear();
+		for (const [id, handle] of sorted)
+			PluginManager.s_plugins_.set(id, handle);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

@@ -120,7 +120,8 @@ async function Main(): Promise<void>
 	await McpHttpServer.AttachMcpAsync(Paths.ScouterHome, Settings.Get<Array<{ Name: string; Transport: "stdio" | "http"; Command?: string; Args?: string[]; Url?: string; Headers?: Record<string, string>; Prefix: string }>>("Mcp.Upstreams", []));
 	if (Args.IsTest)
 		TestApiServer.Attach(McpHttpServer);                           // 8
-	GlobalHotkey.Sync();
+	if (!Args.IsTest)
+		GlobalHotkey.Sync();                                           // --test는 단일 인스턴스 예외라 전역 단축키를 잡지 않는다
 	Shutdown.Arm();
 	UpdateClient.Start();
 	await UIManager.ShowAsync("Shell");                                // 9

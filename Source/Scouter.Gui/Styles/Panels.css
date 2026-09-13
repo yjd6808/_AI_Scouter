@@ -6,6 +6,7 @@
 .gui-grid > [data-halign="Left"] { justify-self: start; }
 .gui-stack { display: flex; flex-direction: column; }
 .gui-stack.is-horizontal { flex-direction: row; }
+.gui-usercontrol > .gui-grid, .gui-usercontrol > .gui-stack { flex: 1 1 auto; min-width: 0; min-height: 0; }
 .gui-wrap { display: flex; flex-wrap: wrap; }
 .gui-wrap.is-vertical { flex-direction: column; }
 .gui-dock { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; min-height: 0; }

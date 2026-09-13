@@ -20,10 +20,11 @@ export class PluginDiscovery
 	// ==================== 공개 메서드 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 폴더들을 순서대로 스캔한다. Id 중복이면 나중 것 우선.
+	// 폴더들을 순서대로 스캔한다. Id 중복이면 나중 것 우선. 폴더 안은 알파벳순으로 굳힌다.
 	// @param _dirs: [BuiltIn, User, External] 폴더 (없으면 건너뜀)
 	public static async Scan(_dirs: Array<{ Dir: string | null; Source: "BuiltIn" | "User" | "External" }>): Promise<IPluginCandidate[]>
 	{
+		const collator = new Intl.Collator("ko");
 		const byId = new Map<string, IPluginCandidate>();
 		for (const entry of _dirs)
 		{
@@ -38,6 +39,7 @@ export class PluginDiscovery
 			{
 				continue;
 			}
+			names.sort((_a, _b) => collator.compare(_a, _b));
 			for (const name of names)
 			{
 				const dir = path.join(entry.Dir, name);

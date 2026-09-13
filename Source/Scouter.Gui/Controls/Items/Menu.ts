@@ -75,11 +75,13 @@ export class MenuItem extends Control
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 실행한다. 체커블이면 토글 후 Click·Command 순.
+	// 실행한다. 체커블이면 토글 후 Click·Command 순. 잎 항목이면 열린 메뉴부터 닫는다.
 	public Activate(): void
 	{
 		if (this.IsCheckable)
 			this.IsChecked = !this.IsChecked;
+		if (this.subItems_.length === 0)
+			MenuBase.CloseOpen();
 		this.RaiseEvent(this.Click, new RoutedEventArgs(this));
 		if (this.Command.length > 0 && ButtonBase.DefaultCommands !== null && ButtonBase.DefaultCommands.Has(this.Command))
 			ButtonBase.DefaultCommands.Execute(this.Command, this.CommandParameter);
@@ -184,6 +186,13 @@ export class MenuBase extends Control
 		MenuBase.s_open_ = this;
 		this.popup_.IsOpen = true;
 		this.RaiseEvent(this.Opened, new RoutedEventArgs(this));
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 열려 있는 메뉴를 닫는다. 잎 항목 실행 시 호출. 없으면 조용히 넘긴다.
+	public static CloseOpen(): void
+	{
+		MenuBase.s_open_?.Close();
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

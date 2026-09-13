@@ -120,6 +120,10 @@ void describe("SidebarNotice E2E", () =>
 		assert.equal((opened as { Value?: unknown }).Value, true);
 		const clicked = await Post("/test/click", { Name: "reload_ControlLab" }) as { Ok?: boolean };
 		assert.equal(clicked.Ok, true);
+		const closed = await Poll("(() => document.querySelector('.gui-popup.is-open') === null)()", true);
+		assert.equal(closed, true);
+		const toast = await Poll("(() => { const el = document.querySelector('.gui-toast__title'); return el === null ? '' : (el.textContent ?? ''); })()", "Control Lab 다시 로드 완료");
+		assert.equal(toast, "Control Lab 다시 로드 완료");
 		const gone = await Poll("(() => document.querySelector('[data-testid=\"nav_ControlLab\"] .gui-navitem__dot') !== null)()", false, 40);
 		assert.equal(gone, false);
 	});

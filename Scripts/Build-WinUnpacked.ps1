@@ -1,6 +1,6 @@
 #Requires -Version 5.1
-# Run-WinUnpacked: rebuild dist / win-unpacked only when stale, then launch.
-# Double-click via Run-WinUnpacked.bat. English-only (PS 5.1 encoding safety).
+# Build-WinUnpacked: ensure fresh dist, then package win-unpacked (--dir). No launch.
+# Double-click via Build-WinUnpacked.bat. English-only (PS 5.1 encoding safety).
 param([string]$Root = "")
 
 $ErrorActionPreference = "Stop"
@@ -14,8 +14,7 @@ try
 	Install-NodeModules $Root
 	Build-DistIfStale $Root
 	$exe = Pack-WinUnpacked $Root
-	Write-Host "Launching Scouter..."
-	Start-Process -FilePath $exe -WorkingDirectory (Split-Path -Parent $exe) | Out-Null
+	Write-Host ("Done: {0}" -f $exe)
 }
 catch
 {

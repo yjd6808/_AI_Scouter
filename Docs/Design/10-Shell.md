@@ -33,7 +33,7 @@
 
 - 사이드바 항목 = `ToggleButton Variant=Ghost` 32px, 아이콘 16 + 이름 + 우측 `Badge`(선택). 접힌 상태(48px)는 아이콘만, 이름은 ToolTip.
 - 선택 항목: `is-checked` → `--primary-muted` 배경 + 좌측 2px `--primary` 바.
-- Plugin 순서는 `Ui.PluginOrder`, 드래그 정렬은 P10.
+- Plugin 순서는 `Ui.PluginOrder`(외부 영역, 최초 알파벳 확정·리로드 유지·신규 알파벳 삽입), 정렬기준은 `Ui.SidebarSort`(`Custom` 사용자 순서·드래그 / `MostClicked` 클릭 많은 순 / `Oldest` 오래된 순, 클릭 수는 `Ui.PluginClicks`, 최초 확인은 `Ui.PluginFirstSeen`). 시스템(BuiltIn) 영역은 항상 이름 알파벳순이며 드래그 불가. 영역은 시스템(위)·외부(아래)로 분리.
 - StatusBar: 좌 `dot_mcp`(StatusDot Ok/Idle/Error) `MCP :{@mcpPort}` `{@mcpSessions} sessions`, 우 테마 이름(클릭 → 테마 피커 13), 버전(클릭 → About).
 - `Ui.NativeFrame=true`면 TitleBar `Collapsed`, 변경 시 "재시작 필요" 토스트 + `app:relaunch` 버튼.
 
@@ -224,7 +224,10 @@ export class ShellWindow extends Window
 | `Ui.SplitterEnabled` | true | A-03 |
 | `Ui.NativeFrame` | false | 재시작 필요 |
 | `Ui.LastPluginId` | "" | |
-| `Ui.PluginOrder` | [] | |
+| `Ui.PluginOrder` | [] | 외부 영역 사용자 순서(드래그 저장) |
+| `Ui.SidebarSort` | `Custom` | `Custom`/`MostClicked`/`Oldest`. 후자는 order를 덮고 드래그 불가 |
+| `Ui.PluginClicks` | {} | Id별 클릭 수(자동) |
+| `Ui.PluginFirstSeen` | {} | Id별 최초 확인 시각 ms(자동) |
 | `App.CloseToTray` | true | 21 |
 | `App.AutoStart` | false | 21 |
 | `App.AutoSelectNewPlugin` | true | 새 Plugin 설치 시 자동 이동 |

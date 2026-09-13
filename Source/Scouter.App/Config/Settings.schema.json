@@ -14,7 +14,10 @@
 				"SplitterEnabled": { "type": "boolean", "default": true },
 				"NativeFrame": { "type": "boolean", "default": false },
 				"LastPluginId": { "type": "string", "default": "" },
-				"PluginOrder": { "type": "array", "items": { "type": "string" }, "default": [] },
+				"PluginOrder": { "type": "array", "items": { "type": "string" }, "default": [], "description": "외부 Plugin 사용자 순서. 드래그로 바뀐다." },
+				"SidebarSort": { "type": "string", "enum": ["Custom", "MostClicked", "Oldest"], "default": "Custom", "description": "사이드바 외부 영역 정렬기준. Custom이면 드래그 순서, 아니면 기준이 order를 덮는다." },
+				"PluginClicks": { "type": "object", "default": {}, "description": "Plugin별 클릭 수. 클릭 많은 순 정렬용(자동 관리)." },
+				"PluginFirstSeen": { "type": "object", "default": {}, "description": "Plugin별 최초 확인 시각(ms). 오래된 순 정렬용(자동 관리)." },
 				"AppToastDurationSec": { "type": "integer", "minimum": 0, "maximum": 120, "default": 4, "description": "인앱 토스트 표시 시간(초). 0이면 계속 표시." },
 				"GlobalToastDurationSec": { "type": "integer", "minimum": 0, "maximum": 120, "default": 4, "description": "바탕화면 토스트 표시 시간(초). 0이면 계속 표시." }
 			},

@@ -11,20 +11,24 @@ if not exist "node_modules\.bin\electron.cmd" (
     )
 )
 
-if /i "%~1"=="rebuild" goto :build
+if /i "%~1"=="rebuild" goto :forcebuild
 
-if not exist "dist\main\Main.cjs" goto :build
-if not exist "dist\renderer\Index.html" goto :build
-goto :run
-
-:build
-echo [Run] Building...
-call npm run build
+echo [Run] Checking build state...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Scripts\BuildIfStale.ps1" -Root "%~dp0."
 if errorlevel 1 (
     echo [Run] build failed.
     exit /b 1
 )
-if /i "%~1"=="rebuild" shift
+goto :run
+
+:forcebuild
+echo [Run] Rebuilding...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Scripts\BuildIfStale.ps1" -Root "%~dp0." -Force
+if errorlevel 1 (
+    echo [Run] build failed.
+    exit /b 1
+)
+shift
 
 :run
 echo [Run] Starting Scouter...

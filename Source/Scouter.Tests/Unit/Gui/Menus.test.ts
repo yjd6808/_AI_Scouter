@@ -54,6 +54,25 @@ void describe("Menus", () =>
 		menu.Close();
 	});
 
+	void it("잎 항목 실행이면 열린 메뉴가 닫힌다", () =>
+	{
+		const menu = new ContextMenu();
+		const leaf = CheckItem("다시 로드");
+		let ran = 0;
+		leaf.Click.Add(() => { ran++; });
+		const parent = CheckItem("하위 있음");
+		parent.AddItem(CheckItem("자식"));
+		menu.AddItem(leaf);
+		menu.AddItem(parent);
+		menu.OpenAt(10, 10);
+		assert.equal(menu.IsOpen, true);
+		parent.Activate();
+		assert.equal(menu.IsOpen, true);
+		leaf.Activate();
+		assert.equal(ran, 1);
+		assert.equal(menu.IsOpen, false);
+	});
+
 	void it("ContextMenu 우클릭으로 열린다", () =>
 	{
 		const list = new ListBox();
