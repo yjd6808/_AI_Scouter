@@ -32,7 +32,7 @@ npm run lint:layout / npm run lint:theme / npm run pack
 ## 5. 테스트 규칙
 
 - 단위: `Source/Scouter.Tests/Unit/**`, 가짜 객체 주입. E2E: `Source/Scouter.Tests/E2E/**`.
-- E2E 포트: 9521 Shell, 9522 Mcp, 9523/9524 P4Util, 9525 팔레트, 9526 Notes — 신규는 9527번부터.
+- E2E 포트: 9521 Shell, 9522 Mcp, 9523/9524 P4Util, 9525 팔레트, 9526 Notes, 9527 Theme, 9528 ToastLab, 9529 ControlLab, 9530 SidebarNotice — 신규는 9531번부터.
 - 스폰: `dist/main/Main.cjs --test --hidden --no-auth --port {N} --plugin-dir Plugins`.
   승인 필요 Tool은 `before`에서 `POST /test/approval {Policy:"allow"}`.
 - 외부 서버·바이너리 의존 테스트는 `SCOUTER_X_MODE` + `t.skip()` 분기 (P4Util 선례).
@@ -51,7 +51,18 @@ npm run lint:layout / npm run lint:theme / npm run pack
   `Plugins/*/.cache/ Source/*/.cache/`. 산출물·로그·temp를 커밋에 섞지 않는다.
 - `Assets/` 아이콘은 생성물이어도 커밋한다 (pack에 필요, `Scripts/MakeIcons.mjs`로 재생성 가능).
 
-## 7. 세션 인계 (멈춤없이 계속 개발용)
+## 7. 문서 안내 (Docs/)
+
+- `Docs/Design/` — 설계 원문 v5 (구현 순서 01→23 + 부록). 동작 원리가 필요하면 여기가 정답.
+  목차·역할별 읽기 순서는 `Docs/Design/README.md`.
+- `Docs/Plugin/Guide.md` — 외부 플러그인 개발 절차 전체 (상세 가이드).
+  AI용 짧은 체크리스트는 `Plugins/AGENTS.md`.
+- `Docs/Program/LayoutXml.md` — Layout XML 작성법. 전 패널·전 컨트롤 속성표 + 예시 + 소스 파일 위치.
+- `Docs/Program/TypeScript.md` — Plugin TS 작성법. 컨벤션·`IPluginContext` 창구표·Tool·화면 코드 관례.
+- 역할별 진입점: Plugin 작성 → `Docs/Plugin/Guide.md` → 필요시 Program 2종 → 그래도 모르면 Design 원문(07/09/11/12/14/19).
+  프레임워크 수정 → Design 해당 번호 문서부터.
+
+## 8. 세션 인계 (멈춤없이 계속 개발용)
 
 - 작업이 바뀌면 `.admin/working/YYYY-MM-DD-{제목}.md`를 만든다(날짜는 당일).
 - 문서는 3섹션 고정: `이전 세션 작업` / `다음 세션 작업` / `프롬프트`(다음 세션 지시문).

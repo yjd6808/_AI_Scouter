@@ -1,115 +1,69 @@
-# AGENTS.md — Scouter 외부 플러그인 추가 가이드 (AI용)
+# AGENTS.md — Scouter 외부 플러그인 체크리스트 (AI용)
 
-> 대상: `Plugins/{Id}/` 외부 플러그인. 내장(`Source/Scouter.App/Renderer/BuiltIn/`)은 이 문서 범위 밖.
-> 참고 구현: `Plugins/P4Util/` (Tool 7종·화면·레시피 전부), `Plugins/Notes/` (최소형 4종).
+> 대상: `Plugins/{Id}/` 외부 플러그인. 내장(`Source/Scouter.App/Renderer/BuiltIn/`)은 범위 밖.
+> 상세 가이드는 `Docs/Plugin/Guide.md` (절차 전체), 화면 선언은 `Docs/Program/LayoutXml.md`,
+> TS 작성은 `Docs/Program/TypeScript.md`. 막히면 Guide부터 읽는다.
+> 참고 구현: `Plugins/P4Util/` (Tool·화면·레시피 전부), `Plugins/Notes/` (최소형),
+> `Plugins/ToastLab/` (토스트·확인창), `Plugins/ControlLab/` (전 컨트롤 예시).
 
-## 1. 최소 뼈대
+## 1. 뼈대 (`Docs/Plugin/Guide.md` §6)
 
 ```
 Plugins/{Id}/
-	Plugin.json            # 필수. 폴더명 == Id (다르면 경고만)
+	Plugin.json            # 필수. 폴더명 == Id
 	package.json           # name/version/type=module/private
 	tsconfig.json          # base 확장, composite=false, noEmit, include 명시
-	Index.ts               # default export PluginBase
+	Index.ts               # default export PluginBase. 등록만
 	Types.ts               # 공용 타입
-	NoteStore.ts           # 상태·외부연동 클래스 (도메인별 이름)
+	{Domain}Store.ts       # 상태 클래스 (가짜 주입 가능하게)
 	Tools/{X}Tool.ts       # Tool 1개 = 1파일
-	Views/MainControl.ts   # UserControl 1개
+	Views/MainControl.ts   # UserControl 1개. OnInit + static Configure
 	Layout/Main.xml        # UserControl 루트
-	Recipes/{X}.md         # 최소 1개 (P11 조건)
-	Settings.schema.json   # 있으면 자동 등록
+	Recipes/{X}.md         # 최소 1개
+	Settings.schema.json   # 선택 (있으면 자동 등록)
 ```
 
-## 2. Plugin.json
+## 2. 규칙 요약 (어기면 빨강)
 
-`Source/Scouter.App/Config/Plugin.schema.json`이 정답. 필수: `Id`(대문자 시작 영숫자) `Name` `Version`(x.y.z) `Main` `Layout`.
-`Permissions`는 `Process/Fs.Read/Fs.Write/Clipboard/Settings/Secrets/Network/Tools.Invoke` 중 필요만.
-없으면 권한 다이얼로그가 안 뜬다. `Tools`/`Commands` 배열은 실제 등록과 대조된다(어긋나면 경고·에러 로그).
+- `Plugin.json`은 `Source/Scouter.App/Config/Plugin.schema.json`이 정답. 필수 `Id`(대문자 시작 영숫자) `Name` `Version`(x.y.z) `Main` `Layout`.
+- `Permissions`는 필요만. `Tools`/`Commands` 배열은 실제 등록과 1:1.
+- 설정 읽기는 스냅샷 금지, getter로 넘긴다. 키는 `Plugins.{Id}.{Key}`.
+- `ITool` = `Name/Description/InputSchema` + `Run` (실패는 `throw`, 동기 throw는 `Promise.reject`로).
+  읽기 전용 `Annotations = { ReadOnly: true }`, 저위험 쓰기 `DefaultApproval = "auto"`, 위험은 ask.
+- 화면: `MainControl extends UserControl`, `OnInit`에서 `FindName/RequireName`.
+  `UserControl.Data`는 `Int/Bool/String`만. 목록은 코드 `SetItems`로 채운다.
+- `ctx` 필요 동작은 `static Configure` 주입. View에서 `require("electron")`·`node:*` 금지.
+- 루트 `package.json`의 `typecheck`·`lint:layout`에 `Plugins/{Id}`, `Plugins/{Id}/Layout` 추가.
+- 코딩 컨벤션: 탭, Allman, 파일 헤더, `////` 구분선, `_param`·`member_`·`s_`·`k`, 루프 `idx`, `any` 금지.
 
-## 3. Index.ts 패턴
+## 3. 테스트·포트
 
-```ts
-export default class XPlugin extends PluginBase
-{
-	protected override OnActivate(_ctx: IPluginContext): void
-	{
-		_ctx.Tools.Register(new FooTool(deps));          // MCP Tool 등록. 이름은 {Id}__{Tool명} 자동
-		_ctx.Ui.RegisterWindow("Main", MainControl);     // 사이드바 화면. "{Id}/Main" 등록
-		MainControl.Configure(shared);                   // View가 ctx를 못 받으니 static 주입 (P4Util/Notes/McpInspector 패턴)
-		_ctx.Commands.Register("Bar", { Title: "...", Hotkey: "Ctrl+Shift+X", Run: () => {...} });
-		// _ctx.Resources.Register / _ctx.Prompts.Register — 레시피·프롬프트
-	}
-}
-```
+- 단위: `Source/Scouter.Tests/Unit/Plugin/{Id}.test.ts`, `describe("{Id}")` 1개.
+- E2E: `Source/Scouter.Tests/E2E/{Id}.test.ts`. 사용 중: 9521 Shell, 9522 Mcp, 9523/9524 P4Util,
+  9525 팔레트, 9526 Notes, 9527 Theme, 9528 ToastLab, 9529 ControlLab, 9530 SidebarNotice.
+  **신규는 9531번부터.** 스폰: `dist/main/Main.cjs --test --hidden --no-auth --port {N} --plugin-dir Plugins`.
+- 화면 확인: `GET /test/find?name=`, `POST /test/click`, `POST /test/eval`.
+  합성 클릭은 hit-testing을 우회하므로 클릭 계열 수정 뒤에는 `Scripts/Testing/` 실마우스로 확인.
 
-- 설정 읽기는 스냅샷 금지. getter 객체로 넘긴다 (P4Util `ReadSettings` 참조).
-  설정 키는 `Plugins.{Id}.{Key}`. E2E에서 `/test/settings`로 바꿔도 실행 시점에 읽히게.
-- `ctx.Fs`는 `StorageDir`·`PluginDir` 안이 자유. 밖은 권한 필요.
-- 파일명 slug 등 외부 입력 → 경로 탈출 검증 (`..`·`/` 거부).
+## 4. 동작 메모 (2026-09 기준)
 
-## 4. Tool 작성
+- 파일 저장 → 300ms 디바운스. `.xml`만 자동 리로드, `.ts`/`.json`/`.css`는 사이드바 빨간 점 + 수동 리로드(우클릭 메뉴·F5·`Shell.ReloadPlugin`). 실패하면 느낌표. `.md` 등은 무시.
+- `TabControl`은 직접 붙인 `TabItem`을 자동 채택한다. `TextBlock`은 `FontSize` 개별 지정 가능.
+  `VirtualList`는 `ItemHeight` 생략 시 폰트 연동 자동 높이.
 
-`ITool` = `Name/Description/InputSchema` + `Run(_args, _call): Promise<unknown>`.
-실패는 `throw` (문자열 반환 금지). 인자 검증은 `ReadXArgs` 함수로 분리.
-
-| 종류 | 선언 |
-|---|---|
-| 읽기 전용 | `Annotations = { ReadOnly: true }` → 승인 auto |
-| 쓰기·저위험(자기 notes 등) | `DefaultApproval = "auto"` (Notes 선례, 결정 사유 남길 것) |
-| 위험 | `Annotations = { Destructive: true }` 또는 미선언 → `Mcp.DefaultApproval`(기본 ask) |
-
-## 5. 화면 (Views + Layout)
-
-- `MainControl extends UserControl`, `OnInit`에서 `FindName/RequireName` 바인딩.
-- `UserControl.Data` 타입은 `Int/Bool/String`만. 바인딩 식 `{{@x} + `s`}`, 문자열 리터럴은 백틱.
-- 목록+본문 구조는 P4Util `Main.xml`·Notes `Main.xml` 복사 후 수정이 가장 빠름.
-- 우클릭 메뉴: `new ContextMenu()` + `MenuItem` → `control.ContextMenu = menu` (P4Util `BindMenu` 참조).
-- `ctx`가 필요한 동작(클립보드 등)은 `static Configure`로 주입. View에서 직접 `require("electron")` 금지.
-
-## 6. package.json 등록 (잊으면 CI 빨강)
-
-```json
-"typecheck": "... Plugins/P4Util Plugins/Notes Plugins/{Id}",
-"lint:layout": "... Plugins/P4Util/Layout Plugins/Notes/Layout Plugins/{Id}/Layout",
-```
-
-## 7. 테스트
-
-- 단위: `Source/Scouter.Tests/Unit/Plugin/{Id}.test.ts`. 외부연동은 가짜 객체 주입
-  (Notes `MemoryFs` 참조). 파일 1개에 `describe("{Id}")`.
-- E2E: `Source/Scouter.Tests/E2E/{Id}.test.ts`. 포트 규칙: 9521 Shell, 9522 Mcp, 9523/9524 P4Util, 9525 팔레트, 9526 Notes, 9527 Theme, 9528 ToastLab 사용 중 — **9529번부터** 새 번호.
-  스폰 인자: `dist/main/Main.cjs --test --hidden --no-auth --port {N} --plugin-dir Plugins`.
-  승인 필요 Tool이면 `before`에서 `POST /test/approval {Policy:"allow"}`.
-  `--plugin-dir Plugins`라 새 플러그인은 자동 발견. StorageDir은 pid별 temp라 격리됨.
-- 서버·바이너리 의존이면 P4Util E2E처럼 `SCOUTER_X_MODE` + `t.skip()` 분기.
-
-## 8. 코딩 컨벤션 (위반하면 lint 빨강)
-
-탭 들여쓰기, Allman 브레이스, 파일 헤더 주석, `////` 메서드 구분선, 멤버 그룹 순서
-(정적→멤버→생성·소멸→속성→이벤트→공개→확장점→내부), `public/protected/private` 명시,
-`_param`·`member_`·`s_`·`k` 접두, 루프 `idx`(`i` 금지), `any` 금지, 파일 1개 = 클래스 1개.
-한글 주석은 Write 도구로만 작성.
-
-## 9. 검증 체인 (순서대로, 전부 녹색)
+## 5. 검증 체인
 
 ```
 npm run lint → npm run typecheck → npm run build → npm run test:unit → npm run test:e2e
+npm run lint:layout / npm run lint:theme
 ```
 
-## 10. 흔한 실패
+## 6. 흔한 실패
 
 | 증상 | 원인 |
 |---|---|
-| 사이드바에 오류 뷰 | `Layout` 경로 오타·XML 파싱 실패 (`LayoutXml=null` 아님. 로그 확인) |
-| 권한 다이얼로그 무한 대기 | `Permissions` 과다 선언. E2E는 `/test/permission` 또는 선언 축소 |
-| E2E에서 Tool 없음 | `OnActivate` 10초 타임아웃 초과, 또는 `Tools` 선언·등록 불일치 |
-| 설정이 안 먹음 | 스냅샷 저장. getter로 바꿀 것 (§3) |
-| `tsc -b`에 새 플러그인 누락 | §6 미등록 |
-
-## 11. 배포판에 넣기 (exe 기준)
-
-- 설치된 앱(`Scouter.exe` 옆 `Plugins/` 폴더)에 `{Id}/` 통째로 복사 → 앱 재시작 후 자동 로드(이미 있던 파일 수정은 300ms 디바운스 핫리로드).
-- 뼈대는 §1과 동일. `tsconfig`·`.cache` 없이 소스만 넣는다(앱이 esbuild로 번들).
-- 첫 실행에 권한 다이얼로그가 뜬다(§2 `Permissions` 최소 선언).
-- `~/.scouter/plugins`와 Id가 겹치면 exe 쪽이 아닌 나중 스캔이 우선(Discovery 규칙). 겹치지 않게 할 것.
-- exe 폴더 쓰기 권한이 없으면(관리자 설치 등) 로드 실패 → 로그 확인 후 `~/.scouter/plugins` 사용.
+| 사이드바 오류 뷰·느낌표 | `Layout` 오타·XML 파싱 실패·TS 오류. `/test/logs` 확인 후 다시 로드 |
+| 권한 다이얼로그 무한 대기 | `Permissions` 과다 선언 |
+| E2E에서 Tool 없음 | `OnActivate` 10초 타임아웃 또는 선언·등록 불일치 |
+| 설정이 안 먹음 | 스냅샷 저장. getter로 바꿀 것 |
+| `tsc -b` 누락 | §2 경로 미등록 |
