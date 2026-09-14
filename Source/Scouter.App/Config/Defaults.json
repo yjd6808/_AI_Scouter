@@ -1,7 +1,18 @@
 {
-	"Ui": { "SidebarWidth": 150, "SidebarCollapsed": false, "SplitterEnabled": true, "NativeFrame": false, "LastPluginId": "", "PluginOrder": [], "SidebarSort": "Custom", "PluginClicks": {}, "PluginFirstSeen": {}, "AppToastDurationSec": 4, "GlobalToastDurationSec": 4 },
+	"Ui":
+	{
+		"SidebarWidth": 150, "SidebarCollapsed": false, "SplitterEnabled": true, "NativeFrame": false, "LastPluginId": "",
+		"PluginOrder": [], "SidebarSort": "Custom", "PluginClicks": {}, "PluginFirstSeen": {},
+		"PluginGroups":
+		{
+			"System": [{ "Id": "default", "Name": "기본", "Kind": "Fixed", "Collapsed": false, "Items": [] }, { "Id": "hidden", "Name": "숨겨짐", "Kind": "Fixed", "Collapsed": true, "Items": [] }],
+			"External": [{ "Id": "default", "Name": "기본", "Kind": "Fixed", "Collapsed": false, "Items": [] }, { "Id": "hidden", "Name": "숨겨짐", "Kind": "Fixed", "Collapsed": true, "Items": [] }]
+		},
+		"SidebarAreaCollapsed": { "System": false, "External": false },
+		"AppToastDurationSec": 4, "GlobalToastDurationSec": 4
+	},
 	"Theme": { "Id": "oc-2", "Scheme": "System", "FontSize": 13, "FontFamily": "Segoe UI, system-ui, sans-serif", "MonoFamily": "Cascadia Code, Consolas, monospace", "Density": "Normal" },
-	"App": { "CloseToTray": true, "AutoStart": false, "StartHidden": false, "AutoSelectNewPlugin": true, "Update": { "Channel": "stable", "Url": "" } },
+	"App": { "CloseToTray": true, "AutoStart": false, "StartHidden": false, "AutoSelectNewPlugin": true, "AskPluginPermission": false, "Update": { "Channel": "stable", "Url": "" } },
 	"Hotkeys": { "Global": { "Show": "Ctrl+Shift+Space" } },
 	"Mcp": { "Port": 9515, "AllowedOrigins": [], "DefaultApproval": "ask", "SessionIdleMinutes": 30, "AuditMaxMb": 20, "Upstreams": [] },
 	"Log": { "Level": "info", "RetainDays": 7 }

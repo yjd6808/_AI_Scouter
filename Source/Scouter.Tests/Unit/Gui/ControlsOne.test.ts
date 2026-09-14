@@ -37,6 +37,14 @@ class StubChrome implements IWindowChrome
 	}
 }
 
+// Expander 헤더를 실제 포인터 입력으로 클릭한다. 합성 click이 아니라 InputDispatcher 경로를 태운다.
+// @param _header: 헤더 버튼 DOM
+function ClickHeader(_header: HTMLElement): void
+{
+	_header.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 1 }));
+	_header.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 1 }));
+}
+
 void describe("ControlsOne", () =>
 {
 	void it("ListBox 클릭·키보드 Extended", () =>
@@ -59,14 +67,41 @@ void describe("ControlsOne", () =>
 		UIManager.Reset();
 	});
 
-	void it("Expander 펼침·GroupBox 헤더", () =>
+	void it("Expander 접어도 헤더는 남고 다시 펼칠 수 있다", () =>
 	{
 		const expander = new Expander();
 		expander.Header = "일반";
+		const body = new TextBlock();
+		body.Text = "본문";
+		expander.Content = body;
+		document.body.append(expander.Element);
+		InputDispatcher.Attach(document.body, expander);
+		const header = expander.Element.querySelector<HTMLElement>(".gui-expander__header");
+		assert.ok(header !== null);
 		assert.equal(expander.IsExpanded, true);
-		expander.IsExpanded = false;
-		assert.ok(expander.Element.classList.contains("is-collapsed"));
+		assert.equal(header.getAttribute("aria-expanded"), "true");
+
+		ClickHeader(header);
+		assert.equal(expander.IsExpanded, false);
+		assert.ok(expander.Element.classList.contains("is-expander-collapsed"));
+		// Visibility.Collapsed 전용 클래스를 건드리면 루트가 통째로 사라진다.
+		assert.ok(!expander.Element.classList.contains("is-collapsed"));
+		// 접혀도 헤더는 DOM에 그대로 남아 다시 클릭할 수 있어야 한다.
+		assert.equal(expander.Element.querySelector(".gui-expander__header"), header);
+		assert.equal(header.isConnected, true);
+		assert.equal(header.getAttribute("aria-expanded"), "false");
+
+		ClickHeader(header);
+		assert.equal(expander.IsExpanded, true);
+		assert.ok(!expander.Element.classList.contains("is-expander-collapsed"));
+		assert.equal(header.getAttribute("aria-expanded"), "true");
+
+		InputDispatcher.Detach();
 		expander.Dispose();
+	});
+
+	void it("GroupBox 헤더", () =>
+	{
 		const group = new GroupBox();
 		group.Header = "G";
 		assert.equal(group.Element.querySelector("legend")?.textContent, "G");

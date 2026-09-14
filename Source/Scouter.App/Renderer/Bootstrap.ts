@@ -22,6 +22,7 @@ import { Hotkeys } from "./Services/Hotkeys";
 import { CommandRegistry } from "./Services/CommandRegistry";
 import { FileLogSink } from "./Services/FileLogSink";
 import { GlobalHotkey } from "./Services/GlobalHotkey";
+import { MainSettingsSync } from "./Services/MainSettingsSync";
 import { Shutdown } from "./Services/Shutdown";
 import { ToastPolicy } from "./Services/ToastPolicy";
 import { UpdateClient } from "./Services/UpdateClient";
@@ -122,6 +123,7 @@ async function Main(): Promise<void>
 		TestApiServer.Attach(McpHttpServer);                           // 8
 	if (!Args.IsTest)
 		GlobalHotkey.Sync();                                           // --test는 단일 인스턴스 예외라 전역 단축키를 잡지 않는다
+	MainSettingsSync.Sync();                                           // App.CloseToTray·App.AutoStart를 Main에 즉시 반영
 	Shutdown.Arm();
 	UpdateClient.Start();
 	await UIManager.ShowAsync("Shell");                                // 9

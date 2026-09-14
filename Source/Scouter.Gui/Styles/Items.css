@@ -18,6 +18,8 @@
 .gui-gridview__headercell { position: relative; display: flex; align-items: center; padding: 0 8px; background: transparent; border: none; color: var(--text-base); cursor: pointer; }
 .gui-gridview__grip { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: col-resize; }
 .gui-expander__header { min-height: var(--gui-control-height); display: flex; align-items: center; font-size: var(--gui-font-size); box-sizing: border-box; }
+/* Expander 접힘: 헤더는 남기고 본문(나머지 직계 자식)만 감춘다. Visibility 전용 .is-collapsed와 분리. */
+.gui-expander.is-expander-collapsed > *:not(.gui-expander__header) { display: none; }
 .gui-groupbox { border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
 .gui-groupbox > legend { font-size: var(--gui-font-sm, 12px); color: var(--text-weak); padding: 0 4px; }
 .gui-textbox { display: inline-flex; min-width: 0; max-width: 100%; }
@@ -76,7 +78,7 @@
 .gui-menuitem__gesture { color: var(--text-weak); font-size: var(--gui-font-sm, 12px); }
 .gui-menuitem__arrow { color: var(--text-weak); }
 .gui-toolbar { display: flex; gap: 2px; align-items: center; overflow: hidden; }
-.gui-button.gui-navitem { width: 100%; justify-content: flex-start; text-align: left; position: relative; }
+.gui-button.gui-navitem { width: 100%; justify-content: flex-start; text-align: left; position: relative; padding-left: calc(var(--gui-gap) + var(--gui-nav-indent) * var(--gui-nav-depth, 0)); }
 .gui-button.gui-navitem.is-error { border-color: var(--error); }
 .gui-navitem__dot { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--error); pointer-events: none; }
 .gui-navitem__alert { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--warning); color: #1e1e1e; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; box-sizing: border-box; pointer-events: none; }
@@ -84,10 +86,21 @@
 .gui-button.gui-navitem.is-external { background: var(--button-background); border: 1px solid var(--border); }
 .gui-button.gui-navitem:hover { border-color: var(--border-active); }
 .gui-button.gui-navitem .gui-button__content { flex: 1 1 auto; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gui-navheader { padding: 6px 8px 2px; color: var(--text-weak); font-size: var(--gui-font-sm, 12px); }
+.gui-navheader { display: flex; align-items: center; gap: 4px; padding: 6px 8px 2px; padding-left: calc(var(--gui-gap) + var(--gui-nav-indent) * var(--gui-nav-depth, 0)); color: var(--text-weak); font-size: var(--gui-font-sm, 12px); border-radius: var(--gui-radius); cursor: pointer; user-select: none; }
+.gui-navheader:hover { background: var(--background-hover); }
+.gui-navheader:focus-visible { outline: 1px solid var(--border-active); outline-offset: -1px; }
+.gui-navheader.is-area { color: var(--text-base); font-weight: 600; }
+.gui-navheader.is-editing { cursor: default; }
+.gui-navheader__chevron { --gui-icon-size: 14px; flex: none; transition: transform 120ms ease; }
+.gui-navheader.is-folded .gui-navheader__chevron { transform: rotate(-90deg); }
+.gui-navheader__text { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gui-navheader__edit { flex: 1 1 auto; min-width: 0; }
+.gui-navheader__edit input { width: 100%; box-sizing: border-box; }
 .gui-button.gui-navitem.is-dragging { opacity: 0.5; cursor: grabbing; }
 .gui-button.gui-navitem.is-drop-before { box-shadow: 0 -2px 0 var(--primary); }
 .gui-button.gui-navitem.is-drop-after { box-shadow: 0 2px 0 var(--primary); }
+/* 그룹 헤더 드롭: 항목 사이(선)와 구분되게 그룹 전체를 면으로 표시한다. is-collapsed는 프레임워크 예약이라 쓰지 않는다. */
+.gui-navheader.is-drop-into { background: var(--primary-muted); box-shadow: inset 0 0 0 1px var(--primary); }
 .gui-datagrid.no-resize .gui-gridview__grip { display: none; }
 .gui-avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary-muted); color: var(--text-base); font-size: var(--gui-font-sm, 12px); overflow: hidden; flex: none; }
 .gui-avatar img { width: 100%; height: 100%; object-fit: cover; }

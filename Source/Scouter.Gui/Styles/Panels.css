@@ -33,6 +33,7 @@
 .gui-splitter::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; background: transparent; border-radius: 1px; }
 .gui-splitter:hover, .gui-splitter.is-dragging { background: transparent; }
 .gui-splitter:hover::after, .gui-splitter.is-dragging::after { background: var(--border-active, #888); }
+/* Visibility.Collapsed 전용. 요소를 통째로 숨기므로 다른 접힘 상태(예: Expander)는 이 이름을 쓰지 않는다. */
 .is-collapsed { display: none !important; }
 .is-hidden { visibility: hidden; }
 .is-disabled { opacity: 0.5; }

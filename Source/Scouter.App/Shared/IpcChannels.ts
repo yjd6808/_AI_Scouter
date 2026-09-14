@@ -20,6 +20,7 @@ export const IpcChannels = {
 	WindowAttention: "window:attention",
 	AppGetPaths: "app:get-paths",
 	AppSetAutoStart: "app:set-auto-start",
+	AppSetCloseToTray: "app:set-close-to-tray",
 	AppSetGlobalHotkey: "app:set-global-hotkey",
 	AppRelaunch: "app:relaunch",
 	AppOpenSettings: "app:open-settings",

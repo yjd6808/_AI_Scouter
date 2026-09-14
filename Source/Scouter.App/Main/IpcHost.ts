@@ -52,6 +52,7 @@ export interface IAppOps
 {
 	Paths(): IAppInfo;
 	SetAutoStart(_enabled: boolean): void;
+	SetCloseToTray(_enabled: boolean): void;
 	SetGlobalHotkey(_accelerator: string): boolean;
 	CheckForUpdates(): Promise<void>;
 	InstallUpdate(): void;
@@ -115,6 +116,12 @@ export class IpcHost
 		{
 			const enabled = ((_payload ?? {}) as { Enabled?: unknown }).Enabled === true;
 			_app.SetAutoStart(enabled);
+			return { Ok: true };
+		});
+		_ipc.Handle(IpcChannels.AppSetCloseToTray, (_payload) =>
+		{
+			const enabled = ((_payload ?? {}) as { Enabled?: unknown }).Enabled === true;
+			_app.SetCloseToTray(enabled);
 			return { Ok: true };
 		});
 		_ipc.Handle(IpcChannels.AppSetGlobalHotkey, (_payload) =>

@@ -48,7 +48,7 @@ export class SettingsCatalog
 		const cloned: Record<string, IJsonSchemaNode> = {};
 		for (const [key, node] of Object.entries(_props ?? {}))
 		{
-			if (_group === "Ui" && (key === "PluginClicks" || key === "PluginFirstSeen"))
+			if (_group === "Ui" && (key === "PluginClicks" || key === "PluginFirstSeen" || key === "PluginGroups" || key === "SidebarAreaCollapsed"))
 				continue;
 			cloned[key] = { ...node };
 		}

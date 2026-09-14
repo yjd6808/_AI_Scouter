@@ -59,13 +59,15 @@ export class Expander extends ContentControl
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 펼침 상태를 갱신한다.
+	// 펼침 상태를 갱신한다. 헤더는 항상 남기고 본문만 감춘다.
+	// Visibility.Collapsed 전용인 is-collapsed와 이름이 겹치지 않도록 전용 클래스를 쓴다.
 	private Refresh(): void
 	{
 		const open = this.IsExpanded;
 		this.header_.IsChecked = open;
 		this.header_.Content = `${open ? "▾" : "▸"} ${this.Header}`;
-		this.Element.classList.toggle("is-collapsed", !open);
+		this.header_.Element.setAttribute("aria-expanded", open ? "true" : "false");
+		this.Element.classList.toggle("is-expander-collapsed", !open);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

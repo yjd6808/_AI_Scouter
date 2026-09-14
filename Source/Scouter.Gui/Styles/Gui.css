@@ -31,6 +31,7 @@
 	--gui-badge-height: 20px;
 	--gui-radius: 6px;
 	--gui-gap: 8px;
+	--gui-nav-indent: 12px;
 	--gui-font-mono: "Cascadia Code", Consolas, monospace;
 }
 .gui-button { min-height: var(--gui-control-height); padding: 2px 12px; border-radius: var(--gui-radius); border: 1px solid var(--border); background: var(--button-background); color: var(--button-text); font-size: var(--gui-font-size); line-height: 1.4; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }

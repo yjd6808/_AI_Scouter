@@ -422,7 +422,7 @@ export class PluginManager
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 권한을 확보한다. 부족하면 다이얼로그(순차). --test는 자동 승인.
+	// 권한을 확보한다. App.AskPluginPermission이 켜져 있을 때만 다이얼로그(순차). --test는 자동 승인.
 	// @param _manifest: 매니페스트
 	private static async EnsurePermissions(_manifest: IPluginManifest): Promise<void>
 	{
@@ -444,6 +444,10 @@ export class PluginManager
 		if (Args.IsTest)
 		{
 			allow = TestApiServer.PermissionDecision(_manifest.Id) ?? true;
+		}
+		else if (!Settings.Get<boolean>("App.AskPluginPermission", false))
+		{
+			allow = true;	// 로컬 신뢰 환경이므로 선언 권한을 자동 승인한다(D-11). 설정을 켜면 다시 묻는다.
 		}
 		else
 		{

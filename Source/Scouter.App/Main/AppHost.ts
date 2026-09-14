@@ -121,7 +121,10 @@ export class AppHost
 			// 무시.
 		}
 		AppHost.SeedBundledPlugins();
+		// 창을 만들기 전에 읽어야 첫 close부터 설정이 적용된다.
+		const settings = ReadSettings(userData);
 		const win = MainWindow.Create(_args);
+		MainWindow.SetCloseToTray(BoolOf(settings, "App.CloseToTray", true));
 		GlobalToastWindow.Arm(() =>
 		{
 			win.show();
@@ -176,9 +179,10 @@ export class AppHost
 			}, 2000);
 			ipcMain.once(IpcChannels.AppQuitReady, () => { AppHost.Quit(); });
 		});
-		const settings = ReadSettings(userData);
-		if (BoolOf(settings, "App.AutoStart", false))
-			AutoStart.Set(login, true);
+		// 설정값과 실제 OS 로그인 항목을 양방향으로 맞춘다(끄면 해제까지).
+		const autoStart = BoolOf(settings, "App.AutoStart", false);
+		if (AutoStart.Get(login) !== autoStart)
+			AutoStart.Set(login, autoStart);
 		updater.Configure(SettingOf(settings, "App.Update.Channel", "stable"), SettingOf(settings, "App.Update.Url", ""));
 		updater.Start(_args.Test);
 		const startHidden = BoolOf(settings, "App.StartHidden", false);
@@ -300,6 +304,7 @@ export class AppHost
 				Version: AppVersion(), IsPackaged: app.isPackaged, Args: process.argv,
 			}),
 			SetAutoStart: (_enabled: boolean) => { AutoStart.Set(_login, _enabled); },
+			SetCloseToTray: (_enabled: boolean) => { MainWindow.SetCloseToTray(_enabled); },
 			SetGlobalHotkey: (_accelerator: string) =>
 			{
 				globalShortcut.unregisterAll();

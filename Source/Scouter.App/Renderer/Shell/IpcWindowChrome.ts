@@ -8,7 +8,6 @@
 import { SimpleEvent } from "@scouter/gui";
 import type { IWindowChrome } from "@scouter/gui";
 import { Ipc } from "../Services/Ipc";
-import { Settings } from "../Services/Settings";
 import { IpcChannels } from "../../Shared/IpcChannels";
 
 export class IpcWindowChrome implements IWindowChrome
@@ -50,13 +49,11 @@ export class IpcWindowChrome implements IWindowChrome
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 닫는다. 트레이면 숨김.
+	// 닫는다. 트레이 숨김 여부는 Main의 close 핸들러가 App.CloseToTray로 정한다.
+	// 여기서 분기하면 Alt+F4 같은 OS 닫기와 규칙이 갈리므로 판단을 Main 한 곳에 모은다.
 	public Close(): void
 	{
-		if (Settings.Get<boolean>("App.CloseToTray", true))
-			void Ipc.Invoke(IpcChannels.WindowHide);
-		else
-			void Ipc.Invoke(IpcChannels.WindowClose);
+		void Ipc.Invoke(IpcChannels.WindowClose);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

@@ -57,14 +57,46 @@ void describe("PluginNotice", () =>
 		const controller = new SidebarController(list, shell);
 		try
 		{
-			controller.Rebuild([{ Id: kId, Title: "Probe", Icon: "package", Source: "External", State: "Active" }]);
+			controller.Sync([{ Id: kId, Title: "Probe", Icon: "package", Source: "External", State: "Active" }]);
 			const btn = controller.Find(kId);
 			assert.notEqual(btn, null);
 			assert.equal(btn?.Element.querySelector(".gui-navitem__dot"), null);
 			PluginManager.MarkDirty(kId);
-			controller.Rebuild([{ Id: kId, Title: "Probe", Icon: "package", Source: "External", State: "Active" }]);
+			controller.Sync([{ Id: kId, Title: "Probe", Icon: "package", Source: "External", State: "Active" }]);
+			assert.equal(controller.Find(kId), btn);
 			assert.notEqual(controller.Find(kId)?.Element.querySelector(".gui-navitem__dot"), null);
 			assert.equal(controller.Find(kId)?.Element.querySelector(".gui-navitem__alert"), null);
+			assert.equal(btn.ToolTip, "Probe (다시 로드 필요)");
+			PluginManager.ClearNotice(kId);
+			controller.Sync([{ Id: kId, Title: "Probe", Icon: "package", Source: "External", State: "Active" }]);
+			assert.equal(controller.Find(kId), btn);
+			assert.equal(btn.Element.querySelector(".gui-navitem__dot"), null);
+			assert.equal(btn.ToolTip, "Probe");
+		}
+		finally
+		{
+			PluginManager.ClearNotice(kId);
+			list.Dispose();
+		}
+	});
+
+	void it("표시 스팬이 밖에서 지워져도 다음 동기화가 되살린다", () =>
+	{
+		const list = new StackPanel();
+		const shell = { Navigate: (_id: string): void => undefined } as unknown as ShellWindow;
+		const controller = new SidebarController(list, shell);
+		const items = [{ Id: kId, Title: "Probe", Icon: "package", Source: "External" as const, State: "Active" as const }];
+		try
+		{
+			PluginManager.MarkDirty(kId);
+			controller.Sync(items);
+			const btn = controller.Find(kId);
+			assert.notEqual(btn, null);
+			btn?.Element.querySelector(".gui-navitem__dot")?.remove();
+			assert.equal(btn.Element.querySelector(".gui-navitem__dot"), null);
+			controller.Sync(items);
+			assert.equal(controller.Find(kId), btn);
+			assert.notEqual(btn.Element.querySelector(".gui-navitem__dot"), null);
 		}
 		finally
 		{
@@ -80,7 +112,7 @@ void describe("PluginNotice", () =>
 		const controller = new SidebarController(list, shell);
 		try
 		{
-			controller.Rebuild([{ Id: kId, Title: "Probe", Icon: "package", Source: "External", State: "Active" }]);
+			controller.Sync([{ Id: kId, Title: "Probe", Icon: "package", Source: "External", State: "Active" }]);
 			const btn = controller.Find(kId);
 			assert.notEqual(btn?.ContextMenu, null);
 		}

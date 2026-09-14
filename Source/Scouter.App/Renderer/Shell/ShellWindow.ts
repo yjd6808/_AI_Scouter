@@ -6,7 +6,7 @@
 */
 
 import { Window, Border, Button, Grid, GridSplitter, StackPanel, ContentPresenter, TextBox, TitleBar, DataList, UIManager, UILayerKind, RegisterWindow, Visibility, GridLength } from "@scouter/gui";
-import type { UserControl } from "@scouter/gui";
+import type { UserControl, KeyEventArgs } from "@scouter/gui";
 import { Settings } from "../Services/Settings";
 import { Paths } from "../Services/Paths";
 import { Ipc } from "../Services/Ipc";
@@ -17,7 +17,10 @@ import { ShellCommands } from "./ShellCommands";
 import { IpcWindowChrome } from "./IpcWindowChrome";
 import { WelcomeControl } from "./WelcomeControl";
 import { PluginManager } from "../Plugin/PluginManager";
+import type { IPluginHandle } from "../Plugin/PluginManager";
 import { PluginOrder } from "../Plugin/PluginOrder";
+import { PluginGroups } from "../Plugin/PluginGroups";
+import type { TPluginGroupArea } from "../Plugin/PluginGroups";
 import { McpHttpServer } from "../Mcp/McpHttpServer";
 
 @RegisterWindow("Shell")
@@ -31,36 +34,26 @@ export class ShellWindow extends Window
 	private presenter_!: ContentPresenter;
 	private expandTab_: Button | null = null;
 	private readonly views_ = new Map<string, UserControl>();
+	private readonly viewHandles_ = new Map<string, IPluginHandle>();
 	private viewOrder_: string[] = [];
+	private selectedId_ = "";
 
 	// ==================== 공개 메서드 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 사이드바 선택 → 콘텐츠 스와프. 이전 뷰는 캐시.
+	// 사이드바 선택 → 콘텐츠 스와프. 이전 뷰는 캐시. 빈 Id면 콘텐츠를 비운다.
 	// @param _pluginId: 뷰 Id
 	public Navigate(_pluginId: string): void
 	{
-		const prev = this.presenter_.Detach();
-		if (prev instanceof WelcomeControl)
-			this.views_.set("Shell/Welcome", prev);
 		if (_pluginId.length === 0)
-			return;
-		let view = this.views_.get(_pluginId);
-		if (view === undefined && _pluginId === "Shell/Welcome")
 		{
-			view = new WelcomeControl();
-			view.AttachToManager(this, view.DataList);
-			this.views_.set(_pluginId, view);
-		}
-		if (view === undefined && PluginManager.Has(_pluginId))
-			view = PluginManager.CreateMainView(_pluginId);
-		if (view === undefined)
+			this.presenter_.Detach();
+			this.selectedId_ = "";
 			return;
-		if (!this.viewOrder_.includes(_pluginId))
-			this.viewOrder_.push(_pluginId);
+		}
 		this.RecordClick(_pluginId);
-		this.presenter_.Content = view;
-		this.sidebar_.Select(_pluginId);
+		if (!this.ShowView(_pluginId))
+			return;
 		Settings.Set("Ui.LastPluginId", _pluginId);
 	}
 
@@ -92,9 +85,11 @@ export class ShellWindow extends Window
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 지금 열린 Plugin Id를 구한다. 없으면 빈 문자열. F5 리로드용.
+	// 리로드 중이라 콘텐츠가 잠시 비어도 선택 Id로 답한다.
 	public CurrentPluginId(): string
 	{
-		return (this.presenter_.Content as UserControl | null)?.PluginId ?? "";
+		const shown = (this.presenter_.Content as UserControl | null)?.PluginId ?? "";
+		return shown.length > 0 ? shown : this.selectedId_;
 	}
 
 	// ==================== 확장점 ====================
@@ -120,9 +115,10 @@ export class ShellWindow extends Window
 			if (def.Hotkey !== undefined)
 				Hotkeys.Bind(def.Hotkey, def.Id);
 		}
+		this.PreviewKeyDown.Add((_s, _a) => { this.OnPreviewKey(_a); });
 		Settings.Changed.Add((_change) => { this.OnSettingsChanged(_change.Key); });
 		Ipc.On("app:open-settings", () => { this.OpenSettings(); });
-		PluginManager.Changed.Add(() => { this.RebuildFromPlugins(); });
+		PluginManager.Changed.Add(() => { this.SyncFromPlugins(); });
 		McpHttpServer.SessionsChanged.Add(() =>
 		{
 			_data.Set("mcpSessions", McpHttpServer.SessionList().length);
@@ -138,7 +134,7 @@ export class ShellWindow extends Window
 	// 첫 화면을 정한다. 마지막 Plugin, 없으면 환영 뷰. 복원 뒤 사이드바에 포커스.
 	protected override OnShown(): void
 	{
-		this.RebuildFromPlugins();
+		this.SyncFromPlugins();
 		const last = Settings.Get<string>("Ui.LastPluginId", "");
 		const target = PluginManager.Has(last) ? last : (PluginManager.List()[0]?.Id ?? "Shell/Welcome");
 		this.Navigate(target);
@@ -148,45 +144,215 @@ export class ShellWindow extends Window
 	// ==================== 내부 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// Plugin 목록으로 사이드바를 다시 그린다. 시스템은 위(항상 알파벳), 외부는 아래(정렬기준).
-	private RebuildFromPlugins(): void
+	// 창 안에 포커스가 있을 때도 전역 단축키가 먹도록 창 터널 단계에서 한 번 더 본다.
+	// Hotkeys는 UIManager.Root의 PreviewKeyDown에 붙는데 창 트리는 그 자식이 아니다.
+	// InputDispatcher는 document.activeElement에서 라우팅하므로, 창 안이 포커스면 Root 핸들러까지 가지 않는다.
+	// 조합 판정은 Hotkeys가 실제로 들고 있는 바인딩(HotkeyOf)으로만 하므로 표가 둘로 갈리지 않는다.
+	// @param _a: 키 인자
+	private OnPreviewKey(_a: KeyEventArgs): void
 	{
-		const active = PluginManager.List().filter((_p) => _p.State === "Active" || _p.State === "Error");
-		for (const id of [...this.views_.keys()])
+		if (_a.Handled)
+			return;
+		const chord = ShellWindow.ChordOf(_a);
+		for (const def of CommandRegistry.List())
 		{
-			if (id !== "Shell/Welcome" && !active.some((_p) => _p.Id === id))
-			{
-				const stale = this.views_.get(id);
-				if (stale !== undefined)
-				{
-					if (this.presenter_.Content === stale)
-						this.presenter_.Detach();
-					stale.Dispose();
-				}
-				this.views_.delete(id);
-			}
+			if (Hotkeys.HotkeyOf(def.Id) !== chord)
+				continue;
+			if (!CommandRegistry.CanExecute(def.Id))
+				return;
+			void CommandRegistry.Execute(def.Id);
+			_a.Handled = true;
+			return;
 		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 키 인자에서 단축키 조합 문자열을 만든다. Hotkeys.Normalize와 같은 표기로 맞춘다.
+	// @param _a: 키 인자
+	private static ChordOf(_a: KeyEventArgs): string
+	{
+		const parts: string[] = [];
+		if (_a.Ctrl)
+			parts.push("ctrl");
+		if (_a.Shift)
+			parts.push("shift");
+		if (_a.Alt)
+			parts.push("alt");
+		if (_a.Meta)
+			parts.push("meta");
+		parts.push(_a.Key.length === 1 ? _a.Key : _a.Code);
+		return Hotkeys.Normalize(parts.join("+"));
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Plugin 목록을 사이드바에 동기화한다. 영역 → 그룹 → 항목 구조는 SidebarController가 그린다.
+	// 정렬기준은 그룹 구조를 덮지 않는다. 그룹 안 나열 순서만 바꾸므로 여기서는 평탄한 목록만 넘긴다.
+	// 리로드 중 잠시 Disabled가 되는 Plugin도 목록에 남긴다. 목록이 깜빡이면 선택·스크롤이 날아가기 때문이다.
+	private SyncFromPlugins(): void
+	{
+		const listed = PluginManager.List();
+		this.PruneViews();
 		const sort = PluginOrder.NormalizeSort(Settings.Get<unknown>("Ui.SidebarSort", "Custom"));
-		const ids = active.map((_p) => _p.Id);
+		const ids = listed.map((_p) => _p.Id);
 		const seen = Settings.Get<Record<string, number>>("Ui.PluginFirstSeen", {});
 		const ensuredSeen = PluginOrder.EnsureFirstSeen(seen, ids, Date.now());
 		if (JSON.stringify(ensuredSeen) !== JSON.stringify(seen))
 			Settings.Set("Ui.PluginFirstSeen", ensuredSeen);
-		const builtIn = PluginOrder.SortBuiltIn(active.filter((_p) => _p.Source === "BuiltIn"));
-		const external = active.filter((_p) => _p.Source !== "BuiltIn");
-		const order = Settings.Get<string[]>("Ui.PluginOrder", []);
-		const ensured = PluginOrder.EnsureExternalOrder(order, external.map((_p) => _p.Id));
-		if (ensured.length !== order.length)
-			Settings.Set("Ui.PluginOrder", ensured);
+		const builtIn = PluginOrder.SortBuiltIn(listed.filter((_p) => _p.Source === "BuiltIn"));
+		const external = listed.filter((_p) => _p.Source !== "BuiltIn");
+		const externalIds = external.map((_p) => _p.Id);
+		ShellWindow.MigrateGroupsOnce(externalIds);
+		const groups = PluginGroups.Normalize(Settings.Get<unknown>("Ui.PluginGroups", null), builtIn.map((_p) => _p.Id), externalIds);
 		const clicks = Settings.Get<Record<string, number>>("Ui.PluginClicks", {});
-		const sortedExternal = PluginOrder.SortExternal(external, ensured, clicks, ensuredSeen, sort);
-		this.sidebar_.Rebuild([...builtIn, ...sortedExternal].map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: "package", Source: _p.Source, State: _p.State })), {
+		this.sidebar_.Sync([...builtIn, ...external].map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: "package", Source: _p.Source, State: _p.State })), {
 			SortMode: sort,
-			OnOrderChanged: (_ids) => { Settings.Set("Ui.PluginOrder", _ids); },
+			Groups: groups,
+			Clicks: clicks,
+			Seen: ensuredSeen,
+			AreaCollapsed: ShellWindow.AreaCollapsed(),
+			OnOrderChanged: (_area, _itemId, _groupId, _index) => { ShellWindow.SaveItemMove(_area, _itemId, _groupId, _index); },
+			OnGroupsChanged: (_state) => { Settings.Set("Ui.PluginGroups", _state); },
+			OnAreaCollapsedChanged: (_area, _collapsed) => { ShellWindow.SaveAreaCollapsed(_area, _collapsed); },
 		});
-		const current = (this.presenter_.Content as UserControl | null)?.PluginId ?? Settings.Get<string>("Ui.LastPluginId", "");
-		if (current.length > 0 && this.sidebar_.Find(current) !== null)
-			this.sidebar_.Select(current);
+		this.RestoreSelection();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 기존 Ui.PluginOrder를 그룹 구조로 딱 한 번 옮긴다. 이관 뒤에는 NeedsMigration이 false라 다시 덮지 않는다.
+	// Ui.PluginOrder는 지우지 않고 레거시(읽기 전용)로 남긴다.
+	// @param _externalIds: 현재 외부 Plugin Id
+	private static MigrateGroupsOnce(_externalIds: string[]): void
+	{
+		if (!PluginGroups.NeedsMigration(Settings.Get<unknown>("Ui.PluginGroups", null)))
+			return;
+		const order = Settings.Get<string[]>("Ui.PluginOrder", []);
+		if (order.length === 0)
+			return;
+		Settings.Set("Ui.PluginGroups", PluginGroups.MigrateFromOrder(order, _externalIds));
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 영역 접힘 설정을 읽는다. 저장값이 깨져 있어도 두 영역 모두 boolean으로 굳힌다.
+	private static AreaCollapsed(): Record<TPluginGroupArea, boolean>
+	{
+		const raw = Settings.Get<Record<string, unknown>>("Ui.SidebarAreaCollapsed", {});
+		return { System: raw["System"] === true, External: raw["External"] === true };
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 영역 접힘을 저장한다.
+	// @param _area: 영역
+	// @param _collapsed: 접힘 여부
+	private static SaveAreaCollapsed(_area: TPluginGroupArea, _collapsed: boolean): void
+	{
+		const next = ShellWindow.AreaCollapsed();
+		next[_area] = _collapsed;
+		Settings.Set("Ui.SidebarAreaCollapsed", next);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 항목 이동을 저장한다. 저장된 구조에 같은 이동을 다시 적용한다.
+	// @param _area: 영역
+	// @param _itemId: Plugin Id
+	// @param _groupId: 대상 그룹 Id
+	// @param _index: 대상 그룹에서 제거 후 기준 삽입 위치
+	private static SaveItemMove(_area: TPluginGroupArea, _itemId: string, _groupId: string, _index: number): void
+	{
+		const current = PluginGroups.Normalize(Settings.Get<unknown>("Ui.PluginGroups", null), [], []);
+		const next = PluginGroups.MoveItem(current, _area, _itemId, _groupId, _index);
+		if (next === current)
+			return;
+		Settings.Set("Ui.PluginGroups", next);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 낡은 캐시 뷰를 버린다. Plugin이 사라졌거나 리로드로 핸들이 바뀐 경우다.
+	// 리로드가 끝나기 전까지는 보고 있던 뷰를 그대로 두어 콘텐츠가 비는 순간을 없앤다.
+	private PruneViews(): void
+	{
+		for (const id of [...this.views_.keys()])
+		{
+			if (id === "Shell/Welcome")
+				continue;
+			const handle = PluginManager.Get(id);
+			if (handle !== null && handle === this.viewHandles_.get(id))
+				continue;
+			this.DropView(id);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 캐시 뷰 1개를 떼고 버린다. 선택 상태는 건드리지 않는다.
+	// @param _pluginId: 뷰 Id
+	private DropView(_pluginId: string): void
+	{
+		const stale = this.views_.get(_pluginId);
+		this.views_.delete(_pluginId);
+		this.viewHandles_.delete(_pluginId);
+		if (stale === undefined)
+			return;
+		if (this.presenter_.Content === stale)
+			this.presenter_.Detach();
+		stale.Dispose();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 선택을 유지한다. 보고 있던 뷰가 리로드로 버려졌으면 새 뷰를 만들어 콘텐츠 영역에 다시 꽂는다.
+	// 아직 Loading·Disabled면 아무것도 하지 않는다. 다음 Changed에서 다시 들어온다.
+	private RestoreSelection(): void
+	{
+		const selected = this.selectedId_.length > 0 ? this.selectedId_ : Settings.Get<string>("Ui.LastPluginId", "");
+		if (selected.length === 0)
+			return;
+		if (this.sidebar_.Find(selected) !== null)
+			this.sidebar_.Select(selected);
+		if (this.presenter_.Content !== null)
+			return;
+		const state = PluginManager.Get(selected)?.State ?? null;
+		if (selected !== "Shell/Welcome" && state !== "Active" && state !== "Error")
+			return;
+		this.ShowView(selected);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 캐시 뷰를 콘텐츠 영역에 건다. 클릭 집계·마지막 Id 저장은 하지 않는다.
+	// @param _pluginId: 뷰 Id
+	private ShowView(_pluginId: string): boolean
+	{
+		const view = this.ResolveView(_pluginId);
+		if (view === null)
+			return false;
+		if (this.presenter_.Content !== view)
+			this.presenter_.Content = view;
+		if (!this.viewOrder_.includes(_pluginId))
+			this.viewOrder_.push(_pluginId);
+		this.selectedId_ = _pluginId;
+		this.sidebar_.Select(_pluginId);
+		return true;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 캐시 뷰를 구한다. 없으면 만들어 캐시한다. 만들 때의 Plugin 핸들도 같이 적어 리로드를 판별한다.
+	// @param _pluginId: 뷰 Id
+	private ResolveView(_pluginId: string): UserControl | null
+	{
+		const cached = this.views_.get(_pluginId);
+		if (cached !== undefined)
+			return cached;
+		if (_pluginId === "Shell/Welcome")
+		{
+			const welcome = new WelcomeControl();
+			welcome.AttachToManager(this, welcome.DataList);
+			this.views_.set(_pluginId, welcome);
+			return welcome;
+		}
+		const handle = PluginManager.Get(_pluginId);
+		if (handle === null)
+			return null;
+		const created = PluginManager.CreateMainView(_pluginId);
+		this.views_.set(_pluginId, created);
+		this.viewHandles_.set(_pluginId, handle);
+		return created;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -215,8 +381,8 @@ export class ShellWindow extends Window
 	{
 		if (_key === "Ui.SidebarCollapsed" || _key === "Ui.SidebarWidth")
 			this.ApplySidebarWidth();
-		if (_key === "Ui.SidebarSort" || _key === "Ui.PluginOrder" || _key === "Ui.PluginClicks" || _key === "Ui.PluginFirstSeen")
-			this.RebuildFromPlugins();
+		if (_key === "Ui.SidebarSort" || _key === "Ui.PluginGroups" || _key === "Ui.SidebarAreaCollapsed" || _key === "Ui.PluginClicks" || _key === "Ui.PluginFirstSeen")
+			this.SyncFromPlugins();
 		if (_key === "Ui.NativeFrame")
 			this.ApplyNativeFrame();
 		if (_key === "Mcp.Port")

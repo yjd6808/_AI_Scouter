@@ -22,10 +22,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Testing/Capture-Wind
 ```
 powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Testing/Send-Mouse.ps1 hover 390 340
 powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Testing/Send-Mouse.ps1 click 390 340
+powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Testing/Send-Mouse.ps1 rclick 390 340
 ```
 
 - `hover` 뒤 1초 대기 → 캡처하면 툴팁(400ms 지연) 상태까지 보인다.
 - `click` 뒤 2초 대기 → 캡처하면 화면 전환까지 보인다.
+- `rclick`은 우클릭. 컨텍스트 메뉴 위치·항목 확인용.
 - 용도: 호버 덮개·툴팁 가로챔·사이드바 이동 같은 실마우스 전용 버그 재현.
   (P10 스플리터가 사이드바를 덮던 버그는 이 방식으로만 잡혔다.)
 

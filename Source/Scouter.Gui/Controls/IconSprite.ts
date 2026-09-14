@@ -13,6 +13,7 @@ const kSymbols: ReadonlyArray<{ Id: string; Body: string }> = [
 	{ Id: "lucide-panel-left-close", Body: "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M9 4v16M14 10l-2 2 2 2\"/>" },
 	{ Id: "lucide-panel-left-open", Body: "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M9 4v16M10 10l2 2-2 2\"/>" },
 	{ Id: "lucide-minus", Body: "<path d=\"M5 12h14\"/>" },
+	{ Id: "lucide-chrome-minimize", Body: "<path d=\"M5 18h14\"/>" },
 	{ Id: "lucide-square", Body: "<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"1\"/>" },
 	{ Id: "lucide-copy", Body: "<rect x=\"9\" y=\"9\" width=\"12\" height=\"12\" rx=\"2\"/><path d=\"M5 15V5a2 2 0 0 1 2-2h10\"/>" },
 	{ Id: "lucide-x", Body: "<path d=\"M6 6l12 12M18 6L6 18\"/>" },

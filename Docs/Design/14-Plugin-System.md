@@ -132,6 +132,7 @@ classDiagram
 | `Process` `Fs.Read` `Fs.Write` `Network` `Secrets` `App.*` `Tools.Invoke` | 설치(첫 로드) 시 1회 `PermissionDialog`(D-15), `~/.scouter/permissions.json` `{ "P4Util": { "Granted": [...], "At": iso, "Version": "0.1.0" } }` |
 | 권한 추가된 새 버전 | 추가분만 다시 질문 |
 | BuiltIn Plugin | 자동 승인 |
+| `App.AskPluginPermission` = false (기본) | 묻지 않고 선언 권한을 자동 승인(D-11 로컬 신뢰). true로 켜면 다이얼로그 |
 | `--test` | `--grant-all` 플래그 또는 Test API `POST /test/permission`으로 응답 |
 
 PermissionDialog UI: 380px, Plugin 이름/버전/작성자, 권한별 한 줄 설명 및 아이콘(terminal, folder, globe, key, ...), [허용(Primary)] [거부 → Disabled 상태로 로드, 사이드바 항목 회색 + 클릭 시 재질문].

@@ -15,7 +15,35 @@
 				"NativeFrame": { "type": "boolean", "default": false },
 				"LastPluginId": { "type": "string", "default": "" },
 				"PluginOrder": { "type": "array", "items": { "type": "string" }, "default": [], "description": "외부 Plugin 사용자 순서. 드래그로 바뀐다." },
-				"SidebarSort": { "type": "string", "enum": ["Custom", "MostClicked", "Oldest"], "default": "Custom", "description": "사이드바 외부 영역 정렬기준. Custom이면 드래그 순서, 아니면 기준이 order를 덮는다." },
+				"PluginGroups":
+				{
+					"type": "object",
+					"description": "사이드바 그룹 구조. 영역(System·External)별 그룹 목록과 각 그룹의 항목·접힘 상태(자동 관리).",
+					"default":
+					{
+						"System": [{ "Id": "default", "Name": "기본", "Kind": "Fixed", "Collapsed": false, "Items": [] }, { "Id": "hidden", "Name": "숨겨짐", "Kind": "Fixed", "Collapsed": true, "Items": [] }],
+						"External": [{ "Id": "default", "Name": "기본", "Kind": "Fixed", "Collapsed": false, "Items": [] }, { "Id": "hidden", "Name": "숨겨짐", "Kind": "Fixed", "Collapsed": true, "Items": [] }]
+					},
+					"properties":
+					{
+						"System": { "type": "array", "items": { "$ref": "#/definitions/PluginGroup" }, "default": [], "description": "시스템(내장) 영역 그룹 목록. 나열 순서가 표시 순서다." },
+						"External": { "type": "array", "items": { "$ref": "#/definitions/PluginGroup" }, "default": [], "description": "외부 Plugin 영역 그룹 목록. 나열 순서가 표시 순서다." }
+					},
+					"additionalProperties": true
+				},
+				"SidebarAreaCollapsed":
+				{
+					"type": "object",
+					"description": "사이드바 최상위 영역(시스템·외부 플러그인) 접힘 상태(자동 관리).",
+					"default": { "System": false, "External": false },
+					"properties":
+					{
+						"System": { "type": "boolean", "default": false, "description": "시스템 영역 접힘." },
+						"External": { "type": "boolean", "default": false, "description": "외부 Plugin 영역 접힘." }
+					},
+					"additionalProperties": true
+				},
+				"SidebarSort": { "type": "string", "enum": ["Custom", "MostClicked", "Oldest"], "default": "Custom", "description": "사이드바 외부 영역 정렬기준. 그룹 구조·그룹 순서는 유지하고 각 그룹 안 나열 순서에만 적용된다." },
 				"PluginClicks": { "type": "object", "default": {}, "description": "Plugin별 클릭 수. 클릭 많은 순 정렬용(자동 관리)." },
 				"PluginFirstSeen": { "type": "object", "default": {}, "description": "Plugin별 최초 확인 시각(ms). 오래된 순 정렬용(자동 관리)." },
 				"AppToastDurationSec": { "type": "integer", "minimum": 0, "maximum": 120, "default": 4, "description": "인앱 토스트 표시 시간(초). 0이면 계속 표시." },
@@ -46,6 +74,7 @@
 				"AutoStart": { "type": "boolean", "default": false },
 				"StartHidden": { "type": "boolean", "default": false },
 				"AutoSelectNewPlugin": { "type": "boolean", "default": true },
+				"AskPluginPermission": { "type": "boolean", "default": false, "description": "Plugin 첫 로드 시 권한 승인 창을 띄운다. 꺼두면 선언한 권한을 자동 승인한다(D-11 로컬 신뢰)." },
 				"Update": {
 					"type": "object",
 					"properties":
@@ -95,6 +124,24 @@
 			{
 				"Level": { "type": "string", "enum": ["debug", "info", "warn", "error"], "default": "info" },
 				"RetainDays": { "type": "integer", "minimum": 1, "maximum": 30, "default": 7 }
+			},
+			"additionalProperties": true
+		}
+	},
+	"definitions":
+	{
+		"PluginGroup":
+		{
+			"type": "object",
+			"description": "사이드바 그룹 1개. default·hidden은 두 영역 모두에 항상 있는 고정 그룹이다.",
+			"required": ["Id", "Name", "Kind", "Collapsed", "Items"],
+			"properties":
+			{
+				"Id": { "type": "string", "description": "그룹 Id. 영역 안에서 유일하다. default·hidden은 예약." },
+				"Name": { "type": "string", "description": "그룹 표시 이름. 고정 그룹은 기본·숨겨짐으로 강제된다." },
+				"Kind": { "type": "string", "enum": ["Fixed", "User"], "description": "Fixed는 이름변경·삭제 불가(순서 변경은 가능), User는 전부 가능." },
+				"Collapsed": { "type": "boolean", "description": "접힘 상태. 숨겨짐 그룹은 기본 접힘이고 검색 대상에서 빠진다." },
+				"Items": { "type": "array", "items": { "type": "string" }, "description": "그룹에 속한 Plugin Id. 나열 순서가 사용자 순서다." }
 			},
 			"additionalProperties": true
 		}

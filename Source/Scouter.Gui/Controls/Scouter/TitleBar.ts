@@ -27,15 +27,15 @@ export class TitleBar extends Control
 	private chromeBag_: IDisposable[] = [];
 	private readonly icon_: Icon;
 	private readonly title_: TextBlock;
-	private readonly min_: Button;
 	private readonly pin_: Button;
+	private readonly min_: Button;
 	private readonly max_: Button;
 	private readonly close_: Button;
 
 	// ==================== 생성 · 소멸 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 드래그 영역 + 버튼 4개를 만든다.
+	// 드래그 영역 + 버튼 4개를 만든다. 버튼은 왼쪽부터 고정·최소화·최대화·닫기 순서로 붙인다.
 	public constructor()
 	{
 		super();
@@ -43,19 +43,19 @@ export class TitleBar extends Control
 		this.icon_ = new Icon();
 		this.title_ = new TextBlock();
 		this.title_.Element.classList.add("gui-titlebar__title");
-		this.min_ = TitleBar.MakeChromeButton("minus", "최소화");
 		this.pin_ = TitleBar.MakeChromeButton("pin", "항상 위");
+		this.min_ = TitleBar.MakeChromeButton("chrome-minimize", "최소화");
 		this.max_ = TitleBar.MakeChromeButton("square", "최대화");
 		this.close_ = TitleBar.MakeChromeButton("x", "닫기");
 		this.close_.Element.classList.add("is-close");
 		this.AddChild(this.icon_);
 		this.AddChild(this.title_);
-		this.AddChild(this.min_);
 		this.AddChild(this.pin_);
+		this.AddChild(this.min_);
 		this.AddChild(this.max_);
 		this.AddChild(this.close_);
-		this.min_.Click.Add(() => { this.chrome_?.Minimize(); });
 		this.pin_.Click.Add(() => { void this.ToggleTopmostAsync(); });
+		this.min_.Click.Add(() => { this.chrome_?.Minimize(); });
 		this.max_.Click.Add(() => { this.chrome_?.ToggleMaximize(); });
 		this.close_.Click.Add(() => { this.chrome_?.Close(); });
 		this.ApplyTitle(this.Title);

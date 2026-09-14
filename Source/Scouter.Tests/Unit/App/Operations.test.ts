@@ -128,6 +128,7 @@ void describe("Operations", () =>
 		const app: IAppOps = {
 			Paths: () => ({ UserData: "u", Home: "h", Exe: "e", AppPath: "a", Resources: "r", Logs: "l", Temp: "t", Version: "0.4.0", IsPackaged: false, Args: [] }),
 			SetAutoStart: (_e) => { appCalls.push(`auto:${_e}`); },
+			SetCloseToTray: (_e) => { appCalls.push(`tray:${_e}`); },
 			SetGlobalHotkey: (_a) => { appCalls.push(`hot:${_a}`); return _a.length > 0; },
 			CheckForUpdates: () => { appCalls.push("check"); return Promise.resolve(); },
 			InstallUpdate: () => { appCalls.push("install"); },
@@ -149,6 +150,8 @@ void describe("Operations", () =>
 		assert.ok(win.Calls.includes("unmax"));
 		assert.deepEqual(run("app:set-auto-start", { Enabled: true }), { Ok: true });
 		assert.ok(appCalls.includes("auto:true"));
+		assert.deepEqual(run("app:set-close-to-tray", { Enabled: false }), { Ok: true });
+		assert.ok(appCalls.includes("tray:false"));
 		assert.deepEqual(run("app:set-global-hotkey", { Accelerator: "Ctrl+X" }), { Ok: true });
 		run("tray:set-tooltip", { Text: "hi" });
 		assert.ok(appCalls.includes("tip:hi"));

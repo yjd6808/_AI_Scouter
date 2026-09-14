@@ -5,7 +5,7 @@
 	설명: MainWindow. 주 창 생성·표시 토글·닫기 가로채기.
 */
 
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
 import * as path from "node:path";
 import { LaunchArgs } from "./LaunchArgs";
 
@@ -14,17 +14,21 @@ export class MainWindow
 	// ==================== 정적 ====================
 	private static s_current_: BrowserWindow | null = null;
 	private static s_quitting_ = false;
+	private static s_testMode_ = false;
+	private static s_closeToTray_ = true;
 
 	// ==================== 속성 ====================
 	public static get Current(): BrowserWindow | null { return MainWindow.s_current_; }
+	public static get CloseToTray(): boolean { return MainWindow.s_closeToTray_; }
 
 	// ==================== 공개 메서드 ====================
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 프레임없는 주 창을 만든다. 닫기는 기본 숨김(트레이).
+	// 프레임없는 주 창을 만든다. 닫기 처리는 App.CloseToTray가 정한다.
 	// @param _args: 실행 인자
 	public static Create(_args: LaunchArgs): BrowserWindow
 	{
+		MainWindow.s_testMode_ = _args.Test;
 		const win = new BrowserWindow(
 			{
 				width: 1280, height: 800, minWidth: 800, minHeight: 500, show: false,
@@ -35,14 +39,28 @@ export class MainWindow
 		void win.loadFile(path.join(__dirname, "../renderer/Index.html"));
 		win.on("close", (_e) =>
 		{
-			if (!MainWindow.s_quitting_)
+			if (MainWindow.ShouldHideOnClose(MainWindow.s_quitting_, MainWindow.s_testMode_, MainWindow.s_closeToTray_))
 			{
 				_e.preventDefault();
 				win.hide();
+				return;
 			}
+			if (MainWindow.s_quitting_ || MainWindow.s_testMode_)
+				return;
+			// 트레이로 숨기지 않는 설정. before-quit 정리 절차를 태운 뒤 실제로 끝낸다.
+			_e.preventDefault();
+			app.quit();
 		});
 		MainWindow.s_current_ = win;
 		return win;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 닫기→트레이 숨김 여부를 갱신한다. 부팅 시 settings.json, 이후 IPC로 들어온다.
+	// @param _enabled: App.CloseToTray 값
+	public static SetCloseToTray(_enabled: boolean): void
+	{
+		MainWindow.s_closeToTray_ = _enabled;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -66,5 +84,17 @@ export class MainWindow
 	public static SetQuitting(): void
 	{
 		MainWindow.s_quitting_ = true;
+	}
+
+	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 닫기를 숨김으로 바꿀지 판정한다. 부수효과 없는 순수 함수.
+	// @param _quitting: 종료가 확정된 상태인지
+	// @param _testMode: --test 실행인지(트레이가 없어 복구 수단이 없다)
+	// @param _closeToTray: App.CloseToTray 설정값
+	private static ShouldHideOnClose(_quitting: boolean, _testMode: boolean, _closeToTray: boolean): boolean
+	{
+		return !_quitting && !_testMode && _closeToTray;
 	}
 }

@@ -74,8 +74,8 @@ void describe("TitleBar", () =>
 		await Flush();
 		const buttons = ButtonsOf(bar);
 		assert.equal(buttons.length, 4);
-		assert.equal(HrefOf(buttons[0] as Element), "#lucide-minus");
-		assert.equal(HrefOf(buttons[1] as Element), "#lucide-pin");
+		assert.equal(HrefOf(buttons[0] as Element), "#lucide-pin");
+		assert.equal(HrefOf(buttons[1] as Element), "#lucide-chrome-minimize");
 		assert.equal(HrefOf(buttons[2] as Element), "#lucide-square");
 		assert.equal(HrefOf(buttons[3] as Element), "#lucide-x");
 		bar.Dispose();
@@ -90,7 +90,7 @@ void describe("TitleBar", () =>
 		bar.Chrome = chrome;
 		await Flush();
 		chrome.TopmostChanged.Invoke(true);
-		assert.equal(HrefOf(ButtonsOf(bar)[1] as Element), "#lucide-pin-off");
+		assert.equal(HrefOf(ButtonsOf(bar)[0] as Element), "#lucide-pin-off");
 		chrome.MaximizedChanged.Invoke(true);
 		assert.equal(HrefOf(ButtonsOf(bar)[2] as Element), "#lucide-copy");
 		chrome.MaximizedChanged.Invoke(false);

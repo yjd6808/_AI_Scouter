@@ -26,7 +26,7 @@ void describe("IconSprite", () =>
 		assert.equal(nodes.length, 1);
 		const svg = document.getElementById("scouter-icon-sprite");
 		assert.ok(svg?.querySelector("#lucide-x") !== null);
-		assert.ok(svg?.querySelector("#lucide-minus") !== null);
+		assert.ok(svg?.querySelector("#lucide-chrome-minimize") !== null);
 		assert.ok(svg?.querySelector("#lucide-square") !== null);
 		assert.ok(svg?.querySelector("#lucide-pin") !== null);
 		assert.ok(svg?.querySelector("#lucide-pin-off") !== null);
@@ -35,7 +35,7 @@ void describe("IconSprite", () =>
 	void it("Ids에 창 버튼이 있다", () =>
 	{
 		const ids = IconSprite.Ids();
-		assert.ok(ids.includes("lucide-minus"));
+		assert.ok(ids.includes("lucide-chrome-minimize"));
 		assert.ok(ids.includes("lucide-square"));
 		assert.ok(ids.includes("lucide-copy"));
 		assert.ok(ids.includes("lucide-x"));
