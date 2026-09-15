@@ -15,8 +15,8 @@
       "diffDelete": "#f52a65"
     },
     "overrides": {
-      "text-weak": "#8a8a8a",
-      "syntax-comment": "#8a8a8a",
+      "text-weak": "#848484",
+      "syntax-comment": "#848484",
       "syntax-keyword": "#EC5B2B",
       "syntax-string": "#0062d1",
       "syntax-primitive": "#c94d24",

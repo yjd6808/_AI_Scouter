@@ -84,6 +84,10 @@
 .gui-navitem__alert { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--warning); color: #1e1e1e; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; box-sizing: border-box; pointer-events: none; }
 .gui-button.gui-navitem.is-core { background: transparent; border: 1px solid var(--border-weak-base); }
 .gui-button.gui-navitem.is-external { background: var(--button-background); border: 1px solid var(--border); }
+/* 선택 항목 채움. 기본 배경 규칙과 동급이라 뒤에서 덮는다. 정확히 1개만 체크되므로 강조도 1개다. */
+.gui-button.gui-navitem.is-core.is-checked, .gui-button.gui-navitem.is-external.is-checked { background: var(--primary-muted); }
+/* 체크된 항목은 채움이 현재 위치를 말하므로 키보드 링을 겹치지 않는다. 미체크 항목의 링은 그대로 둔다. */
+.gui-button.gui-navitem.is-checked:focus-visible { outline: none; }
 .gui-button.gui-navitem:hover { border-color: var(--border-active); }
 .gui-button.gui-navitem .gui-button__content { flex: 1 1 auto; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gui-navheader { display: flex; align-items: center; gap: 4px; padding: 6px 8px 2px; padding-left: calc(var(--gui-gap) + var(--gui-nav-indent) * var(--gui-nav-depth, 0)); color: var(--text-weak); font-size: var(--gui-font-sm, 12px); border-radius: var(--gui-radius); cursor: pointer; user-select: none; }

@@ -53,6 +53,7 @@ export class Settings
 			loaded = {};
 		}
 		Settings.s_data_ = Settings.Merge(_defaults, loaded);
+		Settings.MigrateThemeScheme();
 		if (!Settings.s_validate_(Settings.s_data_))
 			Settings.s_data_ = Settings.Merge(_defaults, {});
 	}
@@ -145,6 +146,18 @@ export class Settings
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 구 Theme.Scheme="System" 저장값을 Dark로 옮긴다. 스키마에서 System을 빼도 기존 설정이 날아가지 않게 한다.
+	private static MigrateThemeScheme(): void
+	{
+		const theme = Settings.s_data_["Theme"];
+		if (typeof theme !== "object" || theme === null)
+			return;
+		const record = theme as Record<string, unknown>;
+		if (record["Scheme"] === "System")
+			record["Scheme"] = "Dark";
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 점 경로로 읽는다.

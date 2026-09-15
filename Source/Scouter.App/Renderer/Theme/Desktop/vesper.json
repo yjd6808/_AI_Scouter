@@ -16,6 +16,7 @@
       "diffDelete": "#FF8080"
     },
     "overrides": {
+      "surface-brand-base": "#8a5016",
       "syntax-comment": "#7a7a7a",
       "syntax-keyword": "#6e6e6e",
       "syntax-string": "#117e69",

@@ -109,6 +109,6 @@ void describe("Theme E2E", () =>
 		assert.equal(await Eval("document.documentElement.dataset[\"scheme\"]"), "light");
 		const lightBg = await Eval("getComputedStyle(document.documentElement).getPropertyValue(\"--background-base\").trim()");
 		assert.notEqual(darkBg, lightBg);
-		await Post("/test/settings", { Path: "Theme.Scheme", Value: "System" });
+		await Post("/test/settings", { Path: "Theme.Scheme", Value: "Dark" });
 	});
 });

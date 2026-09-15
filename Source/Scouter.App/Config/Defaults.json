@@ -1,7 +1,7 @@
 {
 	"Ui":
 	{
-		"SidebarWidth": 150, "SidebarCollapsed": false, "SplitterEnabled": true, "NativeFrame": false, "LastPluginId": "",
+		"SidebarWidth": 225, "SidebarCollapsed": false, "SplitterEnabled": true, "NativeFrame": false, "LastPluginId": "",
 		"PluginOrder": [], "SidebarSort": "Custom", "PluginClicks": {}, "PluginFirstSeen": {},
 		"PluginGroups":
 		{
@@ -11,7 +11,7 @@
 		"SidebarAreaCollapsed": { "System": false, "External": false },
 		"AppToastDurationSec": 4, "GlobalToastDurationSec": 4
 	},
-	"Theme": { "Id": "oc-2", "Scheme": "System", "FontSize": 13, "FontFamily": "Segoe UI, system-ui, sans-serif", "MonoFamily": "Cascadia Code, Consolas, monospace", "Density": "Normal" },
+	"Theme": { "Id": "oc-2", "Scheme": "Dark", "FontSize": 13, "FontFamily": "Segoe UI, system-ui, sans-serif", "MonoFamily": "Cascadia Code, Consolas, monospace", "Density": "Normal" },
 	"App": { "CloseToTray": true, "AutoStart": false, "StartHidden": false, "AutoSelectNewPlugin": true, "AskPluginPermission": false, "Update": { "Channel": "stable", "Url": "" } },
 	"Hotkeys": { "Global": { "Show": "Ctrl+Shift+Space" } },
 	"Mcp": { "Port": 9515, "AllowedOrigins": [], "DefaultApproval": "ask", "SessionIdleMinutes": 30, "AuditMaxMb": 20, "Upstreams": [] },

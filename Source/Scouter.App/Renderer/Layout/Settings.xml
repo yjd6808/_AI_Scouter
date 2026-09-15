@@ -3,7 +3,7 @@
 	<StackPanel ContentHost="true" Spacing="8" Margin="12">
 		<TextBlock Text="테마" />
 		<ComboBox Name="cmb_theme" />
-		<TextBlock Text="스킴 (다크·라이트·시스템)" />
+		<TextBlock Text="스킴 (다크·라이트)" />
 		<ComboBox Name="cmb_scheme" />
 		<TextBlock Text="글꼴 크기" />
 		<NumericUpDown Name="num_fontsize" Minimum="10" Maximum="20" />

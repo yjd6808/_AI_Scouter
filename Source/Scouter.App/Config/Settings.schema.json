@@ -9,7 +9,7 @@
 			"type": "object",
 			"properties":
 			{
-				"SidebarWidth": { "type": "integer", "minimum": 48, "maximum": 600, "default": 150 },
+				"SidebarWidth": { "type": "integer", "minimum": 48, "maximum": 600, "default": 225 },
 				"SidebarCollapsed": { "type": "boolean", "default": false },
 				"SplitterEnabled": { "type": "boolean", "default": true },
 				"NativeFrame": { "type": "boolean", "default": false },
@@ -57,7 +57,7 @@
 			"properties":
 			{
 				"Id": { "type": "string", "default": "oc-2" },
-				"Scheme": { "type": "string", "enum": ["Dark", "Light", "System"], "default": "System" },
+				"Scheme": { "type": "string", "enum": ["Dark", "Light"], "default": "Dark" },
 				"FontSize": { "type": "integer", "minimum": 10, "maximum": 20, "default": 13 },
 				"FontFamily": { "type": "string", "default": "Segoe UI, system-ui, sans-serif" },
 				"MonoFamily": { "type": "string", "default": "Cascadia Code, Consolas, monospace" },

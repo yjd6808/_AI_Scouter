@@ -36,8 +36,8 @@ export class SettingsWindow extends Window
 				Settings.Set("Theme.Id", item);
 		});
 		const scheme = this.RequireName(ComboBox, "cmb_scheme");
-		scheme.SetItems(["System", "Dark", "Light"]);
-		scheme.SelectedItem = Settings.Get<ThemeMode>("Theme.Scheme", "System");
+		scheme.SetItems(["Dark", "Light"]);
+		scheme.SelectedItem = Settings.Get<ThemeMode>("Theme.Scheme", "Dark");
 		scheme.SelectionChanged.Add(() =>
 		{
 			if (this.applying_)
@@ -97,7 +97,7 @@ export class SettingsWindow extends Window
 			if (_key === "Theme.Id")
 				this.RequireName(ComboBox, "cmb_theme").SelectedItem = Settings.Get<string>("Theme.Id", "oc-2");
 			else if (_key === "Theme.Scheme")
-				this.RequireName(ComboBox, "cmb_scheme").SelectedItem = Settings.Get<ThemeMode>("Theme.Scheme", "System");
+				this.RequireName(ComboBox, "cmb_scheme").SelectedItem = Settings.Get<ThemeMode>("Theme.Scheme", "Dark");
 			else if (_key === "Theme.FontSize")
 				this.RequireName(NumericUpDown, "num_fontsize").Value = Settings.Get<number>("Theme.FontSize", 13);
 			else if (_key === "Theme.Density")

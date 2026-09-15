@@ -34,7 +34,6 @@ export class ThemeManager
 	private static s_preview_: ITheme | null = null;
 	private static s_resolved_: IResolvedTheme | null = null;
 	private static s_style_: HTMLStyleElement | null = null;
-	private static s_media_: MediaQueryList | null = null;
 	private static s_watcher_: FSWatcher | null = null;
 	private static readonly s_changed_ = new SimpleEvent<IThemeChanged>();
 
@@ -69,11 +68,6 @@ export class ThemeManager
 		ThemeManager.s_style_ = document.createElement("style");
 		ThemeManager.s_style_.id = "scouter-theme";
 		document.head.append(ThemeManager.s_style_);
-		ThemeManager.s_media_ = window.matchMedia("(prefers-color-scheme: dark)");
-		ThemeManager.s_media_.addEventListener("change", () =>
-		{
-			ThemeManager.Apply();
-		});
 		ThemeManager.Apply();
 		try
 		{
@@ -165,9 +159,8 @@ export class ThemeManager
 	{
 		if (ThemeManager.s_style_ === null)
 			return;
-		const mode = Settings.Get<ThemeMode>("Theme.Scheme", "System");
-		const wantDark = mode === "Dark" || (mode === "System" && (ThemeManager.s_media_?.matches ?? true));
-		const scheme: ThemeScheme = wantDark ? "Dark" : "Light";
+		const mode = Settings.Get<ThemeMode>("Theme.Scheme", "Dark");
+		const scheme: ThemeScheme = mode === "Light" ? "Light" : "Dark";
 		const fallback = ThemeManager.s_themes_.get("oc-2");
 		const fallbackResolved = fallback !== undefined ? ThemeResolver.Resolve(fallback, "Dark", null) : null;
 		const useScheme = (scheme === "Light" && !_theme.HasLight) ? "Dark" : (scheme === "Dark" && !_theme.HasDark ? "Light" : scheme);

@@ -346,7 +346,7 @@ export class SidebarController
 	private BuildNodes(): ISidebarNode[]
 	{
 		const nodes: ISidebarNode[] = [];
-		this.PushArea(nodes, "System", this.system_, "시스템");
+		this.PushArea(nodes, "System", this.system_, "시스템 플러그인");
 		this.PushArea(nodes, "External", this.external_, "외부 플러그인");
 		return nodes;
 	}
@@ -535,6 +535,7 @@ export class SidebarController
 		btn.ContextMenu = this.ItemMenu(_id);
 		btn.Click.Add((_s, _a) =>
 		{
+			btn.IsChecked = true;	// 네비 항목은 토글 끄기를 하지 않는다. 토글이 먼저 뒤집혀도 현재 뷰 선택을 굳힌다.
 			this.shell_.Navigate(_id);
 		});
 		const view: IItemView = { Button: btn, Title: "", Notice: null, Draggable: false, Depth: -1 };

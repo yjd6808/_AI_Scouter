@@ -194,14 +194,15 @@ export class DesktopResolver
 		_isDark: boolean): void
 	{
 		const neutralAlpha = DesktopResolver.NeutralAlpha(_neutral, _isDark);
-		_tokens["background-base"] = DesktopResolver.At(_neutral, 0);
+		_tokens["background-base"] = _isDark ? DesktopResolver.At(_neutral, 0) : DesktopResolver.At(_neutral, 2);
 		_tokens["background-weak"] = DesktopResolver.At(_neutral, 2);
 		_tokens["background-strong"] = DesktopResolver.At(_neutral, 0);
 		_tokens["background-stronger"] = _isDark ? DesktopResolver.At(_neutral, 1) : "#fcfcfc";
 		_tokens["surface-base"] = DesktopResolver.At(neutralAlpha, 1);
 		_tokens["base"] = DesktopResolver.At(neutralAlpha, 1);
-		_tokens["surface-base-hover"] = DesktopResolver.At(neutralAlpha, 2);
-		_tokens["surface-base-active"] = DesktopResolver.At(neutralAlpha, 2);
+		// Light 조작 단계(base < hover < 버튼 < 버튼호버 < 누름). Dark는 기존 값을 유지한다.
+		_tokens["surface-base-hover"] = _isDark ? DesktopResolver.At(neutralAlpha, 2) : DesktopResolver.At(neutralAlpha, 3);
+		_tokens["surface-base-active"] = _isDark ? DesktopResolver.At(neutralAlpha, 2) : DesktopResolver.At(neutralAlpha, 6);
 		_tokens["base2"] = DesktopResolver.At(neutralAlpha, 1);
 		_tokens["base3"] = DesktopResolver.At(neutralAlpha, 1);
 		_tokens["surface-inset-base"] = DesktopResolver.At(neutralAlpha, 1);
@@ -211,12 +212,12 @@ export class DesktopResolver
 			: OklchColor.WithAlpha(DesktopResolver.At(_neutral, 3), 0.09);
 		_tokens["surface-inset-strong-hover"] = DesktopResolver.Get(_tokens, "surface-inset-strong");
 		_tokens["surface-raised-base"] = DesktopResolver.At(neutralAlpha, 0);
-		_tokens["surface-float-base"] = _isDark ? DesktopResolver.At(_neutral, 1) : "#ffffff";
+		_tokens["surface-float-base"] = DesktopResolver.At(_neutral, 1);
 		_tokens["surface-float-base-hover"] = _isDark ? DesktopResolver.At(_neutral, 2) : DesktopResolver.At(_neutral, 1);
 		_tokens["surface-raised-base-hover"] = DesktopResolver.At(neutralAlpha, 1);
 		_tokens["surface-raised-base-active"] = DesktopResolver.At(neutralAlpha, 2);
-		_tokens["surface-raised-strong"] = _isDark ? DesktopResolver.At(neutralAlpha, 3) : DesktopResolver.At(_neutral, 0);
-		_tokens["surface-raised-strong-hover"] = _isDark ? DesktopResolver.At(neutralAlpha, 5) : "#ffffff";
+		_tokens["surface-raised-strong"] = _isDark ? DesktopResolver.At(neutralAlpha, 3) : DesktopResolver.At(neutralAlpha, 4);
+		_tokens["surface-raised-strong-hover"] = DesktopResolver.At(neutralAlpha, 5);
 		_tokens["surface-raised-stronger"] = _isDark ? DesktopResolver.At(neutralAlpha, 5) : "#ffffff";
 		_tokens["surface-raised-stronger-hover"] = _isDark ? DesktopResolver.At(neutralAlpha, 6) : "#ffffff";
 		_tokens["surface-weak"] = DesktopResolver.At(neutralAlpha, 2);
@@ -302,7 +303,7 @@ export class DesktopResolver
 		_interactive: string[],
 		_isDark: boolean): void
 	{
-		_tokens["input-base"] = _isDark ? DesktopResolver.At(_neutral, 1) : DesktopResolver.At(_neutral, 0);
+		_tokens["input-base"] = _isDark ? DesktopResolver.At(_neutral, 1) : "#ffffff";
 		_tokens["input-hover"] = _isDark ? DesktopResolver.At(_neutral, 2) : DesktopResolver.At(_neutral, 1);
 		_tokens["input-active"] = DesktopResolver.At(_interactive, _isDark ? 6 : 0);
 		_tokens["input-selected"] = DesktopResolver.At(_interactive, _isDark ? 7 : 3);

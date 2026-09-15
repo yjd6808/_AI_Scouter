@@ -32,7 +32,7 @@ void describe("Services", () =>
 	{
 		await unlink(file).catch(() => undefined);
 		await Settings.Load(file, schema, defaults);
-		assert.equal(Settings.Get<number>("Ui.SidebarWidth"), 150);
+		assert.equal(Settings.Get<number>("Ui.SidebarWidth"), 225);
 		let changed = "";
 		Settings.Changed.Add((_c) => { changed = _c.Key; });
 		Settings.Set("Ui.SidebarWidth", 220);

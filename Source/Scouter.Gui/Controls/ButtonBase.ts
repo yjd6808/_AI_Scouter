@@ -91,6 +91,7 @@ export class ButtonBase extends ContentControl
 			return;
 		this.isPressed_ = true;
 		this.Element.classList.add("is-pressed");
+		this.Focus();	// 디스패처가 기본 포커스를 막으므로 직접 준다. 마우스면 focus-visible과 무관하다.
 		InputDispatcher.Capture(this, _a.PointerId);
 		if (this.GetValue(ButtonBase.ClickModeProperty) === ClickMode.Press)
 			this.OnClick();

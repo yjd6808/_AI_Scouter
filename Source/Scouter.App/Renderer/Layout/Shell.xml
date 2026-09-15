@@ -10,7 +10,7 @@
 
 	<Grid ContentHost="true" Name="root" RowDefinitions="Auto,Auto,*,Auto">
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Name="col_sidebar" Width="150" MinWidth="48" MaxWidth="600"/>
+			<ColumnDefinition Name="col_sidebar" Width="225" MinWidth="48" MaxWidth="600"/>
 			<ColumnDefinition Width="8" MinWidth="8" MaxWidth="8"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>

@@ -6,7 +6,7 @@
 */
 
 export type ThemeScheme = "Dark" | "Light";
-export type ThemeMode = "Dark" | "Light" | "System";
+export type ThemeMode = "Dark" | "Light";
 export type ThemeSource = "BuiltIn" | "User" | "Plugin";
 
 export interface IThemeJson

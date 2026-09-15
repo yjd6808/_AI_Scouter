@@ -15,7 +15,7 @@ export class ThemePickerWindow extends Window
 {
 	// ==================== 멤버 ====================
 	private original_ = "oc-2";
-	private originalScheme_: ThemeMode = "System";
+	private originalScheme_: ThemeMode = "Dark";
 	private list_!: ListBox;
 
 	// ==================== 확장점 ====================
@@ -26,9 +26,9 @@ export class ThemePickerWindow extends Window
 	protected override OnInit(_data: DataList): void
 	{
 		this.original_ = Settings.Get<string>("Theme.Id", "oc-2");
-		this.originalScheme_ = Settings.Get<ThemeMode>("Theme.Scheme", "System");
+		this.originalScheme_ = Settings.Get<ThemeMode>("Theme.Scheme", "Dark");
 		const scheme = this.RequireName(ComboBox, "cmb_scheme");
-		scheme.SetItems(["System", "Dark", "Light"]);
+		scheme.SetItems(["Dark", "Light"]);
 		scheme.SelectedItem = this.originalScheme_;
 		scheme.SelectionChanged.Add(() =>
 		{
