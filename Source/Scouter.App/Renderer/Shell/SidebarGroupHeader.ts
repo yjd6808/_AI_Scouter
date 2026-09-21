@@ -36,7 +36,7 @@ export class SidebarGroupHeader extends Control
 		this.Focusable = true;
 		this.chevron_ = new Icon();
 		this.chevron_.Element.classList.add("gui-navheader__chevron");
-		this.chevron_.Name = "chevron-down";	// chevron-right 심볼이 없어 회전으로 접힘을 표현한다.
+		this.chevron_.Name = "chevron-down";	// 접힘은 CSS 회전(is-folded)으로 표현한다. chevron-right 심볼로 갈아끼우면 전환 애니메이션이 끊긴다.
 		this.AddChild(this.chevron_);
 		this.label_ = document.createElement("span");
 		this.label_.className = "gui-navheader__text";

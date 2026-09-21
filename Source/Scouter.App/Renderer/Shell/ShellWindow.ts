@@ -204,7 +204,7 @@ export class ShellWindow extends Window
 		ShellWindow.MigrateGroupsOnce(externalIds);
 		const groups = PluginGroups.Normalize(Settings.Get<unknown>("Ui.PluginGroups", null), builtIn.map((_p) => _p.Id), externalIds);
 		const clicks = Settings.Get<Record<string, number>>("Ui.PluginClicks", {});
-		this.sidebar_.Sync([...builtIn, ...external].map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: "package", Source: _p.Source, State: _p.State })), {
+		this.sidebar_.Sync([...builtIn, ...external].map((_p) => ({ Id: _p.Id, Title: _p.Name, Icon: ShellWindow.IconOf(_p.Id), Source: _p.Source, State: _p.State })), {
 			SortMode: sort,
 			Groups: groups,
 			Clicks: clicks,
@@ -215,6 +215,15 @@ export class ShellWindow extends Window
 			OnAreaCollapsedChanged: (_area, _collapsed) => { ShellWindow.SaveAreaCollapsed(_area, _collapsed); },
 		});
 		this.RestoreSelection();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 사이드바에 쓸 아이콘 이름을 매니페스트에서 구한다. 목록(IPluginInfo)에는 Icon이 없어 핸들에서 읽는다.
+	// 스프라이트에 없는 이름 걸러내기는 SidebarController가 한다. 여기서는 매니페스트 값을 그대로 넘긴다.
+	// @param _pluginId: Plugin Id
+	private static IconOf(_pluginId: string): string
+	{
+		return PluginManager.Get(_pluginId)?.Manifest.Icon ?? "";
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

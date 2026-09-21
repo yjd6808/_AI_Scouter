@@ -8,7 +8,7 @@
 	그룹 구조는 PluginGroups.Normalize를 통과한 값만 쓴다. 저장 원본(Ui.PluginGroups)을 직접 그리지 않는다.
 */
 
-import { StackPanel, ToggleButton, ContextMenu, MenuItem, ToastService, UIElement } from "@scouter/gui";
+import { StackPanel, ToggleButton, ContextMenu, MenuItem, ToastService, UIElement, IconSprite } from "@scouter/gui";
 import type { PluginNotice, PluginSource, PluginState } from "../Plugin/PluginManager";
 import { PluginManager } from "../Plugin/PluginManager";
 import { PluginOrder } from "../Plugin/PluginOrder";
@@ -22,7 +22,7 @@ export interface ISidebarItem
 {
 	Id: string;
 	Title: string;
-	Icon: string;
+	Icon: string;	// 스프라이트 심볼 이름. 없는 이름이면 package로 떨어진다.
 	Source: PluginSource;
 	State: PluginState;
 }
@@ -99,6 +99,7 @@ export class SidebarController
 {
 	// ==================== 정적 ====================
 	private static readonly s_newGroupName_ = "새 그룹";
+	private static readonly s_fallbackIcon_ = "package";
 
 	// ==================== 멤버 ====================
 	private readonly list_: StackPanel;
@@ -515,7 +516,7 @@ export class SidebarController
 			view.Depth = _depth;
 			element.style.setProperty("--gui-nav-depth", String(_depth));
 		}
-		view.Button.Icon = _item.Icon;
+		view.Button.Icon = SidebarController.IconOf(_item.Icon);
 		element.classList.toggle("is-core", _item.Source === "BuiltIn");
 		element.classList.toggle("is-external", _item.Source !== "BuiltIn");
 		element.classList.toggle("is-error", _item.State === "Error");
@@ -556,6 +557,15 @@ export class SidebarController
 	{
 		_view.Draggable = _draggable;
 		_view.Button.Element.style.cursor = _draggable ? "grab" : "";
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 그릴 아이콘 이름을 고른다. 항목 아이콘은 Plugin.json에서 오므로 스프라이트에 없는 이름이 섞일 수 있다.
+	// 없는 이름은 use가 에러 없이 빈 칸으로 렌더되어 눈으로만 알 수 있으므로 여기서 package로 떨어뜨린다.
+	// @param _name: 매니페스트 아이콘 이름
+	private static IconOf(_name: string): string
+	{
+		return IconSprite.Has(_name) ? _name : SidebarController.s_fallbackIcon_;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

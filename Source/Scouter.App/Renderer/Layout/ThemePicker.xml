@@ -7,7 +7,7 @@
 		<TextBox Name="txt_filter" Placeholder="검색" />
 		<ComboBox Name="cmb_scheme" />
 		<ListBox Name="lst_themes" MaxHeight="320" />
-		<StackPanel Orientation="Horizontal" Spacing="8">
+		<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
 			<Button Name="btn_apply" Content="적용" Variant="Primary" IsDefault="true" />
 			<Button Name="btn_cancel" Content="취소" Variant="Ghost" IsCancel="true" />
 		</StackPanel>

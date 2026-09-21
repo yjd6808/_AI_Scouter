@@ -7,9 +7,9 @@
 
 import * as path from "node:path";
 import { DisposableBag } from "@scouter/gui";
-import type { IDisposable } from "@scouter/gui";
-import { UIManager, ToastService, RegisterWindow, UserControl, DataList, WindowRegistry, ToastKind } from "@scouter/gui";
-import type { IPluginContext, IPluginManifest, ITool, TNotifyKind, IMessageBoxOptions, TMessageBoxResult } from "@scouter/plugin-api";
+import type { IDisposable, Window } from "@scouter/gui";
+import { UIManager, ToastService, RegisterWindow, UserControl, DataList, WindowRegistry, ToastKind, ContentPresenter } from "@scouter/gui";
+import type { IPluginContext, IPluginManifest, ITool, TNotifyKind, IMessageBoxOptions, TMessageBoxResult, TTickHandler, ITickOptions } from "@scouter/plugin-api";
 import { Settings } from "../Services/Settings";
 import { Storage } from "../Services/Storage";
 import { Secrets } from "../Services/Secrets";
@@ -21,11 +21,16 @@ import { Process } from "../Services/Process";
 import { Fs } from "../Services/Fs";
 import { Clipboard } from "../Services/Clipboard";
 import { Schedule } from "../Services/Schedule";
+import { TickService } from "../Services/TickService";
+import type { ITickJobOptions } from "../Services/TickService";
 import { GlobalToast } from "../Services/GlobalToast";
 import { MessageBox } from "../Services/MessageBox";
 import { ToolRegistry } from "./ToolRegistry";
 import { ResourceRegistry } from "./ResourceRegistry";
 import { PromptRegistry } from "./PromptRegistry";
+
+const kShellWindow = "Shell";
+const kShellContent = "content";
 
 export interface IPluginHost
 {
@@ -56,6 +61,7 @@ export class PluginContext implements IPluginContext
 	private readonly bag_ = new DisposableBag();
 	private readonly storage_: Storage;
 	private readonly windows_: string[] = [];
+	private readonly opened_: Window[] = [];
 
 	// ==================== 생성 · 소멸 ====================
 
@@ -71,13 +77,16 @@ export class PluginContext implements IPluginContext
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// 전 등록을 해제한다. Deactivate 시 호출.
+	// 전 등록을 해제한다. Deactivate 시 호출. 두 번 불러도 안전하다.
+	// 띄워 둔 Dialog·Popup을 가장 먼저 닫는다. 모달을 남기면 앱 전체가 잠긴다.
 	public Dispose(): void
 	{
+		this.CloseOwned();
 		ToolRegistry.RemoveAll(this.Manifest.Id);
 		ResourceRegistry.RemoveAll(this.Manifest.Id);
 		PromptRegistry.RemoveAll(this.Manifest.Id);
 		Schedule.RemoveAll(this.Manifest.Id);
+		TickService.RemoveAll(this.Manifest.Id);
 		for (const name of this.windows_)
 			WindowRegistry.Unregister(name);
 		this.windows_.length = 0;
@@ -306,6 +315,17 @@ export class PluginContext implements IPluginContext
 			this.bag_.Add(sub);
 			return sub;
 		},
+		Tick: (_handler: TTickHandler, _opts?: ITickOptions): IDisposable =>
+		{
+			const opts: ITickJobOptions = {};
+			if (_opts?.PeriodMs !== undefined)
+				opts.PeriodMs = _opts.PeriodMs;
+			if (_opts?.WhenVisible === true)
+				opts.Visible = (): boolean => PluginContext.IsViewVisible(this.Manifest.Id);
+			const sub = TickService.Add(this.Manifest.Id, _handler, opts);
+			this.bag_.Add(sub);
+			return sub;
+		},
 	};
 
 	public readonly Worker = {
@@ -358,6 +378,22 @@ export class PluginContext implements IPluginContext
 			const data = _data instanceof DataList ? _data : undefined;
 			return UIManager.Show(_name, data);
 		},
+		ShowDialog: <T>(_name: string, _data?: unknown, _timeoutMs?: number): Promise<T> =>
+		{
+			const full = this.FullWindowName(_name);
+			const data = _data instanceof DataList ? _data : undefined;
+			const pending = UIManager.ShowDialog<T>(full, data, _timeoutMs ?? 0);
+			this.Track(UIManager.Find(full));
+			return pending;
+		},
+		ShowPopup: (_name: string, _data?: unknown): Window =>
+		{
+			const full = this.FullWindowName(_name);
+			const data = _data instanceof DataList ? _data : undefined;
+			const win = UIManager.ShowPopup(full, data);
+			this.Track(win);
+			return win;
+		},
 		Toast: (_msg: string): void => { ToastService.Info(`[${this.Manifest.Id}] ${_msg}`); },
 		Notify: (_kind: TNotifyKind, _msg: string): void =>
 		{
@@ -387,6 +423,68 @@ export class PluginContext implements IPluginContext
 	};
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Plugin 메인 화면이 지금 Shell 콘텐츠 영역에 걸려 있는지 본다. Tick(WhenVisible) 판정용.
+	// Shell·콘텐츠 자리를 못 찾으면(테스트 등) 막지 않고 참으로 본다.
+	// @param _id: Plugin Id
+	private static IsViewVisible(_id: string): boolean
+	{
+		const shell = UIManager.Find(kShellWindow);
+		if (shell === null)
+			return true;
+		const presenter = shell.FindName(ContentPresenter, kShellContent);
+		if (presenter === null)
+			return true;
+		const content = presenter.Content;
+		return content instanceof UserControl && content.PluginId === _id && content.IsLoaded && content.IsVisible;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 창 이름에 Plugin Id를 붙인다. RegisterWindow와 같은 규칙. 이미 붙어 있으면 그대로 둔다.
+	// @param _name: 등록 이름
+	private FullWindowName(_name: string): string
+	{
+		const prefix = `${this.Manifest.Id}/`;
+		return _name.startsWith(prefix) ? _name : `${prefix}${_name}`;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 이 Plugin이 띄운 창을 기억한다. 이미 닫힌 창은 이 참에 목록에서 턴다.
+	// @param _win: 창 (없으면 무시)
+	private Track(_win: Window | null): void
+	{
+		for (let idx = this.opened_.length - 1; idx >= 0; --idx)
+		{
+			const win = this.opened_[idx];
+			if (win === undefined || win === _win || win.IsClosed || !win.Element.isConnected)
+				this.opened_.splice(idx, 1);
+		}
+		if (_win !== null)
+			this.opened_.push(_win);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 이 Plugin이 띄운 창만 골라 닫는다. 나중에 띄운 것부터. 다른 Plugin·앱 창은 건드리지 않는다.
+	private CloseOwned(): void
+	{
+		const opened = [...this.opened_].reverse();
+		this.opened_.length = 0;
+		for (const win of opened)
+		{
+			if (win.IsClosed || !win.Element.isConnected)
+				continue;
+			try
+			{
+				if (!UIManager.Close(win, undefined))
+					this.Logger.Warn(`창이 닫기를 거부했다: ${this.Manifest.Id}`);
+			}
+			catch (_e)
+			{
+				this.Logger.Warn(`창 정리 실패: ${String(_e)}`);
+			}
+		}
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 알림 종류를 ToastKind로 바꾼다.

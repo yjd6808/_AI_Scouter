@@ -3,7 +3,7 @@
 .gui-listbox__item:hover { background: var(--background-hover); }
 .gui-listbox__item.is-selected { background: var(--primary-muted); }
 .gui-combobox { display: inline-flex; }
-.gui-combobox__toggle { display: inline-flex; align-items: center; gap: 6px; min-width: 120px; }
+.gui-combobox__toggle { display: inline-flex; align-items: center; gap: 6px; width: 100%; min-width: 0; }	/* 폭은 ComboBox의 Width가 정한다. 여기서 min-width를 박으면 XML 지정 폭이 조용히 무시된다. */
 .gui-combobox__value { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gui-popup { position: absolute; background: var(--background-panel); border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow); display: none; }
 .gui-popup.is-open { display: block; }

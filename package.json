@@ -12,9 +12,9 @@
 	],
 	"scripts": {
 		"clean": "rimraf Source/*/dist dist",
-		"typecheck": "tsc -b Source/Scouter.Gui Source/Scouter.PluginApi Source/Scouter.App Source/Scouter.Harness Plugins/P4Util Plugins/Notes Plugins/ToastLab Plugins/ControlLab",
+		"typecheck": "tsc -b Source/Scouter.Gui Source/Scouter.PluginApi Source/Scouter.App Source/Scouter.Harness Plugins/P4Util Plugins/Notes Plugins/ToastLab Plugins/ControlLab Plugins/InstantAlarm",
 		"lint": "eslint . --max-warnings 0",
-		"lint:layout": "node --import tsx Scripts/LayoutLint.mjs Source/Scouter.App/Renderer/Layout Plugins/P4Util/Layout Plugins/Notes/Layout Plugins/ToastLab/Layout Plugins/ControlLab/Layout",
+		"lint:layout": "node --import tsx Scripts/LayoutLint.mjs Source/Scouter.App/Renderer/Layout Plugins/P4Util/Layout Plugins/Notes/Layout Plugins/ToastLab/Layout Plugins/ControlLab/Layout Plugins/InstantAlarm/Layout",
 		"lint:theme": "node --import tsx Scripts/ThemeLint.mjs Source/Scouter.App/Renderer/Theme/Themes",
 		"build:main": "webpack -c webpack/main.cjs",
 		"build:renderer": "webpack -c webpack/renderer.cjs",

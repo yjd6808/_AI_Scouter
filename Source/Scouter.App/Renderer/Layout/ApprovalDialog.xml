@@ -11,7 +11,7 @@
 		<TextBlock Name="txt_tool" Text="{@toolName}" />
 		<TextBlock Name="txt_args" Text="{@argsJson}" />
 		<CheckBox Name="chk_remember" Content="이 세션에서 같은 도구는 다시 묻지 않기" />
-		<StackPanel Orientation="Horizontal" Spacing="8">
+		<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
 			<Button Name="btn_deny" Content="거부" Variant="Ghost" IsCancel="true" />
 			<Button Name="btn_allow" Content="한 번 허용" Variant="Primary" IsDefault="true" />
 			<Button Name="btn_always" Content="항상 허용" Variant="Primary" />

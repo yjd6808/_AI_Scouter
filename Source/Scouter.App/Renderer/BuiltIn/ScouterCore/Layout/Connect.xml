@@ -3,7 +3,7 @@
 	<StackPanel ContentHost="true" Spacing="8" Margin="12">
 		<TextBlock Name="txt_status" Text="{@statusLine}" />
 		<StackPanel Orientation="Horizontal" Spacing="8">
-			<ComboBox Name="cmb_client" />
+			<ComboBox Name="cmb_client" Width="160" />
 			<Button Name="btn_copy" Content="복사" Variant="Primary" />
 		</StackPanel>
 		<TextBox Name="txt_snippet" AcceptsReturn="true" IsReadOnly="true" />

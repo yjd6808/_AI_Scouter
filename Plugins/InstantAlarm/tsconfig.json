@@ -1,0 +1,9 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions":
+	{
+		"composite": false,
+		"noEmit": true
+	},
+	"include": ["Index.ts", "Types.ts", "AlarmStore.ts", "AlarmEngine.ts", "AlarmFormat.ts", "SpecFactory.ts", "Tools/**/*.ts", "Views/**/*.ts", "Layout/**/*"]
+}

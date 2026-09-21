@@ -7,8 +7,18 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { OklchColor, DesktopResolver, ThemeResolver } from "@scouter/gui";
-import type { IDesktopVariant, ITheme } from "@scouter/gui";
+import { OklchColor, DesktopResolver, ThemeResolver, ThemeCss } from "@scouter/gui";
+import type { IDesktopVariant, ITheme, ITypography } from "@scouter/gui";
+
+function Luminance(_r: number, _g: number, _b: number): number
+{
+	const lift = (_v: number): number =>
+	{
+		const s = _v / 255;
+		return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+	};
+	return 0.2126 * lift(_r) + 0.7152 * lift(_g) + 0.0722 * lift(_b);
+}
 
 function MakePalette(): IDesktopVariant
 {
@@ -121,5 +131,70 @@ void describe("DesktopTheme", () =>
 		tokens["background-base"] = "#000000";
 		const css = DesktopResolver.ToCss(tokens);
 		assert.match(css, /--background-base: #000000;/);
+	});
+
+	void it("오버레이 스크림이 반투명으로 생성된다", () =>
+	{
+		for (const variant of [MakePalette(), MakeSeeds()])
+		{
+			for (const isDark of [true, false])
+			{
+				const tokens = DesktopResolver.Resolve(variant, isDark);
+				for (const key of ["overlay-scrim", "overlay-scrim-weak"])
+				{
+					const found = /^rgba\((\d+), (\d+), (\d+), ([\d.]+)\)$/.exec(tokens[key] ?? "");
+					assert.ok(found !== null, `${key}/${String(isDark)}`);
+					const alpha = Number(found[4]);
+					assert.ok(alpha > 0 && alpha < 1, `${key} 알파 ${String(alpha)}`);	// 불투명하면 아래 내용이 안 비쳐 모달 맥락이 사라진다.
+				}
+				assert.notEqual(tokens["overlay-scrim"], tokens["overlay-scrim-weak"]);
+			}
+		}
+	});
+
+	void it("스크림 시드는 중립 스케일의 어두운 끝을 고른다", () =>
+	{
+		// 다크 시드(#1f1f1f)는 다크 스킴에서, 라이트 시드(#f7f7f7)는 라이트 스킴에서 제 방향이다.
+		const cases: Array<{ Variant: IDesktopVariant; IsDark: boolean }> = [
+			{ Variant: MakePalette(), IsDark: true },
+			{ Variant: MakeSeeds(), IsDark: false },
+		];
+		for (const entry of cases)
+		{
+			const tokens = DesktopResolver.Resolve(entry.Variant, entry.IsDark);
+			const found = /^rgba\((\d+), (\d+), (\d+),/.exec(tokens["overlay-scrim"] ?? "");
+			assert.ok(found !== null);
+			const lum = Luminance(Number(found[1]), Number(found[2]), Number(found[3]));
+			assert.ok(lum < 0.2, `딤이 밝다: ${String(lum)}`);
+		}
+	});
+
+	void it("스크림 토큰이 실제 CSS 변수로 나온다", () =>
+	{
+		const theme: ITheme = {
+			Id: "t", Name: "T", Source: "BuiltIn", Defs: {}, Tokens: {},
+			HasLight: true, HasDark: true,
+			Desktop: {
+				Dark: DesktopResolver.Resolve(MakePalette(), true),
+				Light: DesktopResolver.Resolve(MakePalette(), false),
+			},
+		};
+		const typo: ITypography = { FontSize: 13, FontFamily: "sans-serif", MonoFamily: "monospace" };
+		for (const scheme of ["Dark", "Light"] as const)
+		{
+			const resolved = ThemeResolver.Resolve(theme, scheme, null);
+			assert.notEqual(resolved.Tokens.get("overlay-scrim"), "#ff00ff");	// 코어 토큰 폴백(마젠타)으로 새지 않아야 한다.
+			const css = ThemeCss.Build(resolved, typo, "Normal");
+			assert.ok(css.includes(`--overlay-scrim:${resolved.Tokens.get("overlay-scrim") ?? "?"};`), scheme);
+			assert.ok(css.includes("--overlay-scrim-weak:"), scheme);
+		}
+	});
+
+	void it("스크림은 오버라이드로 덮을 수 있다", () =>
+	{
+		const overrides: Record<string, string> = {};
+		overrides["overlay-scrim"] = "rgba(0, 0, 0, 0.8)";
+		const tokens = DesktopResolver.Resolve({ ...MakePalette(), Overrides: overrides }, true);
+		assert.equal(tokens["overlay-scrim"], "rgba(0, 0, 0, 0.8)");
 	});
 });

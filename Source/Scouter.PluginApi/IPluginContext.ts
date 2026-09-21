@@ -5,7 +5,7 @@
 	설명: IPluginContext. Plugin이 App을 만지는 유일한 창구(14.4).
 */
 
-import type { IDisposable } from "@scouter/gui";
+import type { IDisposable, Window } from "@scouter/gui";
 import type { ITool } from "./ITool";
 
 export interface IPluginManifest
@@ -103,10 +103,19 @@ export interface IContextClipboard
 	WriteText(_text: string): boolean;
 }
 
+export type TTickHandler = (_nowMs: number) => void | Promise<void>;
+
+export interface ITickOptions
+{
+	PeriodMs?: number | undefined;
+	WhenVisible?: boolean | undefined;
+}
+
 export interface IContextSchedule
 {
 	Cron(_expr: string, _fn: () => void): IDisposable;
 	Interval(_ms: number, _fn: () => void): IDisposable;
+	Tick(_handler: TTickHandler, _opts?: ITickOptions): IDisposable;
 }
 
 export interface IContextPaths
@@ -130,7 +139,10 @@ export interface IMessageBoxOptions
 	Message?: string | undefined;
 	Kind?: TMessageBoxKind | undefined;
 	DurationMs?: number | undefined;
+	// Global이면 확인창 자체가 항상 위로, App이면 그동안 주 창을 핀한다. 기본 켜짐(Global 한정).
 	Topmost?: boolean | undefined;
+	// Global 표시와 함께 주 창을 앞으로 끌어온다. 기본 켜짐. 방해되면 false로 끈다.
+	FocusMain?: boolean | undefined;
 	OnResult?: ((_result: TMessageBoxResult) => void) | undefined;
 }
 
@@ -138,6 +150,8 @@ export interface IContextUi
 {
 	RegisterWindow(_name: string, _ctor: new () => unknown): void;
 	Show(_name: string, _data?: unknown): unknown;
+	ShowDialog<T>(_name: string, _data?: unknown, _timeoutMs?: number): Promise<T>;
+	ShowPopup(_name: string, _data?: unknown): Window;
 	Toast(_msg: string): void;
 	Notify(_kind: TNotifyKind, _msg: string): void;
 	NotifyGlobal(_kind: TNotifyKind, _title: string, _message?: string): Promise<boolean>;

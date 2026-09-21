@@ -30,6 +30,34 @@ void describe("MessageBox", () =>
 		assert.equal(await GlobalMessageBox.ShowAsync({ Title: "x", Kind: "yesno", DurationMs: 10 }), "closed");
 	});
 
+	void it("Global 옮김은 Topmost·FocusMain을 기본 켜짐으로 채운다", () =>
+	{
+		const on = MessageBox.GlobalOptionsOf({ Scope: "Global", Title: "t" });
+		assert.equal(on.Topmost, true);
+		assert.equal(on.FocusMain, true);
+		assert.equal(on.Kind, "ok");
+		assert.equal(on.DurationMs, 30000);
+		const off = MessageBox.GlobalOptionsOf({ Scope: "Global", Title: "t", Topmost: false, FocusMain: false, Kind: "yesno", DurationMs: 5000 });
+		assert.equal(off.Topmost, false);
+		assert.equal(off.FocusMain, false);
+		assert.equal(off.Kind, "yesno");
+		assert.equal(off.DurationMs, 5000);
+	});
+
+	void it("Global 페이로드는 Topmost·FocusMain을 Main으로 그대로 넘긴다", () =>
+	{
+		const payload = GlobalMessageBox.BuildPayload({ Title: "t", Message: "m" }, "css");
+		assert.equal(payload["Topmost"], true);
+		assert.equal(payload["FocusMain"], true);
+		assert.equal(payload["Message"], "m");
+		assert.equal(payload["ThemeCss"], "css");
+		const off = GlobalMessageBox.BuildPayload({ Title: "t", Topmost: false, FocusMain: false, DurationMs: -5 }, "");
+		assert.equal(off["Topmost"], false);
+		assert.equal(off["FocusMain"], false);
+		assert.equal(off["DurationMs"], 0);
+		assert.equal("Message" in off, false);
+	});
+
 	void it("App 콜백과 Promise에 같은 결과를 준다", async () =>
 	{
 		UIManager.Reset();

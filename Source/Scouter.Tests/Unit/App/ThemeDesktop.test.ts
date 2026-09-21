@@ -105,6 +105,27 @@ void describe("ThemeDesktop", () =>
 		}
 	});
 
+	void it("37종 전부에 오버레이 스크림이 생긴다", () =>
+	{
+		// DesktopResolver 한 곳만 고쳐도 내장 테마 전부가 딤을 갖는지 본다.
+		for (const entry of kDesktopThemes)
+		{
+			const theme = ThemeLoader.ParseDesktop(entry.Id, entry.Json, "BuiltIn");
+			for (const scheme of ["Dark", "Light"] as const)
+			{
+				const resolved = ThemeResolver.Resolve(theme, scheme, null);
+				const scrim = resolved.Tokens.get("overlay-scrim") ?? "?";
+				const found = /^rgba\((\d+), (\d+), (\d+), ([\d.]+)\)$/.exec(scrim);
+				assert.ok(found !== null, `${entry.Id}/${scheme}/${scrim}`);
+				const alpha = Number(found[4]);
+				assert.ok(alpha > 0 && alpha < 1, `${entry.Id}/${scheme}/alpha`);
+				const lum = Luminance(`#${[1, 2, 3].map((_at) => Number(found[_at]).toString(16).padStart(2, "0")).join("")}`);
+				assert.ok(lum < 0.25, `${entry.Id}/${scheme}/딤이 밝다`);
+				assert.ok((resolved.Tokens.get("overlay-scrim-weak") ?? "?").startsWith("rgba("), `${entry.Id}/${scheme}/weak`);
+			}
+		}
+	});
+
 	void it("본문·보조·강조 대비가 깨지지 않는다", () =>
 	{
 		for (const entry of kDesktopThemes)

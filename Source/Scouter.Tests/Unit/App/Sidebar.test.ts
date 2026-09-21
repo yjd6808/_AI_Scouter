@@ -7,7 +7,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { StackPanel, ToggleButton } from "@scouter/gui";
+import { StackPanel, ToggleButton, IconSprite } from "@scouter/gui";
 import type { ShellWindow } from "../../../Scouter.App/Renderer/Shell/ShellWindow";
 import { SidebarController } from "../../../Scouter.App/Renderer/Shell/SidebarController";
 import type { ISidebarItem } from "../../../Scouter.App/Renderer/Shell/SidebarController";
@@ -25,6 +25,13 @@ function Setup(): { Controller: SidebarController; List: StackPanel }
 function Item(_id: string, _title: string, _external: boolean): ISidebarItem
 {
 	return { Id: _id, Title: _title, Icon: "package", Source: _external ? "External" : "BuiltIn", State: "Active" };
+}
+
+function IconOf(_controller: SidebarController, _id: string): string
+{
+	const found = _controller.Find(_id);
+	assert.ok(found instanceof ToggleButton, _id);
+	return found.Icon;
 }
 
 function HeaderKeys(_list: StackPanel): string[]
@@ -516,6 +523,28 @@ void describe("Sidebar", () =>
 		assert.equal(setup.Controller.Drop("A", { Kind: "Item", Key: "C", After: true }), true);
 		assert.deepEqual(saved, ["External", "A", "group-1", 1]);
 		assert.deepEqual(setup.Controller.ExternalIds(), ["B", "C", "A"]);
+	});
+
+	void it("Plugin.json 아이콘을 그대로 쓰고 없는 이름은 package로 떨어뜨린다", () =>
+	{
+		const setup = Setup();
+		setup.Controller.Sync([
+			{ Id: "ToastLab", Title: "Toast Lab", Icon: "bell", Source: "External", State: "Active" },
+			{ Id: "CommandPalette", Title: "Command Palette", Icon: "command", Source: "BuiltIn", State: "Active" },
+			{ Id: "Notes", Title: "Notes", Icon: "notes", Source: "External", State: "Active" },
+			{ Id: "P4Util", Title: "Perforce Utilities", Icon: "p4", Source: "External", State: "Active" },
+			{ Id: "NoIcon", Title: "No Icon", Icon: "", Source: "External", State: "Active" },
+		]);
+		assert.equal(IconOf(setup.Controller, "ToastLab"), "bell");
+		assert.equal(IconOf(setup.Controller, "CommandPalette"), "command");
+		assert.equal(IconOf(setup.Controller, "Notes"), "package");
+		assert.equal(IconOf(setup.Controller, "P4Util"), "package");
+		assert.equal(IconOf(setup.Controller, "NoIcon"), "package");
+		for (const id of ["ToastLab", "Notes", "NoIcon"])
+		{
+			const href = setup.Controller.Find(id)?.Element.querySelector("use")?.getAttribute("href") ?? "";
+			assert.ok(IconSprite.Has(href.replace("#", "")), `${id}/${href}`);	// 등록 안 된 이름이면 빈 칸으로 렌더된다.
+		}
 	});
 
 	void it("정렬기준은 그룹 안에만 적용되고 그룹 순서는 유지된다", () =>

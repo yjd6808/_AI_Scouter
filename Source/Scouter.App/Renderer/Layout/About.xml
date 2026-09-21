@@ -9,7 +9,7 @@
 		<TextBlock Name="txt_about" Text="Scouter v{@appVersion}" />
 		<TextBlock Name="txt_versions" Text="{@versions}" />
 		<TextBlock Name="txt_update" Text="{@updateState}" />
-		<StackPanel Orientation="Horizontal" Spacing="8">
+		<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
 			<Button Name="btn_update" Content="업데이트 확인" Variant="Ghost" />
 			<Button Name="btn_restart" Content="재시작" Variant="Ghost" />
 			<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />

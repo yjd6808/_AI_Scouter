@@ -81,6 +81,7 @@ export class DesktopResolver
 		DesktopResolver.FillIcon(tokens, neutral, primary, interactive, success, warning, error, info, amber, blue, diffAdd, diffDelete, colors, _isDark);
 		DesktopResolver.FillSyntax(tokens, primary, accent, interactive, success, warning, error, amber, info, diffAdd, diffDelete, colors, _isDark);
 		DesktopResolver.FillAvatar(tokens, _isDark);
+		DesktopResolver.FillOverlay(tokens, neutral, _isDark);
 		for (const [key, value] of Object.entries(overrides))
 			tokens[key] = DesktopResolver.NormalizeHex(value);
 		if (colors.Compact && overrides["text-weak"] !== undefined && overrides["text-weaker"] === undefined)
@@ -634,6 +635,24 @@ export class DesktopResolver
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// 오버레이 스크림(딤) 토큰을 채운다. 모달·오버레이가 아래 화면을 가릴 때 쓴다.
+	// 반투명이어야 아래 내용이 비쳐 맥락이 남으므로 rgba로 만든다. 불투명 hex를 쓰면 안 된다.
+	// 딤은 라이트·다크 양쪽에서 "어두워지는" 방향이어야 한다. 중립 스케일의 양끝(배경 0, 잉크 11) 중
+	// 어두운 쪽을 시드로 잡는다. 보통 다크는 0, 라이트는 11이지만 시드가 뒤집힌 테마도 안전하게 받는다.
+	// 다크는 배경과 대비가 적어 더 진하게, 라이트는 잉크색이 그대로 깔리므로 덜 진하게 간다.
+	// @param _tokens: 토큰 맵
+	// @param _neutral: 중립 스케일
+	// @param _isDark: 다크 여부
+	private static FillOverlay(_tokens: Record<string, string>, _neutral: string[], _isDark: boolean): void
+	{
+		const low = DesktopResolver.At(_neutral, 0);
+		const high = DesktopResolver.At(_neutral, 11);
+		const seed = DesktopResolver.Luminance(low) <= DesktopResolver.Luminance(high) ? low : high;
+		_tokens["overlay-scrim"] = OklchColor.WithAlpha(seed, _isDark ? 0.66 : 0.42);
+		_tokens["overlay-scrim-weak"] = OklchColor.WithAlpha(seed, _isDark ? 0.42 : 0.24);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// 중립 알파 스케일을 만든다.
 	// @param _neutral: 중립 스케일
 	// @param _isDark: 다크 여부
@@ -670,20 +689,24 @@ export class DesktopResolver
 	// @param _fill: 채움색
 	private static On(_fill: string): string
 	{
-		const lum = (_hex: string): number =>
-		{
-			const rgb = OklchColor.HexToRgb(_hex);
-			const lift = (_v: number): number => _v <= 0.04045 ? _v / 12.92 : Math.pow((_v + 0.055) / 1.055, 2.4);
-			return 0.2126 * lift(rgb.R) + 0.7152 * lift(rgb.G) + 0.0722 * lift(rgb.B);
-		};
 		if (!_fill.startsWith("#"))
 			return "#ffffff";
-		const light = lum("#ffffff");
-		const dark = lum("#000000");
-		const back = lum(_fill);
+		const light = DesktopResolver.Luminance("#ffffff");
+		const dark = DesktopResolver.Luminance("#000000");
+		const back = DesktopResolver.Luminance(_fill);
 		const lightContrast = (Math.max(light, back) + 0.05) / (Math.min(light, back) + 0.05);
 		const darkContrast = (Math.max(dark, back) + 0.05) / (Math.min(dark, back) + 0.05);
 		return lightContrast > darkContrast ? "#ffffff" : "#000000";
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 상대 휘도(WCAG)를 구한다.
+	// @param _hex: hex 색
+	private static Luminance(_hex: string): number
+	{
+		const rgb = OklchColor.HexToRgb(_hex);
+		const lift = (_v: number): number => _v <= 0.04045 ? _v / 12.92 : Math.pow((_v + 0.055) / 1.055, 2.4);
+		return 0.2126 * lift(rgb.R) + 0.7152 * lift(rgb.G) + 0.0722 * lift(rgb.B);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

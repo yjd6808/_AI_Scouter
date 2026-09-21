@@ -68,6 +68,7 @@ export interface ICaptureRect
 export interface IAttentionRequest
 {
 	Flash?: boolean;
+	Foreground?: boolean;
 	Notify?: { Title: string; Body: string };
 }
 
@@ -88,5 +89,7 @@ export interface IMessageShow
 	Message?: string;
 	Kind: string;
 	DurationMs: number;
+	Topmost: boolean;
+	FocusMain: boolean;
 	ThemeCss: string;
 }

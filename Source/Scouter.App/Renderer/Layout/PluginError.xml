@@ -5,7 +5,9 @@
 	</DataList>
 	<StackPanel ContentHost="true" Spacing="8" Margin="12">
 		<TextBlock Name="txt_message" Text="{@message}" />
-		<Button Name="btn_retry" Content="재시도" Variant="Primary" />
-		<Button Name="btn_close" Content="닫기" Variant="Ghost" />
+		<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+			<Button Name="btn_retry" Content="재시도" Variant="Primary" />
+			<Button Name="btn_close" Content="닫기" Variant="Ghost" />
+		</StackPanel>
 	</StackPanel>
 </Window>

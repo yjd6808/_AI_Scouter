@@ -16,6 +16,7 @@ import { AutoStart } from "../../../Scouter.App/Main/AutoStart";
 import { CrashReporter } from "../../../Scouter.App/Main/CrashReporter";
 import { IpcHost } from "../../../Scouter.App/Main/IpcHost";
 import type { IMainWindowOps, IAppOps } from "../../../Scouter.App/Main/IpcHost";
+import { ForegroundPolicy } from "../../../Scouter.App/Main/ForegroundPolicy";
 import { FileLogSink } from "../../../Scouter.App/Renderer/Services/FileLogSink";
 import type { ILogEntry } from "@scouter/gui";
 
@@ -40,12 +41,15 @@ function FakeWin(): { Ops: IMainWindowOps; Calls: string[]; Sent: Array<{ Channe
 	const calls: string[] = [];
 	const sent: Array<{ Channel: string; Args: unknown[] }> = [];
 	let maximized = false;
+	let topmost = false;
 	let onMax: (() => void) | null = null;
 	const ops: IMainWindowOps = {
 		Minimize: () => { calls.push("min"); },
 		Maximize: () => { calls.push("max"); maximized = true; },
 		Unmaximize: () => { calls.push("unmax"); maximized = false; },
 		IsMaximized: () => maximized,
+		SetTopmost: (_on) => { calls.push(`top:${_on}`); topmost = _on; },
+		IsTopmost: () => topmost,
 		Close: () => { calls.push("close"); },
 		Hide: () => { calls.push("hide"); },
 		Show: () => { calls.push("show"); },
@@ -53,6 +57,7 @@ function FakeWin(): { Ops: IMainWindowOps; Calls: string[]; Sent: Array<{ Channe
 		ToggleDevTools: () => { calls.push("dev"); },
 		CapturePage: () => Promise.resolve({ Png: "png" }),
 		FlashFrame: () => { calls.push("flash"); },
+		Foreground: () => { calls.push("front"); },
 		Send: (_c, ..._a) => { sent.push({ Channel: _c, Args: _a }); },
 		OnClose: () => undefined,
 		OnMaximize: (_fn) => { onMax = _fn; },
@@ -158,6 +163,42 @@ void describe("Operations", () =>
 		win.FireMaximize();
 		assert.ok(win.Sent.some((_s) => _s.Channel === "window:maximized-changed" && _s.Args[0] === true));
 		await win.Ops.CapturePage({ X: 0, Y: 0, Width: 1, Height: 1 });
+	});
+
+	void it("window:attention은 Flash와 Foreground를 나눠 태운다", () =>
+	{
+		const fake = FakeIpc();
+		const win = FakeWin();
+		const app: IAppOps = {
+			Paths: () => ({ UserData: "u", Home: "h", Exe: "e", AppPath: "a", Resources: "r", Logs: "l", Temp: "t", Version: "0.4.0", IsPackaged: false, Args: [] }),
+			SetAutoStart: () => undefined,
+			SetCloseToTray: () => undefined,
+			SetGlobalHotkey: () => true,
+			CheckForUpdates: () => Promise.resolve(),
+			InstallUpdate: () => undefined,
+			Relaunch: () => undefined,
+			ShowItem: () => undefined,
+			OpenDialog: () => Promise.resolve(null),
+			SaveDialog: () => Promise.resolve(null),
+			SetTrayTooltip: () => undefined,
+			Notify: () => undefined,
+			SystemDark: () => false,
+		};
+		IpcHost.Register(fake.Ipc, win.Ops, app);
+		const run = (_c: string, _a?: unknown): unknown => fake.Handlers.get(_c)?.(_a);
+		run("window:attention", {});
+		assert.ok(win.Calls.includes("flash"));
+		assert.equal(win.Calls.includes("front"), false);
+		run("window:attention", { Foreground: true });
+		assert.ok(win.Calls.includes("front"));
+	});
+
+	void it("ForegroundPolicy는 요청 없거나 테스트 모드면 올리지 않는다", () =>
+	{
+		assert.equal(ForegroundPolicy.ShouldBringToFront(true, false), true);
+		assert.equal(ForegroundPolicy.ShouldBringToFront(false, false), false);
+		assert.equal(ForegroundPolicy.ShouldBringToFront(true, true), false);
+		assert.equal(ForegroundPolicy.ShouldBringToFront(false, true), false);
 	});
 
 	void it("FileLogSink 가짜 시계 회전", async () =>

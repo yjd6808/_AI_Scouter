@@ -1,0 +1,17 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "InstantAlarm Settings",
+	"type": "object",
+	"properties":
+	{
+		"DefaultDurationSec": { "type": "number", "default": 0, "minimum": 0, "maximum": 3600, "description": "알람 창 자동 닫힘 초. 0이면 직접 닫을 때까지 떠 있다" },
+		"DefaultTopmost": { "type": "boolean", "default": true, "description": "알람 창을 항상 위에 띄운다" },
+		"TickMs": { "type": "number", "default": 1000, "minimum": 200, "maximum": 60000, "description": "엔진 점검 주기(ms)" },
+		"MissedPolicy": { "type": "string", "enum": ["toast", "silent"], "default": "toast", "description": "놓친 알람 안내 방식" },
+		"MissedGraceSec": { "type": "number", "default": 0, "minimum": 0, "maximum": 86400, "description": "이 시간 안에 지난 알람은 놓침이 아니라 바로 울린다" },
+		"MissedListMax": { "type": "number", "default": 3, "minimum": 1, "maximum": 20, "description": "놓침 안내에 나열할 최대 건수" },
+		"HistoryKeepDays": { "type": "number", "default": 7, "minimum": 0, "maximum": 365, "description": "완료·취소·놓침 기록 보관 일수" },
+		"UrgentSec": { "type": "number", "default": 60, "minimum": 0, "maximum": 3600, "description": "이 시간 이내로 남으면 긴급으로 강조한다" },
+		"DefaultGroup": { "type": "string", "default": "", "description": "새 알람을 담을 기본 그룹 이름" }
+	}
+}

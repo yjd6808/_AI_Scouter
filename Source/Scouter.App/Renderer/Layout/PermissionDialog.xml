@@ -7,7 +7,7 @@
 	<StackPanel ContentHost="true" Spacing="8" Margin="12">
 		<TextBlock Name="txt_plugin" Text="{@pluginName}" />
 		<TextBlock Name="txt_perms" Text="{@permText}" />
-		<StackPanel Orientation="Horizontal" Spacing="8">
+		<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
 			<Button Name="btn_deny" Content="거부" Variant="Ghost" IsCancel="true" />
 			<Button Name="btn_allow" Content="허용" Variant="Primary" IsDefault="true" />
 		</StackPanel>

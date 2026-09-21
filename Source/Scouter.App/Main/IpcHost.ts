@@ -28,6 +28,7 @@ export interface IMainWindowOps
 	ToggleDevTools(): void;
 	CapturePage(_rect?: ICaptureRect): Promise<{ Png: string }>;
 	FlashFrame(_on: boolean): void;
+	Foreground(): void;
 	Send(_channel: string, ..._args: unknown[]): void;
 	OnClose(_fn: () => void): void;
 	OnMaximize(_fn: () => void): void;
@@ -104,10 +105,14 @@ export class IpcHost
 		_ipc.Handle(IpcChannels.WindowClose, () => { _win.Close(); });
 		_ipc.Handle(IpcChannels.WindowHide, () => { _win.Hide(); });
 		_ipc.Handle(IpcChannels.WindowToggleDevTools, () => { _win.ToggleDevTools(); });
+		// 주의 환기 채널. Flash는 깜빡임(작업 표시줄)까지, Foreground는 창을 실제로 앞으로 끌어온다.
+		// 전역 확인창은 Main이 알아서 Foreground를 태우므로 이 채널을 부르지 않는다. 역할이 겹치지 않는다.
 		_ipc.Handle(IpcChannels.WindowAttention, (_payload) =>
 		{
 			const req = (_payload ?? {}) as IAttentionRequest;
 			_win.FlashFrame(req.Flash ?? true);
+			if (req.Foreground === true)
+				_win.Foreground();
 			if (req.Notify !== undefined)
 				_app.Notify(req.Notify.Title, req.Notify.Body);
 		});

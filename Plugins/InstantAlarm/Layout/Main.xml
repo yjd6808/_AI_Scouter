@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="instantalarm_main">
+	<UserControl.Data>
+		<Item Key="isAddOpen" Type="Bool" Value="false" />
+		<Item Key="isSettingsOpen" Type="Bool" Value="false" />
+		<Item Key="isAt" Type="Bool" Value="false" />
+		<Item Key="armedCount" Type="Int" Value="0" />
+		<Item Key="doneCount" Type="Int" Value="0" />
+		<Item Key="missedCount" Type="Int" Value="0" />
+		<Item Key="nextText" Type="String" Value="" />
+		<Item Key="nextTitle" Type="String" Value="다음 알람이 없습니다." />
+		<Item Key="stateText" Type="String" Value="대기" />
+		<!-- 예약이 하나도 없으면 헤더의 +5분·취소 버튼과 곁다리 문구를 전부 감춘다. -->
+		<Item Key="hasNext" Type="Bool" Value="false" />
+	</UserControl.Data>
+
+	<!-- 루트 Grid는 행·열 정의가 없다. 자식이 전부 같은 칸에 쌓이고 DOM 선언 순서가 곧 z-order다.
+	     오버레이 2종은 반드시 마지막 자식으로 둔다. -->
+	<Grid Name="grid_root">
+
+		<!-- ===== 본문 ===== 오버레이가 열리면 IsEnabled=false가 자식까지 상속돼 조작이 막힌다. -->
+		<DockPanel Name="pnl_body" LastChildFill="true" IsEnabled="{!{@isAddOpen} &amp;&amp; !{@isSettingsOpen}}">
+
+			<!-- 상단: 다음 알람 헤더 -->
+			<Border Name="bar_next" DockPanel.Dock="Top" Padding="12,7" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="0,0,0,1">
+				<Grid Name="grid_next">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" MinWidth="200" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+						<StatusDot Name="dot_next" Status="Idle" VerticalAlignment="Center" />
+						<TextBlock Name="txt_next_label" Text="다음 알람" FontSize="14" Foreground="{$theme.text-weak}" Visibility="{{@hasNext} ? `Visible` : `Collapsed`}" VerticalAlignment="Center" />
+						<TextBlock Name="txt_next_title" Text="{@nextTitle}" FontSize="14" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+						<Badge Name="badge_next" Text="긴급" Variant="Error" Visibility="Collapsed" VerticalAlignment="Center" />
+						<TextBlock Name="txt_next_remain" Text="{@nextText}" FontSize="14" Foreground="{$theme.text-weak}" Visibility="{{@hasNext} ? `Visible` : `Collapsed`}" VerticalAlignment="Center" />
+						<Button Name="btn_next_snooze" Content="+5분" Variant="Default" ToolTip="다음 알람을 5분 미룬다" Visibility="{{@hasNext} ? `Visible` : `Collapsed`}" VerticalAlignment="Center" />
+						<Button Name="btn_next_cancel" Content="취소" Variant="Default" ToolTip="다음 알람을 취소한다" Visibility="{{@hasNext} ? `Visible` : `Collapsed`}" VerticalAlignment="Center" />
+					</StackPanel>
+					<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+						<Button Name="btn_settings" Icon="settings" Content="설정" Variant="Default" ToolTip="InstantAlarm 설정" VerticalAlignment="Center" />
+					</StackPanel>
+				</Grid>
+			</Border>
+
+			<!-- 하단: 상태 표시줄 -->
+			<StatusBar Name="bar_status" DockPanel.Dock="Bottom">
+				<StatusBarItem>
+					<StatusDot Name="dot_state" Status="Idle" />
+				</StatusBarItem>
+				<StatusBarItem>
+					<TextBlock Name="txt_state" Text="{@stateText}" />
+				</StatusBarItem>
+				<StatusBarItem DockPanel.Dock="Right">
+					<TextBlock Name="txt_counts" Text="{`예약 ` + {@armedCount} + ` · 완료 ` + {@doneCount} + ` · 지나감 ` + {@missedCount} + ` — 창을 닫아도 알람은 계속 동작합니다`}" />
+				</StatusBarItem>
+			</StatusBar>
+
+			<!-- 본문: 왼쪽 그룹 / 오른쪽 목록 -->
+			<Grid Name="grid_main">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="220" MinWidth="170" MaxWidth="320" />
+					<ColumnDefinition Width="*" MinWidth="240" />
+				</Grid.ColumnDefinitions>
+
+				<DockPanel Name="pnl_groups" Grid.Column="0" LastChildFill="true" Margin="12">
+					<TextBlock Name="txt_group_label" DockPanel.Dock="Top" Text="그룹(템플릿)" Foreground="{$theme.text-weak}" Margin="0,0,0,6" />
+					<StackPanel Name="pnl_group_buttons" DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+						<Button Name="btn_group_arm" Content="그룹 전체 예약" Variant="Primary" Icon="play" />
+						<!-- 가로 StackPanel은 자식에 flex: 0 0 auto를 박아 버튼이 글자 폭만큼만 차지한다.
+						     그래서 위 [그룹 전체 예약]과 오른쪽 끝이 어긋났다. Grid의 * 두 칸(= minmax(0,1fr))으로
+						     나누면 두 버튼이 각자 반폭으로 늘어나 묶음 전체의 좌우 끝이 위 버튼과 정확히 맞는다. -->
+						<Grid Name="grid_group_buttons">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Button Grid.Column="0" Name="btn_group_new" Content="새 그룹" Variant="Default" Icon="plus" Margin="0,0,3,0" />
+							<Button Grid.Column="1" Name="btn_group_delete" Content="삭제" Variant="Danger" Icon="trash" Margin="3,0,0,0" />
+						</Grid>
+					</StackPanel>
+					<ListBox Name="lst_groups" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+				</DockPanel>
+
+				<DockPanel Name="pnl_list" Grid.Column="1" LastChildFill="true" Margin="0,12,12,12">
+					<Grid Name="grid_toolbar" DockPanel.Dock="Top" Margin="0,0,0,8">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="160" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+							<ComboBox Name="cmb_filter" ToolTip="목록 필터" />
+							<Button Name="btn_cancel_sel" Content="선택 취소" Variant="Default" ToolTip="목록에서 고른 예약을 취소한다" />
+							<Button Name="btn_clear_done" Content="완료 정리" Variant="Default" Icon="check" ToolTip="완료·취소·지나감 기록을 지운다" />
+							<Button Name="btn_test_fire" Content="미리보기 알림" Variant="Default" Icon="bell" ToolTip="예약하지 않고 알림 모양만 확인한다" />
+						</StackPanel>
+						<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+							<Button Name="btn_add" Content="새 알람" Variant="Primary" Icon="plus" ToolTip="새 알람 추가" />
+						</StackPanel>
+					</Grid>
+					<!-- 컬럼명 헤더는 VirtualList 바깥(DockPanel 위쪽 슬라이스)에 둔다. 안에 넣으면 스크롤에 밀려 올라간다.
+					     칸 내용·폭은 MainControl.BuildHead가 본문 행과 같은 컬럼 상수로 채운다. -->
+					<TabControl Name="tab_main">
+						<TabItem Name="tab_armed" Header="예약 목록">
+							<DockPanel Name="pnl_armed_tab" LastChildFill="true">
+								<StackPanel Name="pnl_armed_head" DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" />
+								<VirtualList Name="lst_armed" />
+							</DockPanel>
+						</TabItem>
+						<TabItem Name="tab_history" Header="기록">
+							<DockPanel Name="pnl_history_tab" LastChildFill="true">
+								<StackPanel Name="pnl_history_head" DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" />
+								<VirtualList Name="lst_history" />
+							</DockPanel>
+						</TabItem>
+					</TabControl>
+				</DockPanel>
+			</Grid>
+		</DockPanel>
+
+		<!-- ===== 오버레이 1: 새 알람 추가 =====
+		     딤에 Background가 없으면 포인터가 뒤로 통과한다. overlay-scrim 토큰을 반드시 준다. -->
+		<Grid Name="ovl_add" Background="{$theme.overlay-scrim}" Visibility="{{@isAddOpen} ? `Visible` : `Collapsed`}">
+			<Border Name="pnl_add" HorizontalAlignment="Center" Width="560" Margin="0,28,0,28" Padding="16" CornerRadius="8" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="1">
+				<StackPanel Name="pnl_add_body" Spacing="8">
+					<Grid Name="grid_add_head">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Grid.Column="0" Name="txt_add_head" Text="새 알람" FontSize="15" />
+						<Button Grid.Column="1" Name="btn_add_close" Content="닫기" Variant="Ghost" Icon="x" ToolTip="닫기 (ESC)" />
+					</Grid>
+					<ScrollViewer Name="scr_add" MaxHeight="440" VerticalScrollBarVisibility="Auto">
+						<StackPanel Spacing="8">
+							<StackPanel Orientation="Horizontal" Spacing="12">
+								<RadioButton Name="radio_after" GroupName="alarm_kind" Content="시간 뒤" IsChecked="true" />
+								<RadioButton Name="radio_at" GroupName="alarm_kind" Content="특정 시각" />
+							</StackPanel>
+							<StackPanel Name="pnl_after" Orientation="Horizontal" Spacing="6" Visibility="{!{@isAt} ? `Visible` : `Collapsed`}">
+								<NumericUpDown Name="num_hour" Width="120" Minimum="0" Maximum="72" Value="0" />
+								<TextBlock Text="시간" />
+								<NumericUpDown Name="num_min" Width="120" Minimum="0" Maximum="59" Value="5" />
+								<TextBlock Text="분" />
+								<NumericUpDown Name="num_sec" Width="120" Minimum="0" Maximum="59" Value="0" />
+								<TextBlock Text="초 뒤" />
+							</StackPanel>
+							<StackPanel Name="pnl_at" Orientation="Horizontal" Spacing="6" Visibility="{{@isAt} ? `Visible` : `Collapsed`}">
+								<TextBox Name="txt_at_date" Width="140" Placeholder="2026-09-17 (선택)" />
+								<TextBox Name="txt_at_time" Width="100" Placeholder="22:12" />
+								<CheckBox Name="chk_roll" Content="지났으면 다음 날" />
+							</StackPanel>
+							<TextBox Name="txt_title" Placeholder="제목 (예: 빌드 확인)" />
+							<TextBox Name="txt_message" Placeholder="내용(선택)" AcceptsReturn="true" Height="72" />
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<TextBlock Text="버튼" />
+								<ComboBox Name="cmb_button" Width="140" />
+								<TextBlock Text="자동 닫힘(초)" Margin="12,0,0,0" />
+								<NumericUpDown Name="num_duration" Width="90" Minimum="0" Maximum="3600" Value="0" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" Spacing="12">
+								<CheckBox Name="chk_topmost" Content="항상 위" IsChecked="true" />
+								<CheckBox Name="chk_toast" Content="토스트도 함께" />
+							</StackPanel>
+						</StackPanel>
+					</ScrollViewer>
+					<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
+						<Button Name="btn_arm_one" Content="예약" Variant="Primary" Icon="alarm-clock" />
+						<Button Name="btn_save_group" Content="그룹에 저장" Variant="Default" Icon="package" />
+						<ComboBox Name="cmb_group" Width="180" ToolTip="저장할 그룹" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<!-- ===== 오버레이 2: 설정 ===== -->
+		<Grid Name="ovl_settings" Background="{$theme.overlay-scrim}" Visibility="{{@isSettingsOpen} ? `Visible` : `Collapsed`}">
+			<Border Name="pnl_settings" HorizontalAlignment="Center" Width="520" Margin="0,28,0,28" Padding="16" CornerRadius="8" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="1">
+				<StackPanel Name="pnl_settings_body" Spacing="8">
+					<Grid Name="grid_settings_head">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Grid.Column="0" Name="txt_settings_head" Text="InstantAlarm 설정" FontSize="15" />
+						<Button Grid.Column="1" Name="btn_settings_close" Content="닫기" Variant="Ghost" Icon="x" ToolTip="닫기 (ESC)" />
+					</Grid>
+					<ScrollViewer Name="scr_settings" MaxHeight="480" VerticalScrollBarVisibility="Auto">
+						<PropertyGrid Name="grid_settings" />
+					</ScrollViewer>
+				</StackPanel>
+			</Border>
+		</Grid>
+	</Grid>
+</UserControl>

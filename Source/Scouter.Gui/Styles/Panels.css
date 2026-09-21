@@ -6,6 +6,13 @@
 .gui-grid > [data-halign="Left"] { justify-self: start; }
 .gui-stack { display: flex; flex-direction: column; }
 .gui-stack.is-horizontal { flex-direction: row; }
+/* StackPanel 교차축 정렬. 세로 스택은 HorizontalAlignment, 가로 스택은 VerticalAlignment가 교차축이다. 주축 정렬은 Spacing·Margin으로 잡는다. */
+.gui-stack:not(.is-horizontal) > [data-halign="Right"] { align-self: flex-end; }
+.gui-stack:not(.is-horizontal) > [data-halign="Center"] { align-self: center; }
+.gui-stack:not(.is-horizontal) > [data-halign="Left"] { align-self: flex-start; }
+.gui-stack.is-horizontal > [data-valign="Bottom"] { align-self: flex-end; }
+.gui-stack.is-horizontal > [data-valign="Center"] { align-self: center; }
+.gui-stack.is-horizontal > [data-valign="Top"] { align-self: flex-start; }
 .gui-usercontrol > .gui-grid, .gui-usercontrol > .gui-stack { flex: 1 1 auto; min-width: 0; min-height: 0; }
 .gui-wrap { display: flex; flex-wrap: wrap; }
 .gui-wrap.is-vertical { flex-direction: column; }

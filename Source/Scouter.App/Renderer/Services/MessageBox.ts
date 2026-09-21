@@ -9,6 +9,7 @@ import { UIManager } from "@scouter/gui";
 import { Ipc } from "./Ipc";
 import { IpcChannels } from "../../Shared/IpcChannels";
 import { GlobalMessageBox } from "./GlobalMessageBox";
+import type { IGlobalMessageBoxOptions } from "./GlobalMessageBox";
 
 export type TMessageBoxScope = "App" | "Global";
 export type TMessageBoxKind = "ok" | "yesno";
@@ -22,6 +23,7 @@ export interface IMessageBoxOptions
 	Kind?: TMessageBoxKind | undefined;
 	DurationMs?: number | undefined;
 	Topmost?: boolean | undefined;
+	FocusMain?: boolean | undefined;
 	OnResult?: ((_result: TMessageBoxResult) => void) | undefined;
 }
 
@@ -33,14 +35,31 @@ export class MessageBox
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 확인창을 띄우고 버튼 결과를 돌려준다. 콜백도 함께 부른다.
-	// @param _opts: 범위·제목·내용·종류·지속·최상위·콜백
+	// @param _opts: 범위·제목·내용·종류·지속·최상위·주 창 포그라운드·콜백
 	public static async ShowAsync(_opts: IMessageBoxOptions): Promise<TMessageBoxResult>
 	{
 		const result = _opts.Scope === "Global"
-			? await GlobalMessageBox.ShowAsync({ Title: _opts.Title, Message: _opts.Message, Kind: _opts.Kind ?? "ok", DurationMs: _opts.DurationMs ?? kGlobalDefaultMs })
+			? await GlobalMessageBox.ShowAsync(MessageBox.GlobalOptionsOf(_opts))
 			: await MessageBox.ShowAppAsync(_opts);
 		_opts.OnResult?.(result);
 		return result;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 전역 확인창 옵션으로 옮긴다. 부수효과 없는 순수 함수.
+	// Topmost는 전역 창 자체를 최상위로 띄우고, FocusMain은 그때 주 창을 앞으로 끌어온다.
+	// 둘 다 명시적으로 false를 준 경우에만 꺼진다. 알람처럼 놓치면 안 되는 표시가 기본이라서다.
+	// @param _opts: 원본 옵션
+	public static GlobalOptionsOf(_opts: IMessageBoxOptions): IGlobalMessageBoxOptions
+	{
+		return {
+			Title: _opts.Title,
+			Message: _opts.Message,
+			Kind: _opts.Kind ?? "ok",
+			DurationMs: _opts.DurationMs ?? kGlobalDefaultMs,
+			Topmost: _opts.Topmost !== false,
+			FocusMain: _opts.FocusMain !== false,
+		};
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////

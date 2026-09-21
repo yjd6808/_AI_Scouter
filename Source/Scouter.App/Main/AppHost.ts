@@ -127,10 +127,13 @@ export class AppHost
 		MainWindow.SetCloseToTray(BoolOf(settings, "App.CloseToTray", true));
 		GlobalToastWindow.Arm(() =>
 		{
-			win.show();
-			win.focus();
+			MainWindow.BringToFront(true);
 		});
-		GlobalMessageBoxWindow.Arm();
+		// 전역 확인창은 뜰 때마다 주 창 Foreground를 프레임워크가 직접 태운다. Plugin은 부를 필요가 없다.
+		GlobalMessageBoxWindow.Arm((_wanted) =>
+		{
+			MainWindow.BringToFront(_wanted);
+		});
 		const updater = new UpdateController((_status) => { win.webContents.send(IpcChannels.AppUpdateStatus, _status); });
 		const ipc: IIpcMain = {
 			Handle: (_channel: string, _fn: (..._args: unknown[]) => unknown) =>
@@ -281,6 +284,7 @@ export class AppHost
 				return { Png: image.toPNG().toString("base64") };
 			},
 			FlashFrame: (_on: boolean) => { _win.flashFrame(_on); },
+			Foreground: () => { MainWindow.BringToFront(true); },
 			Send: (_channel: string, ..._args: unknown[]) => { _win.webContents.send(_channel, ..._args); },
 			OnClose: (_fn: () => void) => { _win.on("close", _fn); },
 			OnMaximize: (_fn: () => void) => { _win.on("maximize", _fn); },

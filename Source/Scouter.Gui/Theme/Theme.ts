@@ -61,6 +61,9 @@ export const kCoreTokens: string[] = [
 	"shadow", "shadow-md", "accent", "accent-foreground",
 	"syntax-keyword", "syntax-string", "syntax-comment", "syntax-function", "syntax-number", "syntax-type",
 	"icon-base", "icon-weak-base",
+	// 오버레이 딤. 모달·팝오버가 아래 화면을 가릴 때 쓰는 반투명 스크림이다.
+	// 코어로 올려 데스크톱이 아닌 구포맷 테마도 폴백 값을 받게 한다. 없으면 {$theme.overlay-scrim}이 조용히 투명이 된다.
+	"overlay-scrim", "overlay-scrim-weak",
 ];
 
 // 데스크톱(seeds·palette) 토큰명을 코어 토큰명으로 잇는다.

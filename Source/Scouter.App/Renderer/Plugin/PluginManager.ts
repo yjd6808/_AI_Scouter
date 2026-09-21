@@ -153,7 +153,14 @@ export class PluginManager
 				// 무시.
 			}
 		}
-		handle.Context?.Dispose();
+		try
+		{
+			handle.Context?.Dispose();	// 여기서 이 Plugin이 띄운 Dialog·Popup도 닫힌다. 실패해도 나머지 정리는 끝까지 간다.
+		}
+		catch (_e)
+		{
+			Log.Error("Plugin", `언로드 정리 실패: ${_id}`, { error: String(_e) });
+		}
 		for (const [view, graph] of [...PluginManager.s_viewGraphs_])
 		{
 			if (view.PluginId === _id)

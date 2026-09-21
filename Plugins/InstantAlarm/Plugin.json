@@ -1,0 +1,16 @@
+{
+	"Id": "InstantAlarm",
+	"Name": "Instant Alarm",
+	"Version": "0.1.0",
+	"Description": "일정 시간 뒤 · 특정 시각 알림. 그룹 예약과 재시작 연속성 지원",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "alarm-clock",
+	"MinAppVersion": "0.4.0",
+	"Permissions": [],
+	"Settings": "Settings.schema.json",
+	"Tools": ["ArmAfter", "ArmAt", "List", "ArmGroup", "Cancel", "SaveGroup"],
+	"Commands": [],
+	"Hotkeys": {}
+}

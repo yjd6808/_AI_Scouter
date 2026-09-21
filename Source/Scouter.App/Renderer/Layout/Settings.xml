@@ -9,7 +9,9 @@
 		<NumericUpDown Name="num_fontsize" Minimum="10" Maximum="20" />
 		<TextBlock Text="밀도" />
 		<ComboBox Name="cmb_density" />
-		<Button Name="btn_open_theme_picker" Content="테마 고르기..." Variant="Ghost" />
-		<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />
+		<StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+			<Button Name="btn_open_theme_picker" Content="테마 고르기..." Variant="Ghost" />
+			<Button Name="btn_close" Content="닫기" Variant="Primary" IsDefault="true" />
+		</StackPanel>
 	</StackPanel>
 </Window>
