@@ -75,7 +75,7 @@ export default class NotesPlugin extends PluginBase
 | `Schedule` | `Cron(expr, fn)` / `Interval(ms, fn)` / `Tick(handler, {PeriodMs?, WhenVisible?})` | Plugin 해체 시 자동 해제. **주기 갱신은 `Tick`** — 앱 전체가 타이머 1개를 나눠 쓰고, `WhenVisible: true`면 내 화면이 콘텐츠 영역에 걸렸을 때만 불린다(기본 false = 백그라운드에서도 호출). 공용 틱에 얹기 애매한 독립 타이머만 `Interval` |
 | `Worker` | `Run(script, args)` | Web Worker 실행 |
 | `Paths` | `PluginDir` / `StorageDir` / `UserDataDir` / `Temp` | 절대경로 조립용 |
-| `Ui` | `RegisterWindow` / `Show` / `ShowDialog` / `ShowPopup` / `Toast` / `Notify` / `NotifyGlobal` / `MessageBox` / `Confirm` | 화면·알림. `ShowDialog(name, data?, timeoutMs?)`는 모달 `Promise<T>`, `ShowPopup(name, data?)`는 Popup 레이어 `Window`. 두 메서드는 `RegisterWindow`와 같은 규칙으로 이름 앞에 `{Id}/`를 붙이므로 등록한 이름 그대로 부른다. 언로드하면 이 둘로 띄운 창은 자동으로 닫힌다(모달 잠김 방지) |
+| `Ui` | `RegisterWindow` / `Show` / `ShowDialog` / `ShowPopup` / `Toast` / `Notify` / `NotifyGlobal` / `MessageBox` / `Confirm` | 화면·알림. `ShowDialog(name, data?, timeoutMs?)`는 모달 `Promise<T>`, `ShowPopup(name, data?)`는 Popup 레이어 `Window`. 두 메서드는 `RegisterWindow`와 같은 규칙으로 이름 앞에 `{Id}/`를 붙이므로 등록한 이름 그대로 부른다. 언로드하면 이 둘로 띄운 창은 자동으로 닫힌다(모달 잠김 방지). `MessageBox({Scope})`는 `"App"`이면 앱 모달, `"Global"`이면 앱이 가려져 있어도 뜨는 바탕화면 확인창이다. `Global`은 `Topmost`(창 최상위)·`FocusMain`(주 창 앞으로)·`Flash`(작업 표시줄 아이콘 깜빡임)를 받고 셋 다 기본 켜짐이라 끄려면 `false`를 명시한다 |
 | `App` | `Version` / `Plugins()` | 앱 정보 조회 |
 
 ## 6. Tool 작성 (`Tools/{X}Tool.ts`)

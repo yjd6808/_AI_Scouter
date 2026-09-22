@@ -91,5 +91,6 @@ export interface IMessageShow
 	DurationMs: number;
 	Topmost: boolean;
 	FocusMain: boolean;
+	Flash: boolean;
 	ThemeCss: string;
 }

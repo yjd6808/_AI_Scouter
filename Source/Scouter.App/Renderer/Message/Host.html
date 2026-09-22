@@ -7,12 +7,13 @@
 	<style id="message-theme"></style>
 	<style>
 		html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
-		#message-wrap { padding: 16px; }
+		/* 창틀이 없으니 상자 전체가 드래그 손잡이다. 버튼만 no-drag로 빼야 클릭이 산다. */
+		#message-wrap { padding: 16px; -webkit-app-region: drag; user-select: none; cursor: default; }
 		#message-card { background: var(--background-panel, #fff); color: var(--text-base, #222); border: 1px solid var(--border, #888); border-radius: 8px; padding: 16px; }
 		#message-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; }
 		#message-text { font-size: 13px; margin-bottom: 16px; white-space: pre-wrap; }
 		#message-buttons { display: flex; gap: 8px; justify-content: flex-end; }
-		#message-buttons button { font: inherit; padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border, #888); background: var(--button-background, var(--background-raised, #eee)); color: var(--button-text, inherit); cursor: pointer; }
+		#message-buttons button { -webkit-app-region: no-drag; font: inherit; padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border, #888); background: var(--button-background, var(--background-raised, #eee)); color: var(--button-text, inherit); cursor: pointer; }
 		#message-buttons button:hover { background: var(--button-hover-background, #ddd); }
 		#message-buttons button:focus-visible { outline: 2px solid var(--primary, #06c); outline-offset: 1px; }
 		#message-buttons button.primary { background: var(--primary, #06c); border-color: var(--primary, #06c); color: #fff; }

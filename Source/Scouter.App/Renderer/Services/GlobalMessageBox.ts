@@ -17,6 +17,7 @@ export interface IGlobalMessageBoxOptions
 	DurationMs?: number | undefined;
 	Topmost?: boolean | undefined;
 	FocusMain?: boolean | undefined;
+	Flash?: boolean | undefined;
 }
 
 const kResults: ReadonlyArray<string> = ["ok", "yes", "no", "timeout", "closed"];
@@ -46,7 +47,7 @@ export class GlobalMessageBox
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Main으로 보낼 페이로드를 만든다. 부수효과 없는 순수 함수.
-	// Topmost·FocusMain은 명시적으로 false를 준 경우에만 꺼진다(기본 켜짐).
+	// Topmost·FocusMain·Flash는 명시적으로 false를 준 경우에만 꺼진다(기본 켜짐).
 	// @param _opts: 옵션
 	// @param _themeCss: 창에 입힐 테마 CSS
 	public static BuildPayload(_opts: IGlobalMessageBoxOptions, _themeCss: string): Record<string, unknown>
@@ -57,6 +58,7 @@ export class GlobalMessageBox
 			DurationMs: Math.max(0, Math.round(_opts.DurationMs ?? kDefaultMs)),
 			Topmost: _opts.Topmost !== false,
 			FocusMain: _opts.FocusMain !== false,
+			Flash: _opts.Flash !== false,
 			ThemeCss: _themeCss,
 		};
 		if (_opts.Message !== undefined && _opts.Message.length > 0)

@@ -143,6 +143,8 @@ export interface IMessageBoxOptions
 	Topmost?: boolean | undefined;
 	// Global 표시와 함께 주 창을 앞으로 끌어온다. 기본 켜짐. 방해되면 false로 끈다.
 	FocusMain?: boolean | undefined;
+	// Global 표시 동안 주 창 작업 표시줄 아이콘을 깜빡인다. 기본 켜짐. 확인창이 닫히면 멎는다.
+	Flash?: boolean | undefined;
 	OnResult?: ((_result: TMessageBoxResult) => void) | undefined;
 }
 

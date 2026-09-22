@@ -109,6 +109,18 @@ export class MainWindow
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// 작업 표시줄 아이콘 깜빡임을 켜고 끈다. 포커스·z-order는 건드리지 않는다.
+	// Windows는 이미 포그라운드인 창의 깜빡임 요청을 스스로 무시하므로 따로 거르지 않는다.
+	// @param _on: 켤지 끌지
+	public static Flash(_on: boolean): void
+	{
+		const win = MainWindow.s_current_;
+		if (win === null || win.isDestroyed())
+			return;
+		win.flashFrame(_on);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// 종료 모드로 둔다. 이후 close는 통과.
 	public static SetQuitting(): void
 	{

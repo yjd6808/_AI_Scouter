@@ -43,7 +43,8 @@ export default class InstantAlarmPlugin extends PluginBase
 		const now: INowSource = { Now: () => Date.now() };
 		const store = new AlarmStore(_ctx.Storage, now);
 		// 알람은 Scope "Global"로 띄운다 — 앱 창이 최소화되거나 뒤로 가려 있어도 바탕화면 위로 올라온다.
-		// Topmost는 스펙(항상 위 체크)을 그대로 넘긴다. 주 창을 앞으로 올리는 것은 프레임워크가 맡는다.
+		// Topmost는 스펙(항상 위 체크)을 그대로 넘긴다. 주 창을 앞으로 올리는 것과 작업 표시줄
+		// 아이콘 깜빡임(Flash)은 프레임워크가 기본으로 맡는다. 확인창이 닫히면 깜빡임도 멎는다.
 		// DurationMs는 0을 그대로 넘겨야 한다. 전역 확인창의 기본값 30000은 값이 없을 때만 적용되고,
 		// 0은 "자동으로 닫지 않음"으로 해석된다(Renderer/Message/Host.ts는 DurationMs > 0일 때만 타이머를 건다).
 		const show = (_spec: IAlarmSpec): Promise<TAlarmResult> =>

@@ -30,30 +30,45 @@ void describe("MessageBox", () =>
 		assert.equal(await GlobalMessageBox.ShowAsync({ Title: "x", Kind: "yesno", DurationMs: 10 }), "closed");
 	});
 
-	void it("Global 옮김은 Topmost·FocusMain을 기본 켜짐으로 채운다", () =>
+	void it("Global 옮김은 Topmost·FocusMain·Flash를 기본 켜짐으로 채운다", () =>
 	{
 		const on = MessageBox.GlobalOptionsOf({ Scope: "Global", Title: "t" });
 		assert.equal(on.Topmost, true);
 		assert.equal(on.FocusMain, true);
+		assert.equal(on.Flash, true);
 		assert.equal(on.Kind, "ok");
 		assert.equal(on.DurationMs, 30000);
-		const off = MessageBox.GlobalOptionsOf({ Scope: "Global", Title: "t", Topmost: false, FocusMain: false, Kind: "yesno", DurationMs: 5000 });
+		const off = MessageBox.GlobalOptionsOf({ Scope: "Global", Title: "t", Topmost: false, FocusMain: false, Flash: false, Kind: "yesno", DurationMs: 5000 });
 		assert.equal(off.Topmost, false);
 		assert.equal(off.FocusMain, false);
+		assert.equal(off.Flash, false);
 		assert.equal(off.Kind, "yesno");
 		assert.equal(off.DurationMs, 5000);
 	});
 
-	void it("Global 페이로드는 Topmost·FocusMain을 Main으로 그대로 넘긴다", () =>
+	void it("Flash는 Topmost·FocusMain과 따로 논다", () =>
+	{
+		// 깜빡임만 끄고 최상위·포그라운드는 살리는 조합이 실제로 필요하다. 셋이 묶여 있으면 안 된다.
+		const quiet = MessageBox.GlobalOptionsOf({ Scope: "Global", Title: "t", Flash: false });
+		assert.equal(quiet.Topmost, true);
+		assert.equal(quiet.FocusMain, true);
+		assert.equal(quiet.Flash, false);
+		const loud = MessageBox.GlobalOptionsOf({ Scope: "Global", Title: "t", Topmost: false, FocusMain: false });
+		assert.equal(loud.Flash, true);
+	});
+
+	void it("Global 페이로드는 Topmost·FocusMain·Flash를 Main으로 그대로 넘긴다", () =>
 	{
 		const payload = GlobalMessageBox.BuildPayload({ Title: "t", Message: "m" }, "css");
 		assert.equal(payload["Topmost"], true);
 		assert.equal(payload["FocusMain"], true);
+		assert.equal(payload["Flash"], true);
 		assert.equal(payload["Message"], "m");
 		assert.equal(payload["ThemeCss"], "css");
-		const off = GlobalMessageBox.BuildPayload({ Title: "t", Topmost: false, FocusMain: false, DurationMs: -5 }, "");
+		const off = GlobalMessageBox.BuildPayload({ Title: "t", Topmost: false, FocusMain: false, Flash: false, DurationMs: -5 }, "");
 		assert.equal(off["Topmost"], false);
 		assert.equal(off["FocusMain"], false);
+		assert.equal(off["Flash"], false);
 		assert.equal(off["DurationMs"], 0);
 		assert.equal("Message" in off, false);
 	});

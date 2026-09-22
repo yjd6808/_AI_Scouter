@@ -24,6 +24,7 @@ export interface IMessageBoxOptions
 	DurationMs?: number | undefined;
 	Topmost?: boolean | undefined;
 	FocusMain?: boolean | undefined;
+	Flash?: boolean | undefined;
 	OnResult?: ((_result: TMessageBoxResult) => void) | undefined;
 }
 
@@ -48,7 +49,8 @@ export class MessageBox
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 전역 확인창 옵션으로 옮긴다. 부수효과 없는 순수 함수.
 	// Topmost는 전역 창 자체를 최상위로 띄우고, FocusMain은 그때 주 창을 앞으로 끌어온다.
-	// 둘 다 명시적으로 false를 준 경우에만 꺼진다. 알람처럼 놓치면 안 되는 표시가 기본이라서다.
+	// Flash는 주 창 작업 표시줄 아이콘을 깜빡인다. Windows가 Foreground를 거절해도 이건 남는다.
+	// 셋 다 명시적으로 false를 준 경우에만 꺼진다. 알람처럼 놓치면 안 되는 표시가 기본이라서다.
 	// @param _opts: 원본 옵션
 	public static GlobalOptionsOf(_opts: IMessageBoxOptions): IGlobalMessageBoxOptions
 	{
@@ -59,6 +61,7 @@ export class MessageBox
 			DurationMs: _opts.DurationMs ?? kGlobalDefaultMs,
 			Topmost: _opts.Topmost !== false,
 			FocusMain: _opts.FocusMain !== false,
+			Flash: _opts.Flash !== false,
 		};
 	}
 

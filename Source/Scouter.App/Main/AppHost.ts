@@ -130,9 +130,9 @@ export class AppHost
 			MainWindow.BringToFront(true);
 		});
 		// 전역 확인창은 뜰 때마다 주 창 Foreground를 프레임워크가 직접 태운다. Plugin은 부를 필요가 없다.
-		GlobalMessageBoxWindow.Arm((_wanted) =>
-		{
-			MainWindow.BringToFront(_wanted);
+		GlobalMessageBoxWindow.Arm({
+			FocusMain: (_wanted: boolean) => { MainWindow.BringToFront(_wanted); },
+			Flash: (_on: boolean) => { MainWindow.Flash(_on); },
 		});
 		const updater = new UpdateController((_status) => { win.webContents.send(IpcChannels.AppUpdateStatus, _status); });
 		const ipc: IIpcMain = {
