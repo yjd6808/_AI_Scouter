@@ -1,0 +1,16 @@
+{
+	"Id": "SpeechExecutor",
+	"Name": "SpeechExecutor",
+	"Version": "0.1.0",
+	"Description": "음성 리스너: STT 텍스트를 피어에 전달하고 트리거 함수 실행",
+	"Author": "Scouter",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "mic",
+	"MinAppVersion": "0.4.0",
+	"Permissions": ["Process", "Network", "Fs.Read", "Fs.Write", "Settings", "Tools.Invoke"],
+	"Settings": "Settings.schema.json",
+	"Tools": ["SendText"],
+	"Commands": [],
+	"Hotkeys": {}
+}

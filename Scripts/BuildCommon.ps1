@@ -122,6 +122,11 @@ function Pack-WinUnpacked([string]$Root)
 	{
 		$needPack = Test-Stale $asar $ymlTime
 	}
+	if (-not $needPack)
+	{
+		# 플러그인은 소스(.ts) 그대로 패키징되므로 dist를 거치지 않는다. 입력 변경도 감지.
+		$needPack = Test-Stale $asar (Get-NewestInputTime $Root)
+	}
 	if (-not (Test-Path -LiteralPath $exe))
 	{
 		$needPack = $true
@@ -132,6 +137,18 @@ function Pack-WinUnpacked([string]$Root)
 		if ([string]::IsNullOrEmpty($env:SCOUTER_UPDATE_URL))
 		{
 			$env:SCOUTER_UPDATE_URL = "https://example.com/updates"
+		}
+		# electron-builder가 appOutDir를 비우므로 기존 Plugins를 백업했다가
+		# 팩에 없는 항목(수동 배치 등)만 복원한다.
+		$pluginsDir = Join-Path $Root "release\win-unpacked\resources\Plugins"
+		$pluginsBak = Join-Path ([System.IO.Path]::GetTempPath()) "scouter-plugins-bak"
+		if (Test-Path -LiteralPath $pluginsDir)
+		{
+			if (Test-Path -LiteralPath $pluginsBak)
+			{
+				Remove-Item -LiteralPath $pluginsBak -Recurse -Force
+			}
+			Copy-Item -LiteralPath $pluginsDir -Destination $pluginsBak -Recurse -Force
 		}
 		$backup = Join-Path ([System.IO.Path]::GetTempPath()) "electron-builder.yml.scouter-bak"
 		Copy-Item -LiteralPath $yml -Destination $backup -Force
@@ -152,6 +169,18 @@ function Pack-WinUnpacked([string]$Root)
 		finally
 		{
 			Copy-Item -LiteralPath $backup -Destination $yml -Force
+		}
+		if ((Test-Path -LiteralPath $pluginsBak) -and (Test-Path -LiteralPath $pluginsDir))
+		{
+			foreach ($item in (Get-ChildItem -LiteralPath $pluginsBak -Force))
+			{
+				$dest = Join-Path $pluginsDir $item.Name
+				if (-not (Test-Path -LiteralPath $dest))
+				{
+					Copy-Item -LiteralPath $item.FullName -Destination $dest -Recurse -Force
+				}
+			}
+			Remove-Item -LiteralPath $pluginsBak -Recurse -Force
 		}
 	}
 	else

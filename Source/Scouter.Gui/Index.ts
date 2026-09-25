@@ -97,6 +97,8 @@ export { VirtualList } from "./Controls/Scouter/VirtualList";
 export { RingBuffer } from "./Controls/Scouter/RingBuffer";
 export { LogView } from "./Controls/Scouter/LogView";
 export type { ILogEntry, LogLevel } from "./Controls/Scouter/LogView";
+export { Terminal } from "./Controls/Scouter/Terminal";
+export type { ITerminalLine } from "./Controls/Scouter/Terminal";
 export { Badge } from "./Controls/Scouter/Badge";
 export { PropertyGrid, EditorFactory } from "./Controls/Scouter/PropertyGrid";
 export type { IJsonSchemaNode, IPropertyEditor } from "./Controls/Scouter/PropertyGrid";
@@ -140,6 +142,7 @@ export type { ITheme, IResolvedTheme, IThemeJson, IDesktopTokens, ITypography, T
 export { ThemeResolver } from "./Theme/ThemeResolver";
 export { kDesktopCoreAliases } from "./Theme/Theme";
 export { ThemeCss } from "./Theme/ThemeCss";
+export { ScrollbarTheme } from "./Theme/ScrollbarTheme";
 export { ThemeLint } from "./Theme/ThemeLint";
 export type { IThemeLintMessage, IThemeLintResult } from "./Theme/ThemeLint";
 export { Color } from "./Theme/Color";

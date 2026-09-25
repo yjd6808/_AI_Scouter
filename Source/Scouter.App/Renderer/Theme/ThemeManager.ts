@@ -9,7 +9,7 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { watch } from "chokidar";
 import type { FSWatcher } from "chokidar";
-import { ThemeResolver, ThemeCss, SimpleEvent } from "@scouter/gui";
+import { ThemeResolver, ThemeCss, SimpleEvent, ScrollbarTheme } from "@scouter/gui";
 import type { ITheme, IResolvedTheme, IThemeJson, ThemeMode, ThemeScheme, ITypography, DensityKind } from "@scouter/gui";
 import { MonacoLoader } from "@scouter/gui";
 import { Settings } from "../Services/Settings";
@@ -175,6 +175,7 @@ export class ThemeManager
 		if (css !== ThemeManager.s_style_.textContent)
 		{
 			ThemeManager.s_style_.textContent = css;
+			ScrollbarTheme.Apply(ThemeManager.s_resolved_.Tokens);
 			document.documentElement.dataset["theme"] = _theme.Id;
 			document.documentElement.dataset["scheme"] = useScheme.toLowerCase();
 			MonacoLoader.ApplyTheme(ThemeManager.s_resolved_.Tokens, useScheme === "Dark");

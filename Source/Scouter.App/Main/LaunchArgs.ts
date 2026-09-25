@@ -15,6 +15,8 @@ export class LaunchArgs
 	public LayoutDir: string | null = null;
 	public PluginDir: string | null = null;
 	public Port: number | null = null;
+	public Profile: string | null = null;
+	public Multi = false;
 	public readonly Raw: string[];
 
 	// ==================== 생성 · 소멸 ====================
@@ -53,6 +55,13 @@ export class LaunchArgs
 				const port = Number(_argv[++idx] ?? NaN);
 				args.Port = Number.isNaN(port) ? null : port;
 			}
+			else if (token === "--profile")
+			{
+				const clean = (_argv[++idx] ?? "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
+				args.Profile = clean.length > 0 ? clean : null;
+			}
+			else if (token === "-multi" || token === "--multi")
+				args.Multi = true;
 		}
 		return args;
 	}

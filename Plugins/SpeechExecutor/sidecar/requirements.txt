@@ -1,0 +1,5 @@
+# SpeechExecutor sidecar requirements (STT).
+websockets>=12.0
+numpy>=1.26
+sounddevice>=0.4.6
+google-genai>=2.0.0

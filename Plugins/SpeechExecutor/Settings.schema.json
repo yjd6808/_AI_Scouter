@@ -1,0 +1,10 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "SpeechExecutor Settings",
+	"type": "object",
+	"properties":
+	{
+		"PythonExe": { "type": "string", "default": "python" },
+		"DefaultHost": { "type": "string", "default": "0.0.0.0:9999" }
+	}
+}

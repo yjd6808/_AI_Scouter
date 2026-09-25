@@ -15,6 +15,7 @@ export class Args
 	private static s_layoutDir_: string | null = null;
 	private static s_pluginDir_: string | null = null;
 	private static s_port_: number | null = null;
+	private static s_multi_ = false;
 
 	// ==================== 속성 ====================
 	public static get IsTest(): boolean { return Args.s_test_; }
@@ -24,6 +25,7 @@ export class Args
 	public static get LayoutDir(): string | null { return Args.s_layoutDir_; }
 	public static get PluginDir(): string | null { return Args.s_pluginDir_; }
 	public static get Port(): number | null { return Args.s_port_; }
+	public static get Multi(): boolean { return Args.s_multi_; }
 
 	// ==================== 공개 메서드 ====================
 
@@ -49,6 +51,8 @@ export class Args
 				Args.s_pluginDir_ = _argv[++idx] ?? null;
 			else if (token === "--port")
 				Args.s_port_ = Number(_argv[++idx] ?? NaN) || null;
+			else if (token === "-multi" || token === "--multi")
+				Args.s_multi_ = true;
 		}
 	}
 }

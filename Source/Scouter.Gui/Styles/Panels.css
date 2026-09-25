@@ -34,7 +34,7 @@
 .gui-canvas { position: relative; }
 .gui-uniform { display: grid; }
 .gui-border { border: 0 solid transparent; }
-.gui-scroll { overflow: auto; scrollbar-width: thin; min-width: 0; min-height: 0; }
+.gui-scroll { overflow: auto; scrollbar-width: auto; min-width: 0; min-height: 0; }
 .gui-viewbox { position: relative; overflow: hidden; }
 .gui-splitter { background: transparent; cursor: col-resize; min-width: 8px; touch-action: none; position: relative; left: -4px; }
 .gui-splitter::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; background: transparent; border-radius: 1px; }

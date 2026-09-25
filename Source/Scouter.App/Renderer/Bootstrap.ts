@@ -117,12 +117,16 @@ async function Main(): Promise<void>
 	{
 		Log.Info("App", "safe mode: plugins skipped");
 	}
-	await McpHttpServer.StartAsync(Args.Port ?? Settings.Get<number>("Mcp.Port")); // 7
-	await McpHttpServer.AttachMcpAsync(Paths.ScouterHome, Settings.Get<Array<{ Name: string; Transport: "stdio" | "http"; Command?: string; Args?: string[]; Url?: string; Headers?: Record<string, string>; Prefix: string }>>("Mcp.Upstreams", []));
+	if (!Args.Multi)
+	{
+		// -multi 인스턴스는 MCP 서버를 띄우지 않는다 (포트·세션 충돌 방지).
+		await McpHttpServer.StartAsync(Args.Port ?? Settings.Get<number>("Mcp.Port")); // 7
+		await McpHttpServer.AttachMcpAsync(Paths.ScouterHome, Settings.Get<Array<{ Name: string; Transport: "stdio" | "http"; Command?: string; Args?: string[]; Url?: string; Headers?: Record<string, string>; Prefix: string }>>("Mcp.Upstreams", []));
+	}
 	if (Args.IsTest)
 		TestApiServer.Attach(McpHttpServer);                           // 8
-	if (!Args.IsTest)
-		GlobalHotkey.Sync();                                           // --test는 단일 인스턴스 예외라 전역 단축키를 잡지 않는다
+	if (!Args.IsTest && !Args.Multi)
+		GlobalHotkey.Sync();                                           // --test·-multi는 단일 인스턴스 예외라 전역 단축키를 잡지 않는다
 	MainSettingsSync.Sync();                                           // App.CloseToTray·App.AutoStart를 Main에 즉시 반영
 	Shutdown.Arm();
 	UpdateClient.Start();

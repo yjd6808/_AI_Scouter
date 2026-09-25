@@ -6,11 +6,17 @@ extraResources:
   - { from: "node_modules/@esbuild/win32-x64", to: "esbuild-bin" }
   - { from: "Source/Scouter.App/Renderer/BuiltIn", to: "PluginsBuiltIn", filter: ["!.cache"] }
   - { from: "Plugins/P4Util", to: "Plugins/P4Util", filter: ["!.cache"] }
+  - { from: "Plugins/SpeechExecutor", to: "Plugins/SpeechExecutor", filter: ["!.cache"] }
+  - { from: "Plugins/Notes", to: "Plugins/Notes", filter: ["!.cache"] }
+  - { from: "Plugins/ToastLab", to: "Plugins/ToastLab", filter: ["!.cache"] }
+  - { from: "Plugins/ControlLab", to: "Plugins/ControlLab", filter: ["!.cache"] }
+  - { from: "Plugins/InstantAlarm", to: "Plugins/InstantAlarm", filter: ["!.cache"] }
   - { from: "Source/Scouter.App/Renderer/Theme/Themes", to: "Themes" }
   - { from: "Assets", to: "Assets" }
 win:
   target: [{ target: nsis, arch: [x64] }]
   icon: Assets/app.ico
+  signAndEditExecutable: false
 nsis:
   oneClick: false
   perMachine: false

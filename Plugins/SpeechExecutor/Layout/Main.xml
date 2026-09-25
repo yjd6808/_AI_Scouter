@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="speech_main">
+	<UserControl.Data>
+		<Item Key="statusText" Type="String" Value="대기중" />
+		<Item Key="heartbeatText" Type="String" Value="마지막 하트비트 수신: -" />
+		<Item Key="partialText" Type="String" Value="" />
+		<Item Key="extText" Type="String" Value="" />
+		<Item Key="funcText" Type="String" Value="" />
+		<Item Key="editTargetText" Type="String" Value="" />
+	</UserControl.Data>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="2*" MinWidth="360"/>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="1*" MinWidth="200"/>
+		</Grid.ColumnDefinitions>
+		<TabControl Name="tabs" Grid.Column="0">
+			<TabItem Header="Home">
+				<ScrollViewer>
+					<StackPanel Orientation="Vertical" Spacing="6" Margin="12">
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<TextBox Name="txt_host" Width="150" Placeholder="0.0.0.0:9999" VerticalAlignment="Center" />
+							<TextBox Name="txt_nick" Width="100" Placeholder="닉네임" VerticalAlignment="Center" />
+							<Button Name="btn_listen" Content="리슨" Variant="Primary" VerticalAlignment="Center" />
+							<Button Name="btn_connect" Content="연결" VerticalAlignment="Center" />
+							<Button Name="btn_stop" Content="끊기" VerticalAlignment="Center" />
+						</StackPanel>
+						<TextBlock Name="txt_status" Text="{@statusText}" />
+						<TextBlock Name="txt_heartbeat" Text="{@heartbeatText}" />
+						<StackPanel Orientation="Horizontal" Spacing="12">
+							<CheckBox Name="chk_multi" Content="다중 클라이언트 허용" VerticalAlignment="Center" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<TextBlock Text="인식 텍스트" VerticalAlignment="Center" />
+							<Button Name="btn_stt" Content="듣기 시작" VerticalAlignment="Center" />
+						</StackPanel>
+						<TextBox Name="txt_recognized" AcceptsReturn="true" Height="80" />
+						<TextBlock Name="txt_partial" Text="{@partialText}" />
+						<TextBlock Text="클라이언트 (우클릭: 체크)" />
+						<ListBox Name="lst_peers" Height="90" />
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<TextBlock Text="트리거 → 함수 매핑" VerticalAlignment="Center" />
+							<CheckBox Name="chk_block" Content="트리거 차단" VerticalAlignment="Center" />
+						</StackPanel>
+						<ListBox Name="lst_map" Height="80" />
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<TextBox Name="txt_map_text" Width="130" Placeholder="음성 텍스트" VerticalAlignment="Center" />
+							<TextBox Name="txt_map_func" Width="130" Placeholder="함수명" VerticalAlignment="Center" />
+							<Button Name="btn_map_add" Content="+ 추가" VerticalAlignment="Center" />
+							<Button Name="btn_map_del" Content="- 삭제" VerticalAlignment="Center" />
+							<Button Name="btn_map_run" Content="실행" Variant="Primary" VerticalAlignment="Center" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Spacing="6">
+							<TextBlock Text="함수 소스" VerticalAlignment="Center" />
+							<TextBlock Name="txt_ext" Text="{@extText}" VerticalAlignment="Center" />
+							<Button Name="btn_apply" Content="적용" Variant="Primary" VerticalAlignment="Center" />
+						</StackPanel>
+						<TextBox Name="txt_source" AcceptsReturn="true" Height="220" />
+						<TextBlock Name="txt_funcs" Text="{@funcText}" />
+					</StackPanel>
+				</ScrollViewer>
+			</TabItem>
+			<TabItem Header="API">
+				<StackPanel Orientation="Vertical" Spacing="6" Margin="12">
+					<TextBlock Text="Gemini 키 (선택한 키를 STT에 사용)" />
+					<ListBox Name="lst_keys" Height="120" />
+					<StackPanel Orientation="Horizontal" Spacing="6">
+						<Button Name="btn_key_add" Content="+ 추가" VerticalAlignment="Center" />
+						<Button Name="btn_key_update" Content="변경" VerticalAlignment="Center" />
+						<Button Name="btn_key_del" Content="- 삭제" VerticalAlignment="Center" />
+						<Button Name="btn_key_apply" Content="적용" Variant="Primary" VerticalAlignment="Center" />
+						<Button Name="btn_key_check" Content="확인" VerticalAlignment="Center" />
+					</StackPanel>
+					<TextBlock Text="이름" />
+					<TextBlock Text="{@editTargetText}" />
+					<TextBox Name="txt_key_name" />
+					<TextBlock Text="키 (평문)" />
+					<TextBox Name="txt_key_value" />
+				</StackPanel>
+			</TabItem>
+		</TabControl>
+		<GridSplitter Grid.Column="1" />
+		<DockPanel Grid.Column="2" LastChildFill="true">
+			<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="8">
+				<TextBlock Text="로그" VerticalAlignment="Center" />
+				<Button Name="btn_logclear" Content="지우기" VerticalAlignment="Center" />
+			</StackPanel>
+			<Terminal Name="log_view" />
+		</DockPanel>
+	</Grid>
+</UserControl>
