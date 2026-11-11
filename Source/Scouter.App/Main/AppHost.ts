@@ -13,6 +13,7 @@ import { MainWindow } from "./MainWindow";
 import { GlobalToastWindow } from "./GlobalToastWindow";
 import { GlobalMessageBoxWindow } from "./GlobalMessageBoxWindow";
 import { TrayController } from "./TrayController";
+import { AppIcon } from "./AppIcon";
 import { UpdateController } from "./UpdateController";
 import { IpcHost } from "./IpcHost";
 import type { IIpcMain, IMainWindowOps, IAppOps, IAppInfo } from "./IpcHost";
@@ -239,6 +240,9 @@ export class AppHost
 	// 트레이 아이콘 경로를 구한다. 패키지·개발 실행 모두에서 찾는다.
 	private static TrayIconPath(): string
 	{
+		const appIcon = AppIcon.Path();
+		if (appIcon !== null)
+			return appIcon;
 		const names = ["tray-16.png", "tray-32.png"];
 		const dirs = [path.join(process.resourcesPath, "Assets"), path.join(app.getAppPath(), "Assets")];
 		for (const dir of dirs)

@@ -9,6 +9,7 @@ import { app, BrowserWindow } from "electron";
 import * as path from "node:path";
 import { LaunchArgs } from "./LaunchArgs";
 import { ForegroundPolicy } from "./ForegroundPolicy";
+import { AppIcon } from "./AppIcon";
 
 export class MainWindow
 {
@@ -30,8 +31,10 @@ export class MainWindow
 	public static Create(_args: LaunchArgs): BrowserWindow
 	{
 		MainWindow.s_testMode_ = _args.Test;
+		const icon = AppIcon.Path();
 		const win = new BrowserWindow(
 			{
+				...(icon === null ? {} : { icon }),
 				width: 1280, height: 800, minWidth: 800, minHeight: 500, show: false,
 				frame: false, titleBarStyle: "hidden",
 				backgroundColor: "#1e1e1e",

@@ -23,7 +23,7 @@ function Get-RepoRoot([string]$Root)
 function Get-NewestInputTime([string]$Root)
 {
 	$latest = [datetime]::MinValue
-	$dirs = @("Source", "Plugins", "webpack", "Assets") | ForEach-Object { Join-Path $Root $_ }
+	$dirs = @("Source", "Plugins", "webpack", "Assets", "Res") | ForEach-Object { Join-Path $Root $_ }
 	$files = @("package.json", "package-lock.json", "tsconfig.json", "tsconfig.base.json") | ForEach-Object { Join-Path $Root $_ }
 	foreach ($file in $files)
 	{
@@ -109,6 +109,19 @@ function Build-DistIfStale([string]$Root, [switch]$Force)
 	}
 }
 
+# signAndEditExecutable=false 로 패키징하면 electron-builder 가 exe 아이콘을 넣지 않으므로 rcedit 로 직접 넣는다.
+# 몇 번을 돌려도 결과가 같다(멱등).
+function Set-ExeIcon([string]$Root, [string]$Exe)
+{
+	$rcedit = Join-Path $Root "node_modules\rcedit\bin\rcedit-x64.exe"
+	$ico = Join-Path $Root "Res\Icon\Scouter.ico"
+	if (-not (Test-Path -LiteralPath $rcedit)) { Fail "rcedit not found. Run npm install." }
+	if (-not (Test-Path -LiteralPath $ico)) { Fail "Icon not found: $ico" }
+	& $rcedit $Exe --set-icon $ico
+	if ($LASTEXITCODE -ne 0) { Fail "rcedit --set-icon failed." }
+	Write-Host "Applied exe icon."
+}
+
 function Pack-WinUnpacked([string]$Root)
 {
 	$distMain = Join-Path $Root "dist\main\Main.cjs"
@@ -157,7 +170,7 @@ function Pack-WinUnpacked([string]$Root)
 			$text = Get-Content -LiteralPath $yml -Raw
 			if ($text -notmatch "signAndEditExecutable")
 			{
-				$text = $text.Replace("  icon: Assets/app.ico", "  icon: Assets/app.ico`r`n  signAndEditExecutable: false")
+				$text = $text.Replace("  icon: Res/Icon/Scouter.ico", "  icon: Res/Icon/Scouter.ico`r`n  signAndEditExecutable: false")
 				Set-Content -LiteralPath $yml -Value $text -NoNewline
 			}
 			& npx electron-builder --win --x64 --dir
@@ -191,5 +204,6 @@ function Pack-WinUnpacked([string]$Root)
 	{
 		Fail "Scouter.exe not found after pack."
 	}
+	Set-ExeIcon $Root $exe
 	return $exe
 }

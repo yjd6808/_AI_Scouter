@@ -47,6 +47,7 @@
 		"monaco-editor": "^0.56.0",
 		"monaco-editor-webpack-plugin": "^7.1.0",
 		"playwright": "^1.48.0",
+		"rcedit": "^5.0.2",
 		"rimraf": "^6.0.0",
 		"style-loader": "^4.0.0",
 		"ts-loader": "^9.5.0",

@@ -9,3 +9,5 @@ Source/*/.cache/
 out/
 probe-*
 happy-probe.ts
+CLAUDE.local.md
+Plugins/Mabi*/
