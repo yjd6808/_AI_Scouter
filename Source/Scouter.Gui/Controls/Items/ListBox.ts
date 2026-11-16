@@ -123,7 +123,30 @@ export class ListBox extends Selector
 		this.ContainerFromIndex(_index)?.Element.scrollIntoView({ block: "nearest" });
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 항목을 바꾼 뒤 모든 컨테이너의 선택 표시를 선택 상태에 맞춘다.
+	// 선택이 그대로면 Selector가 바뀐 것이 없다고 보고 표시를 건드리지 않아, 새로 만든 컨테이너가 빈 표시로 남는다.
+	// @param _items: 항목 목록
+	public override SetItems(_items: ReadonlyArray<unknown>): void
+	{
+		super.SetItems(_items);
+		const selected = new Set(this.selection_.Indices);
+		for (let idx = 0; idx < this.Items.length; ++idx)
+			this.MarkItem(idx, selected.has(idx));
+	}
+
 	// ==================== 확장점 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 선택 표시를 항목에 반영한다. Selector는 aria-selected만 바꾸므로 ListBoxItem의 is-selected(하이라이트)는
+	// 여기서 켠다. 이게 없으면 ListBox·ListView·ComboBox 목록 어디에서도 선택 항목이 강조되지 않는다.
+	// @param _index: 인덱스
+	// @param _selected: 선택 여부
+	protected override SetContainerSelected(_index: number, _selected: boolean): void
+	{
+		super.SetContainerSelected(_index, _selected);
+		this.MarkItem(_index, _selected);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 인덱스 컨테이너는 ListBoxItem으로 감싼다.
@@ -152,6 +175,20 @@ export class ListBox extends Selector
 	}
 
 	// ==================== 내부 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 인덱스 컨테이너의 ListBoxItem에 선택 표시를 쓴다. ListView는 행(GridViewRow)이 ListBoxItem을 감싸므로
+	// 컨테이너 자신이 아니면 자식에서 찾는다.
+	// @param _index: 인덱스
+	// @param _selected: 선택 여부
+	private MarkItem(_index: number, _selected: boolean): void
+	{
+		const container = this.ContainerFromIndex(_index);
+		if (container === null)
+			return;
+		const item = container instanceof ListBoxItem ? container : container.Children.find((_c): _c is ListBoxItem => _c instanceof ListBoxItem) ?? null;
+		item?.SetSelected(_selected);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 단일 토글.
@@ -201,11 +238,12 @@ export class ListBox extends Selector
 		{
 			if (node.parentNode === this.Element)
 			{
-				const kids = this.Element.children;
-				for (let idx = 0; idx < kids.length; ++idx)
+				// DOM 자식 순서로 세면 항목이 아닌 자식(ListView 머리글 div)까지 세어 순번이 밀린다.
+				// 항목 컨테이너와 직접 맞춰 본다.
+				for (let idx = 0; idx < this.items_.length; ++idx)
 				{
-					if (kids[idx] === node)
-						return idx < this.items_.length ? idx : -1;
+					if (this.ContainerFromIndex(idx)?.Element === node)
+						return idx;
 				}
 				return -1;
 			}

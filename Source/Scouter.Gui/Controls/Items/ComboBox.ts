@@ -59,6 +59,20 @@ export class ComboBox extends Selector
 				this.toggle_.Focus();
 			}
 		});
+		// 이미 선택된 항목을 다시 누르면 선택이 그대로라 SelectionChanged가 오지 않아 목록이 열린 채 남았다.
+		// ListBox가 자기 PointerDown(생성자에서 먼저 구독)으로 선택을 처리한 뒤에도 아직 열려 있고,
+		// 누른 곳이 이 목록의 항목이면 닫는다. 스크롤바·빈 곳을 누른 것은 그대로 둔다.
+		this.list_.PointerDown.Add((_s, _a) =>
+		{
+			if (!this.IsDropDownOpen)
+				return;
+			const target = _a.Native.target;
+			const item = target instanceof Element ? target.closest(".gui-listbox__item") : null;
+			if (item === null || item.closest(".gui-listbox") !== this.list_.Element)
+				return;
+			this.IsDropDownOpen = false;
+			this.toggle_.Focus();
+		});
 		this.Wheel.Add((_s, _a) =>
 		{
 			if (this.IsDropDownOpen)

@@ -1,7 +1,7 @@
 .gui-listbox { display: flex; flex-direction: column; gap: 0; overflow: auto; outline: none; min-width: 0; min-height: 0; }
 .gui-listbox__item { min-height: var(--gui-control-height); display: flex; align-items: center; padding: 2px 8px; cursor: pointer; color: var(--text-base); font-size: var(--gui-font-size); line-height: 1.4; box-sizing: border-box; }
 .gui-listbox__item:hover { background: var(--background-hover); }
-.gui-listbox__item.is-selected { background: var(--primary-muted); }
+.gui-listbox__item.is-selected { background: var(--primary-muted); box-shadow: inset 3px 0 0 var(--primary); color: var(--text-strong); }	/* 테마에 따라 muted 배경만으로는 목록 배경과 대비가 낮아 왼쪽 강조 막대·밝은 글자를 함께 준다 */
 .gui-combobox { display: inline-flex; }
 .gui-combobox__toggle { display: inline-flex; align-items: center; gap: 6px; width: 100%; min-width: 0; }	/* 폭은 ComboBox의 Width가 정한다. 여기서 min-width를 박으면 XML 지정 폭이 조용히 무시된다. */
 .gui-combobox__value { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
