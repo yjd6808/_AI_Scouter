@@ -1,0 +1,13 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "ScriptRunner Settings",
+	"type": "object",
+	"properties":
+	{
+		"PythonExe": { "type": "string", "default": "python", "description": ".py 스크립트를 실행할 파이썬 실행 파일" },
+		"NodeExe": { "type": "string", "default": "node", "description": ".js 스크립트를 실행할 Node 실행 파일" },
+		"MaxLogKB": { "type": "number", "default": 4096, "minimum": 64, "maximum": 65536, "description": "실행 1회의 출력 기록 상한(KB). 넘으면 이후 출력은 기록하지 않는다" },
+		"TickMs": { "type": "number", "default": 1000, "minimum": 200, "maximum": 60000, "description": "예약 점검·실행 로그 수집 주기(ms)" },
+		"LogHistoryLines": { "type": "number", "default": 5000, "minimum": 100, "maximum": 50000, "description": "실행 로그(화면 아래 [실행 로그], logs/history.log)에 남길 최근 줄 수" }
+	}
+}

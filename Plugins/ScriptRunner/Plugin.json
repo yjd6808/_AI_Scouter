@@ -1,0 +1,16 @@
+{
+	"Id": "ScriptRunner",
+	"Name": "Script Runner",
+	"Version": "0.1.0",
+	"Description": "스크립트 등록 · 즉시 실행 · 중지 · 예약(시간 뒤 / 특정 시각, 반복) 실행",
+	"Author": "윤정도",
+	"Main": "Index.ts",
+	"Layout": "Layout/Main.xml",
+	"Icon": "play",
+	"MinAppVersion": "0.4.0",
+	"Permissions": ["Process"],
+	"Settings": "Settings.schema.json",
+	"Tools": ["List", "Register", "Update", "Run", "Stop", "Remove", "GetOutput", "GetLog", "Preset"],
+	"Commands": [],
+	"Hotkeys": {}
+}

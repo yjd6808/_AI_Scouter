@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UserControl xmlns="scouter/gui" Name="scriptrunner_main">
+	<UserControl.Data>
+		<Item Key="isAddOpen" Type="Bool" Value="false" />
+		<Item Key="isOutputOpen" Type="Bool" Value="false" />
+		<Item Key="isScheduled" Type="Bool" Value="false" />
+		<Item Key="isAt" Type="Bool" Value="false" />
+		<Item Key="isEmpty" Type="Bool" Value="true" />
+		<Item Key="argCount" Type="Int" Value="0" />
+		<Item Key="totalCount" Type="Int" Value="0" />
+		<Item Key="runningCount" Type="Int" Value="0" />
+		<Item Key="scheduledCount" Type="Int" Value="0" />
+		<Item Key="stateText" Type="String" Value="대기" />
+		<Item Key="addHead" Type="String" Value="스크립트 등록" />
+		<Item Key="saveText" Type="String" Value="등록" />
+		<Item Key="outputHead" Type="String" Value="출력" />
+		<Item Key="outputMeta" Type="String" Value="" />
+		<Item Key="logInfo" Type="String" Value="" />
+		<Item Key="isPresetOpen" Type="Bool" Value="false" />
+		<Item Key="presetHead" Type="String" Value="프리셋 저장" />
+		<Item Key="presetValues" Type="String" Value="" />
+		<Item Key="presetCanDelete" Type="Bool" Value="false" />
+	</UserControl.Data>
+
+	<!-- 루트 Grid는 행·열 정의가 없다. 자식이 같은 칸에 쌓이고 선언 순서가 z-order다. 오버레이는 마지막에 둔다. -->
+	<Grid Name="grid_root">
+
+		<DockPanel Name="pnl_body" LastChildFill="true" IsEnabled="{!{@isAddOpen} &amp;&amp; !{@isOutputOpen} &amp;&amp; !{@isPresetOpen}}">
+
+			<Border Name="bar_top" DockPanel.Dock="Top" Padding="12,7" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="0,0,0,1">
+				<Grid Name="grid_top">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" MinWidth="160" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+						<TextBlock Name="txt_head" Text="스크립트 목록" FontSize="14" VerticalAlignment="Center" />
+						<TextBlock Name="txt_counts" Text="{`전체 ` + {@totalCount} + ` · 실행 중 ` + {@runningCount} + ` · 예약 ` + {@scheduledCount}}" Foreground="{$theme.text-weak}" VerticalAlignment="Center" />
+					</StackPanel>
+					<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+						<Button Name="btn_stop_all" Content="모두 중지" Variant="Danger" Icon="square" ToolTip="실행 중인 스크립트를 전부 중지한다" Visibility="{{@runningCount} &gt; 0 ? `Visible` : `Collapsed`}" />
+						<Button Name="btn_add" Content="스크립트 등록" Variant="Primary" Icon="plus" ToolTip="새 스크립트 등록" />
+					</StackPanel>
+				</Grid>
+			</Border>
+
+			<StatusBar Name="bar_status" DockPanel.Dock="Bottom">
+				<StatusBarItem>
+					<StatusDot Name="dot_state" Status="Idle" />
+				</StatusBarItem>
+				<StatusBarItem>
+					<TextBlock Name="txt_state" Text="{@stateText}" />
+				</StatusBarItem>
+				<StatusBarItem DockPanel.Dock="Right">
+					<TextBlock Name="txt_hint" Text="행 우클릭: 프리셋 실행 · 수정 · 출력 보기 · 예약 · 삭제 — 창을 닫아도 예약은 계속 동작합니다" Foreground="{$theme.text-weak}" />
+				</StatusBarItem>
+			</StatusBar>
+
+			<!-- 위: 스크립트 목록 / 가운데: 높이 조절 막대 / 아래: 실행 로그 -->
+			<Grid Name="grid_split">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" MinHeight="120" />
+					<RowDefinition Height="6" />
+					<RowDefinition Height="240" MinHeight="90" />
+				</Grid.RowDefinitions>
+
+				<DockPanel Name="pnl_list" Grid.Row="0" LastChildFill="true">
+					<!-- 컬럼명 행. 칸 폭은 MainControl의 행 열 정의(kRowColumns)와 같아야 한다. -->
+					<Grid Name="grid_list_head" DockPanel.Dock="Top" Margin="12,8,12,0" ColumnDefinitions="12,200,176,*,104,130">
+						<TextBlock Grid.Column="1" Name="txt_col_title" Text="제목" />
+						<TextBlock Grid.Column="2" Name="txt_col_preset" Text="프리셋" />
+						<TextBlock Grid.Column="3" Name="txt_col_args" Text="인자" />
+						<TextBlock Grid.Column="4" Name="txt_col_run" Text="실행" />
+						<TextBlock Grid.Column="5" Name="txt_col_remain" Text="남은 시간" TextAlignment="Right" />
+					</Grid>
+					<TextBlock Name="txt_empty" DockPanel.Dock="Top" Margin="12,16,12,0" Text="등록된 스크립트가 없습니다. [스크립트 등록]을 눌러 추가하세요." Foreground="{$theme.text-weak}" Visibility="{{@isEmpty} ? `Visible` : `Collapsed`}" />
+					<ScrollViewer Name="scr_list" Margin="12,4,12,4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+						<StackPanel Name="pnl_rows" Spacing="2" />
+					</ScrollViewer>
+				</DockPanel>
+
+				<GridSplitter Name="split_log" Grid.Row="1" ResizeDirection="Rows" ToolTip="끌어서 실행 로그 높이 조절" />
+
+				<DockPanel Name="pnl_log" Grid.Row="2" LastChildFill="true" Margin="12,0,12,6">
+					<Grid Name="grid_log_head" DockPanel.Dock="Top" Margin="0,4,0,4">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="120" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+							<TextBlock Name="txt_log_head" Text="실행 로그" FontSize="13" VerticalAlignment="Center" />
+							<TextBlock Name="txt_log_info" Text="{@logInfo}" Foreground="{$theme.text-weak}" VerticalAlignment="Center" />
+						</StackPanel>
+						<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+							<ComboBox Name="cmb_log_scope" Width="150" ToolTip="볼 로그 범위" />
+							<CheckBox Name="chk_log_follow" Content="자동 스크롤" IsChecked="true" ToolTip="새 줄이 오면 맨 아래로 내린다" />
+							<Button Name="btn_log_clear" Content="로그 지우기" Variant="Default" Icon="trash" ToolTip="실행 로그를 전부 지운다(파일 포함)" />
+						</StackPanel>
+					</Grid>
+					<TextBox Name="txt_log" AcceptsReturn="true" IsReadOnly="true" Placeholder="스크립트를 실행하면 여기에 출력이 쌓입니다." />
+				</DockPanel>
+			</Grid>
+		</DockPanel>
+
+		<!-- ===== 오버레이 1: 스크립트 등록·수정 ===== 딤에 Background가 없으면 포인터가 뒤로 통과한다. -->
+		<Grid Name="ovl_add" Background="{$theme.overlay-scrim}" Visibility="{{@isAddOpen} ? `Visible` : `Collapsed`}">
+			<Border Name="pnl_add" HorizontalAlignment="Center" Width="620" Margin="0,24,0,24" Padding="16" CornerRadius="8" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="1">
+				<StackPanel Name="pnl_add_body" Spacing="8">
+					<Grid Name="grid_add_head">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Grid.Column="0" Name="txt_add_head" Text="{@addHead}" FontSize="15" />
+						<Button Grid.Column="1" Name="btn_add_close" Content="닫기" Variant="Ghost" Icon="x" ToolTip="닫기 (ESC)" />
+					</Grid>
+					<ScrollViewer Name="scr_add" MaxHeight="470" VerticalScrollBarVisibility="Auto">
+						<StackPanel Name="pnl_add_form" Spacing="8">
+							<TextBlock Name="txt_title_label" Text="제목" Foreground="{$theme.text-weak}" />
+							<TextBox Name="txt_title" Placeholder="스크립트-1" />
+							<TextBlock Name="txt_path_label" Text="실행할 스크립트 경로 (.ps1 .bat .cmd .exe .py .js)" Foreground="{$theme.text-weak}" />
+							<TextBox Name="txt_path" Placeholder="C:\Tools\build.ps1" />
+
+							<Grid Name="grid_args_head" Margin="0,4,0,0">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" MinWidth="100" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<TextBlock Grid.Column="0" Name="txt_args_label" Text="인자 (위에서부터 순서대로 전달)" Foreground="{$theme.text-weak}" VerticalAlignment="Center" />
+								<Button Grid.Column="1" Name="btn_arg_add" Content="인자 추가" Variant="Default" Icon="plus" ToolTip="인자 1개를 추가한다" />
+							</Grid>
+							<TextBlock Name="txt_args_empty" Text="인자 없음" Foreground="{$theme.text-weak}" Visibility="{{@argCount} == 0 ? `Visible` : `Collapsed`}" />
+							<StackPanel Name="pnl_args" Spacing="6" />
+
+							<Separator Name="sep_schedule" Margin="0,4,0,4" />
+							<CheckBox Name="chk_schedule" Content="스케줄링" ToolTip="켜면 정한 시각에 자동으로 실행한다" />
+							<StackPanel Name="pnl_schedule" Spacing="8" Margin="22,0,0,0" IsEnabled="{@isScheduled}">
+								<StackPanel Orientation="Horizontal" Spacing="12">
+									<RadioButton Name="radio_after" GroupName="scriptrunner_kind" Content="시간 뒤" IsChecked="true" />
+									<RadioButton Name="radio_at" GroupName="scriptrunner_kind" Content="특정 시각" />
+								</StackPanel>
+								<StackPanel Name="pnl_after" Orientation="Horizontal" Spacing="6" Visibility="{!{@isAt} ? `Visible` : `Collapsed`}">
+									<NumericUpDown Name="num_hour" Width="110" Minimum="0" Maximum="720" Value="0" />
+									<TextBlock Text="시간" VerticalAlignment="Center" />
+									<NumericUpDown Name="num_min" Width="110" Minimum="0" Maximum="59" Value="5" />
+									<TextBlock Text="분" VerticalAlignment="Center" />
+									<NumericUpDown Name="num_sec" Width="110" Minimum="0" Maximum="59" Value="0" />
+									<TextBlock Text="초 뒤" VerticalAlignment="Center" />
+								</StackPanel>
+								<StackPanel Name="pnl_at" Orientation="Horizontal" Spacing="6" Visibility="{{@isAt} ? `Visible` : `Collapsed`}">
+									<TextBox Name="txt_at_date" Width="130" Placeholder="YYYY-MM-DD" ToolTip="비우면 오늘(지났으면 내일)" />
+									<Button Name="btn_date_today" Content="오늘" Variant="Default" />
+									<Button Name="btn_date_tomorrow" Content="내일" Variant="Default" />
+									<TextBox Name="txt_at_time" Width="90" Placeholder="HH:mm" ToolTip="24시간 형식 (예: 22:10)" />
+								</StackPanel>
+							</StackPanel>
+							<CheckBox Name="chk_repeat" Content="반복 수행" IsEnabled="{@isScheduled}" ToolTip="시간 뒤: 같은 간격마다 / 특정 시각: 매일 같은 시각" />
+							<TextBlock Name="txt_repeat_hint" Margin="22,0,0,0" Foreground="{$theme.text-weak}" Text="{{@isAt} ? `특정 시각 반복은 매일 같은 시각에 다시 실행합니다.` : `시간 뒤 반복은 같은 간격마다(예정 시각 기준) 다시 실행합니다.`}" Visibility="{{@isScheduled} ? `Visible` : `Collapsed`}" />
+							<CheckBox Name="chk_keep_boot" Content="부팅 후에도 스케줄 적용" IsEnabled="{@isScheduled}" ToolTip="끄면 PC를 다시 켜거나 다시 로그인한 뒤 Scouter가 시작될 때 이 예약을 풉니다. Scouter만 다시 켠 경우는 유지합니다. 어느 쪽이든 꺼져 있던 동안 지난 회차는 실행하지 않습니다." />
+							<TextBlock Name="txt_keep_boot_hint" Margin="22,0,0,0" Foreground="{$theme.text-weak}" Text="끄면 PC를 다시 켠 뒤 이 예약이 풀립니다. 꺼져 있던 동안 지난 회차는 실행하지 않습니다." Visibility="{{@isScheduled} ? `Visible` : `Collapsed`}" />
+						</StackPanel>
+					</ScrollViewer>
+					<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+						<Button Name="btn_save" Content="{@saveText}" Variant="Primary" Icon="check" />
+						<Button Name="btn_add_cancel" Content="취소" Variant="Default" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<!-- ===== 오버레이 2: 출력 보기 ===== -->
+		<Grid Name="ovl_output" Background="{$theme.overlay-scrim}" Visibility="{{@isOutputOpen} ? `Visible` : `Collapsed`}">
+			<Border Name="pnl_output" HorizontalAlignment="Center" Width="820" Margin="0,24,0,24" Padding="16" CornerRadius="8" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="1">
+				<StackPanel Name="pnl_output_body" Spacing="8">
+					<Grid Name="grid_output_head">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Grid.Column="0" Name="txt_output_head" Text="{@outputHead}" FontSize="15" TextTrimming="CharacterEllipsis" />
+						<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+							<Button Name="btn_output_refresh" Content="새로 고침" Variant="Default" ToolTip="출력을 다시 읽는다" />
+							<Button Name="btn_output_close" Content="닫기" Variant="Ghost" Icon="x" ToolTip="닫기 (ESC)" />
+						</StackPanel>
+					</Grid>
+					<TextBlock Name="txt_output_meta" Text="{@outputMeta}" Foreground="{$theme.text-weak}" TextWrapping="Wrap" />
+					<TextBox Name="txt_output" AcceptsReturn="true" IsReadOnly="true" Height="400" FontFamily="Consolas, 'D2Coding', monospace" />
+				</StackPanel>
+			</Border>
+		</Grid>
+		<!-- ===== 오버레이 3: 프리셋 저장 ===== 이름만 받는 작은 창. 값은 그 행의 지금 인자 값을 저장한다. -->
+		<Grid Name="ovl_preset" Background="{$theme.overlay-scrim}" Visibility="{{@isPresetOpen} ? `Visible` : `Collapsed`}">
+			<Border Name="pnl_preset" HorizontalAlignment="Center" Width="440" Margin="0,24,0,24" Padding="16" CornerRadius="8" Background="{$theme.background-panel}" BorderBrush="{$theme.border-weak-base}" BorderThickness="1">
+				<StackPanel Name="pnl_preset_body" Spacing="8">
+					<Grid Name="grid_preset_head">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" MinWidth="100" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<TextBlock Grid.Column="0" Name="txt_preset_head" Text="{@presetHead}" FontSize="15" TextTrimming="CharacterEllipsis" />
+						<Button Grid.Column="1" Name="btn_preset_close" Content="닫기" Variant="Ghost" Icon="x" ToolTip="닫기 (ESC)" />
+					</Grid>
+					<TextBlock Name="txt_preset_label" Text="프리셋 이름 (같은 이름이 있으면 덮어씁니다)" Foreground="{$theme.text-weak}" />
+					<TextBox Name="txt_preset_name" Placeholder="예: release" MaxLength="40" />
+					<TextBlock Name="txt_preset_values_label" Text="저장할 값 (지금 입력란 값)" Foreground="{$theme.text-weak}" />
+					<TextBlock Name="txt_preset_values" Text="{@presetValues}" TextWrapping="Wrap" />
+					<StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+						<Button Name="btn_preset_save" Content="저장" Variant="Primary" Icon="check" />
+						<Button Name="btn_preset_delete" Content="이 프리셋 삭제" Variant="Danger" Icon="trash" Visibility="{{@presetCanDelete} ? `Visible` : `Collapsed`}" />
+						<Button Name="btn_preset_cancel" Content="취소" Variant="Default" />
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</Grid>
+	</Grid>
+</UserControl>

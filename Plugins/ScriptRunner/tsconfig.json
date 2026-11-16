@@ -1,0 +1,9 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions":
+	{
+		"composite": false,
+		"noEmit": true
+	},
+	"include": ["Index.ts", "Types.ts", "ScheduleCalc.ts", "ScriptStore.ts", "ScriptLauncher.ts", "RunnerEngine.ts", "ScriptFormat.ts", "SpecReader.ts", "RunLog.ts", "OutputTailer.ts", "Tools/**/*.ts", "Views/**/*.ts", "Layout/**/*"]
+}

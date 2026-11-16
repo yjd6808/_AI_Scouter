@@ -11,6 +11,7 @@ extraResources:
   - { from: "Plugins/ToastLab", to: "Plugins/ToastLab", filter: ["!.cache"] }
   - { from: "Plugins/ControlLab", to: "Plugins/ControlLab", filter: ["!.cache"] }
   - { from: "Plugins/InstantAlarm", to: "Plugins/InstantAlarm", filter: ["!.cache"] }
+  - { from: "Plugins/ScriptRunner", to: "Plugins/ScriptRunner", filter: ["!.cache"] }
   - { from: "Source/Scouter.App/Renderer/Theme/Themes", to: "Themes" }
   - { from: "Assets", to: "Assets" }
   - { from: "Res", to: "Res" }
