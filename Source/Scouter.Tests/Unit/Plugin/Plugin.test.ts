@@ -70,6 +70,35 @@ void describe("Plugin", () =>
 		assert.throws(() => { ManifestValidator.Validate({ Name: "H" }); });
 	});
 
+	void it("Storage: 읽은 뒤에만 storage.json에 쓰고, 새 컨텍스트가 다시 읽는다", async () =>
+	{
+		const dir = path.join(os.tmpdir(), `scouter-storage-${process.pid}`);
+		const host = {
+			StorageDir: (_id: string) => dir,
+			HasPermission: (_id: string, _perm: string) => true,
+			AppPlugins: () => [],
+			AppVersion: () => "0.4.0",
+		};
+		const unread = new PluginContext(Manifest(), host);
+		unread.Storage.Set("Key", "lost");
+		await unread.FlushStorageAsync();
+		const first = new PluginContext(Manifest(), host);
+		await first.LoadStorageAsync();
+		assert.equal(first.Storage.Get<string>("Key", "none"), "none");
+		first.Storage.Set("Key", { Value: 7 });
+		await first.FlushStorageAsync();
+		const second = new PluginContext(Manifest(), host);
+		await second.LoadStorageAsync();
+		assert.deepEqual(second.Storage.Get<unknown>("Key", null), { Value: 7 });
+		second.Storage.Set("Key", { Value: 8 });
+		second.Dispose();
+		await new Promise((_resolve) => { setTimeout(_resolve, 50); });
+		const third = new PluginContext(Manifest(), host);
+		await third.LoadStorageAsync();
+		assert.deepEqual(third.Storage.Get<unknown>("Key", null), { Value: 8 });
+		third.Dispose();
+	});
+
 	void it("PermissionStore 저장·조회", async () =>
 	{
 		const file = path.join(os.tmpdir(), `scouter-perm-${process.pid}.json`);

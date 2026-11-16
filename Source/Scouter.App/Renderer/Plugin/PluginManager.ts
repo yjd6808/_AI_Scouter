@@ -153,6 +153,8 @@ export class PluginManager
 				// 무시.
 			}
 		}
+		// 리로드가 곧바로 storage.json을 다시 읽으므로, 디바운스 중인 저장을 여기서 끝까지 기다린다.
+		await handle.Context?.FlushStorageAsync();
 		try
 		{
 			handle.Context?.Dispose();	// 여기서 이 Plugin이 띄운 Dialog·Popup도 닫힌다. 실패해도 나머지 정리는 끝까지 간다.
@@ -173,6 +175,14 @@ export class PluginManager
 		handle.Context = null;
 		handle.State = "Disabled";
 		PluginManager.s_changed_.Invoke(undefined);
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 활성 Plugin 전부의 storage.json을 바로 쓴다. 앱 종료 직전에 부른다(디바운스 300ms 안의 변경을 살린다).
+	public static async FlushStoragesAsync(): Promise<void>
+	{
+		const contexts = [...PluginManager.s_plugins_.values()].map((_h) => _h.Context).filter((_c): _c is PluginContext => _c !== null);
+		await Promise.all(contexts.map((_c) => _c.FlushStorageAsync()));
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -389,6 +399,8 @@ export class PluginManager
 			const host = new ManagerHost();
 			const ctx = new PluginContext(manifest, host);
 			ctx.InitPaths(_candidate.Dir, host.StorageDir(manifest.Id), Paths.ScouterHome, Paths.Temp, Paths.Version);
+			// Activate가 ctx.Storage를 읽기 전에 storage.json을 올린다. 빠뜨리면 저장소가 매번 빈 채로 시작한다.
+			await ctx.LoadStorageAsync();
 			const instance = new mod.default();
 			handle.Instance = instance;
 			handle.Context = ctx;

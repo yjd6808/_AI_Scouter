@@ -81,6 +81,8 @@ export class PluginContext implements IPluginContext
 	// 띄워 둔 Dialog·Popup을 가장 먼저 닫는다. 모달을 남기면 앱 전체가 잠긴다.
 	public Dispose(): void
 	{
+		// 디바운스 중인 저장을 놓치지 않게 바로 쓴다. 읽은 적 없는 저장소는 Storage가 알아서 건너뛴다.
+		void this.storage_.FlushAsync();
 		this.CloseOwned();
 		ToolRegistry.RemoveAll(this.Manifest.Id);
 		ResourceRegistry.RemoveAll(this.Manifest.Id);
@@ -94,6 +96,22 @@ export class PluginContext implements IPluginContext
 	}
 
 	// ==================== 공개 메서드 ====================
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// storage.json을 읽는다. 매니저가 Activate 전에 1번 부른다.
+	// 읽지 않으면 저장소가 늘 비어 보이고, Storage.FlushAsync도 읽은 적 없는 저장소는 쓰지 않아
+	// Plugin이 Storage에 넣은 값이 디스크에 남지 않는다.
+	public LoadStorageAsync(): Promise<void>
+	{
+		return this.storage_.LoadAsync();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// 디바운스(300ms)를 기다리지 않고 storage.json을 바로 쓴다. 언로드·앱 종료 때 부른다.
+	public FlushStorageAsync(): Promise<void>
+	{
+		return this.storage_.FlushAsync();
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// 권한을 요구한다. 없으면 PermissionError.
