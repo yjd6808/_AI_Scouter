@@ -11,3 +11,9 @@ probe-*
 happy-probe.ts
 CLAUDE.local.md
 Plugins/Mabi*/
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
